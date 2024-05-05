@@ -1,9 +1,13 @@
-import './App.css';
-import KeysList from './components/KeysList';
-import Navbar from './components/Navbar';
 
-function App() {
-  let keys = [
+const getPassKeyValue = ({account, username}) => {
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            resolve("password");
+        }, 1000);
+    });
+}
+
+let keys = [
     { account: "GitHub", username: "octocat", password: "password" },
     { account: "LinkedIn", username: "octocat", password: "password" },
     { account: "Google", username: "shubhampanchal9773@gmail.com", password: "password"},
@@ -15,14 +19,17 @@ function App() {
     { account: "NPM", username: "octocat", password: "password" },
     { account: "Udemy", username: "octocat", password: "password" },
     { account: "Paypal", username: "octocat", password: "password" },
-  ].sort((a, b) => a.account.localeCompare(b.account));
-  return (
-    <div className="App">
-      <Navbar />
-      <KeysList keys={keys} />
-      <p className="text-center merriweather-light footer">Made with <i className="fa-solid fa-heart"></i> by <a href="https://www.linkedin.com/in/shubham-panchal-18bb6b187/">Shubham!</a></p>
-    </div>
-  );
+]
+
+const getPassKeys = () => {
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            resolve(keys);
+        }, 1000);
+    });
 }
 
-export default App;
+module.exports = {
+    getPassKeyValue,
+    getPassKeys,
+}

@@ -1,0 +1,176 @@
+import React, { useCallback, useState, useEffect } from "react";
+import "../styles/KeysList.css";
+import sha256 from "crypto-js/sha256";
+import AccountLogoProvider from "../utils/AccountLogoProvider";
+import debounce from "../utils/debounce";
+import { getPassKeyValue } from "../utils/firestore";
+
+export default function KeysList(props) {
+    const { keys } = props;
+    const [searchText, setSearchText] = useState("");
+    const [selectedIndex, setSelectedIndex] = useState(-1);
+    const [lastIntervalId, setLastIntervalId] = useState(null);
+    const [timer, setTimer] = useState(30);
+    const [filteredKeys, setFilteredKeys] = useState([...keys]);
+    const [loading, setLoading] = useState(false);
+    const [password, setPassword] = useState("");
+    const [error, setError] = useState("");
+    const [copyIconClassName, setCopyIconClassName] = useState("fa-regular fa-copy");
+
+    const debouncedSearch = debounce((searchText) => {
+        setFilteredKeys(keys.filter(key => key.account.toLowerCase().includes(searchText.toLowerCase()) ||
+            key.username.toLowerCase().includes(searchText.toLowerCase())));
+    }, 500);
+
+    useEffect(() => {
+        debouncedSearch(searchText);        
+    }, [searchText, debouncedSearch]);
+
+    const handleChangeSearchText = useCallback((e) => {
+        setSearchText(e.target.value);
+    }, [setSearchText]);
+
+    const handleClearInput = useCallback(() => {
+        setSearchText("");
+    }, [setSearchText]);
+
+    const handleCopyPassword = useCallback(() => {
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(password);
+        } else {
+            const textArea = document.createElement("textarea");
+            textArea.value = password;
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            try {
+                document.execCommand("copy");
+            } catch (err) {
+                console.error("Failed to copy password to clipboard", err);
+            }
+            textArea.remove();
+        }
+        setCopyIconClassName("fa-solid fa-check");
+        setTimeout(() => {
+            setCopyIconClassName("fa-regular fa-copy");
+        }, 1000);
+    }, [password]);
+
+    const handleShowKeyBody = useCallback((index) => {
+        // if the same key is clicked again, do nothing
+        // if a key is already loading, do nothing
+        if (selectedIndex === index || loading) {
+            return;
+        }
+        if (lastIntervalId) {
+            clearInterval(lastIntervalId);
+        }
+        setSelectedIndex(index);
+        setLoading(true);
+        setError("");
+
+        // fetch password
+        getPassKeyValue({
+            account: filteredKeys[index].account,
+            username: filteredKeys[index].username
+        }).then((pass) => {
+            setPassword(pass);
+            console.log(pass);
+            // if password is fetched, start the timer
+            setTimer(30);
+            setLastIntervalId(setInterval(() => {
+                setTimer(prevTimer => {
+                    if (prevTimer === 1) {
+                        setSelectedIndex(-1);
+                        if (lastIntervalId) {
+                            clearInterval(lastIntervalId);
+                        }
+                        return 30;
+                    }
+                    return prevTimer - 1;
+                });
+            }, 1000));
+        }).catch((error) => {
+            if (error.message) {
+                setError(error.message);
+            } else {
+                setError("Error: Could not get password");
+            }
+        }).finally(() => {
+            setLoading(false);
+        });
+    }, [lastIntervalId, setSelectedIndex, filteredKeys, loading, selectedIndex]);
+
+    const stringToColor = useCallback((string) => {
+        // Hash the input string
+        let hash = sha256(string);
+        // Extract the last 6 characters of the hash
+        let hex = hash.toString().slice(-6);
+        return `#${hex}`;
+    }, []);
+
+    return (
+        <div>
+            <div className="keys-list-container">
+                <form method="post" action="#" className="mb-3">
+                    <div className="d-flex align-items-center justify-content-between search-input-container">
+                        <i className="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" className="form-control merriweather-light" placeholder="Search"
+                            value={searchText} onChange={handleChangeSearchText} name="searchText" />
+                        <button type="button" className="btn" style={{
+                            visibility: searchText ? "visible" : "hidden"
+                        }} onClick={handleClearInput}>
+                            <i className="fa-solid fa-times"></i>
+                        </button>
+                    </div>
+                </form>
+                <div className="d-flex align-items-center justify-content-between mb-3">
+                    <p className="m-0 merriweather-light"><strong>Accounts ({filteredKeys.length})</strong></p>
+                    <button className="btn text-primary merriweather-light"><i className="fa-solid fa-plus"></i> Add</button>
+                </div>
+                {filteredKeys.map((key, index) => (
+                    <div className="key-container mb-3 merriweather-light" key={`${key.account}_${key.username}`}
+                        style={{ borderTop: `5px solid ${stringToColor(key.account)}` }}
+                        onClick={e => handleShowKeyBody(index)}>
+                        <div className="mb-3 d-flex align-items-start justify-content-between">
+                            <div className="d-flex align-items-center">
+                                <AccountLogoProvider account={key.account} />
+                                <div>
+                                    <p className="key-account m-0">{key.account}</p>
+                                    <p className="key-username m-0">{key.username}</p>
+                                </div>
+                            </div>
+                        </div>
+                        {index === selectedIndex &&
+                        <div className="key-body">
+                            {loading ?
+                            <div className="d-flex justify-content-center mt-3">
+                                <div className="spinner-border" role="status" style={{
+                                    borderColor: stringToColor(key.account),
+                                    borderRightColor: "transparent"
+                                }}>
+                                </div>                                
+                            </div> :
+                            <div>
+                                {error ?
+                                <p className="text-danger text-center m-0">{error}</p> :
+                                <div>
+                                    <div className="d-flex justify-content-center">
+                                        <div className="shrinking-div"></div>
+                                    </div>
+                                    <div className="d-flex align-items-center justify-content-center mt-3">                                
+                                        <p className="m-0 passkey">{password}</p>  
+                                        <button className="btn merriweather-light text-primary"
+                                            onClick={handleCopyPassword}><i className={copyIconClassName}></i> Copy</button>                              
+                                    </div>
+                                    <p className="text-center m-0"><strong>{timer}s</strong> until hide</p>
+                                </div>}
+                            </div>}
+                        </div>}
+                    </div>
+                ))}
+                {filteredKeys.length === 0 && <p className="text-center merriweather-light">No keys found</p>}
+            </div>
+        </div>
+    );
+}
