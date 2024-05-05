@@ -43,8 +43,23 @@ const upsertPassKey = ({account, username, password}) => {
     });
 }
 
+const deletePassKey = ({account, username}) => {
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            let index = keys.findIndex(key => key.account === account && key.username === username);
+            if (index === -1) {
+                reject("Passkey not found");
+            }
+            keys.splice(index, 1);
+            console.log("Passkey deleted successfully", account);
+            resolve();
+        }, 1000);
+    });
+}
+
 module.exports = {
     getPassKeyValue,
     getPassKeys,
-    upsertPassKey
+    upsertPassKey,
+    deletePassKey,
 }

@@ -2,7 +2,7 @@ import React, { useCallback, useState, useEffect } from "react";
 import "../styles/KeysList.css";
 import sha256 from "crypto-js/sha256";
 import debounce from "../utils/debounce";
-import { getPassKeyValue, getPassKeys } from "../utils/firestore";
+import { getPassKeyValue, getPassKeys, deletePassKey } from "../utils/firestore";
 import Navbar from "./Navbar";
 import AccountIcon from "./AccountIcon";
 
@@ -20,6 +20,7 @@ export default function KeysList(props) {
     const [error, setError] = useState("");
     const [copyIconClassName, setCopyIconClassName] = useState("fa-regular fa-copy");
     const [openMenuIndex, setOpenMenuIndex] = useState(-1);
+    const [deleteIndex, setDeleteIndex] = useState(-1);
 
     const fetchPassKeys = useCallback(() => {
         setPassKeyError("");
@@ -98,8 +99,23 @@ export default function KeysList(props) {
     }, [filteredKeys, props]);
 
     const handleDeletePassKey = useCallback((index) => {
-
-    }, []);
+        setLoadingPassKeys(true);
+        setDeleteIndex(-1);
+        deletePassKey({ account: filteredKeys[index].account, username: filteredKeys[index].username })
+            .then(() => {
+                fetchPassKeys();
+            }).catch((error) => {
+                console.error("Error deleting passkey", error);
+                if (error.message) {
+                    setPassKeyError(error.message);
+                } else {
+                    setPassKeyError("Error deleting passkey");
+                }
+            })
+            .finally(() => {
+                setLoadingPassKeys(false);
+            });
+    }, [fetchPassKeys, filteredKeys]);
 
     const handleAction = useCallback((event, index, action) => {
         // stop the event from propagating to the parent div
@@ -111,9 +127,9 @@ export default function KeysList(props) {
         if (action === "edit") {
             handleEditPassKey(index);
         } else if (action === "delete") {
-            handleDeletePassKey(index);
+            setDeleteIndex(index);
         }
-    }, [handleEditPassKey, handleDeletePassKey]);
+    }, [handleEditPassKey, setDeleteIndex, setOpenMenuIndex]);
 
     const handleCopyPassword = useCallback(() => {
         if (navigator.clipboard) {
@@ -272,6 +288,21 @@ export default function KeysList(props) {
                         </div>
                     ))}
                     {filteredKeys.length === 0 && <p className="text-center merriweather-light">No keys found</p>}
+                </div>}
+                {deleteIndex !== -1 && <div className="delete-confirm-container">
+                    <div className="delete-confirm">
+                        <p className="m-0 merriweather-light">Are you sure you want to <strong>delete</strong> this key?</p>
+                        <div>
+                            <p className="m-0 merriweather-light"><strong>Account:</strong> {filteredKeys[deleteIndex].account}</p>
+                            <p className="m-0 merriweather-light"><strong>Username:</strong> {filteredKeys[deleteIndex].username}</p>
+                        </div>
+                        <div className="d-flex justify-content-between mt-3">
+                            <button className="btn btn-danger merriweather-light mr-3"
+                                onClick={e => handleDeletePassKey(deleteIndex)}>Delete</button>
+                            <button className="btn btn-secondary merriweather-light"
+                                onClick={e => setDeleteIndex(-1)}>Cancel</button>
+                        </div>
+                    </div>
                 </div>}
             </div>
         </div>
