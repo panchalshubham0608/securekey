@@ -1,21 +1,47 @@
 import React, { useCallback, useState, useEffect } from "react";
 import "../styles/KeysList.css";
 import sha256 from "crypto-js/sha256";
-import AccountLogoProvider from "../utils/AccountLogoProvider";
 import debounce from "../utils/debounce";
-import { getPassKeyValue } from "../utils/firestore";
+import { getPassKeyValue, getPassKeys } from "../utils/firestore";
+import Navbar from "./Navbar";
+import AccountIcon from "./AccountIcon";
 
 export default function KeysList(props) {
-    const { keys } = props;
+    const [keys, setKeys] = useState([]);
+    const [filteredKeys, setFilteredKeys] = useState([]);
     const [searchText, setSearchText] = useState("");
     const [selectedIndex, setSelectedIndex] = useState(-1);
     const [lastIntervalId, setLastIntervalId] = useState(null);
     const [timer, setTimer] = useState(30);
-    const [filteredKeys, setFilteredKeys] = useState([...keys]);
     const [loading, setLoading] = useState(false);
     const [password, setPassword] = useState("");
+    const [loadingPassKeys, setLoadingPassKeys] = useState(false);
+    const [passKeyError, setPassKeyError] = useState("");
     const [error, setError] = useState("");
     const [copyIconClassName, setCopyIconClassName] = useState("fa-regular fa-copy");
+
+    const fetchPassKeys = useCallback(() => {
+        setPassKeyError("");
+        setLoadingPassKeys(true);
+        getPassKeys()
+            .then((keys) => {
+                setKeys(keys);
+                setFilteredKeys(keys);
+            }).catch((error) => {
+                console.error("Error fetching keys", error);
+                if (error.message) {
+                    setPassKeyError(error.message);
+                } else {
+                    setPassKeyError("Error fetching keys");
+                }
+            }).finally(() => {
+                setLoadingPassKeys(false);
+            });
+    }, []);
+
+    useEffect(() => {
+        fetchPassKeys();
+    }, [fetchPassKeys]);
 
     const debouncedSearch = debounce((searchText) => {
         setFilteredKeys(keys.filter(key => key.account.toLowerCase().includes(searchText.toLowerCase()) ||
@@ -23,8 +49,12 @@ export default function KeysList(props) {
     }, 500);
 
     useEffect(() => {
-        debouncedSearch(searchText);        
-    }, [searchText, debouncedSearch]);
+        // if keys are loading, do nothing
+        if (loadingPassKeys) {
+            return;
+        }
+        debouncedSearch(searchText);
+    }, [searchText, debouncedSearch, loadingPassKeys]);
 
     const handleChangeSearchText = useCallback((e) => {
         setSearchText(e.target.value);
@@ -110,8 +140,10 @@ export default function KeysList(props) {
     }, []);
 
     return (
-        <div>
+        <div>            
             <div className="keys-list-container">
+                <Navbar />
+                {passKeyError && <div className="alert alert-danger">{passKeyError}</div>}
                 <form method="post" action="#" className="mb-3">
                     <div className="d-flex align-items-center justify-content-between search-input-container">
                         <i className="fa-solid fa-magnifying-glass"></i>
@@ -124,52 +156,62 @@ export default function KeysList(props) {
                         </button>
                     </div>
                 </form>
-                <div className="d-flex align-items-center justify-content-between mb-3">
-                    <p className="m-0 merriweather-light"><strong>Accounts ({filteredKeys.length})</strong></p>
-                    <button className="btn text-primary merriweather-light"><i className="fa-solid fa-plus"></i> Add</button>
-                </div>
-                {filteredKeys.map((key, index) => (
-                    <div className="key-container mb-3 merriweather-light" key={`${key.account}_${key.username}`}
-                        style={{ borderTop: `5px solid ${stringToColor(key.account)}` }}
-                        onClick={e => handleShowKeyBody(index)}>
-                        <div className="mb-3 d-flex align-items-start justify-content-between">
-                            <div className="d-flex align-items-center">
-                                <AccountLogoProvider account={key.account} />
-                                <div>
-                                    <p className="key-account m-0">{key.account}</p>
-                                    <p className="key-username m-0">{key.username}</p>
+                {loadingPassKeys ? 
+                <div className="d-flex justify-content-center mb-3">
+                    <div className="spinner-border" style={{
+                        borderColor: "#0d6efd",
+                        borderRightColor: "transparent"
+                    }} role="status"></div>
+                </div> :
+                <div>
+                    <div className="d-flex align-items-center justify-content-between mb-3">
+                        <p className="m-0 merriweather-light"><strong>Accounts ({filteredKeys.length})</strong></p>
+                        <button className="btn text-primary merriweather-light"
+                            onClick={props.onAddKey}><i className="fa-solid fa-plus"></i> Add</button>
+                    </div>
+                    {filteredKeys.map((key, index) => (
+                        <div className="key-container mb-3 merriweather-light" key={`${key.account}_${key.username}`}
+                            style={{ borderTop: `5px solid ${stringToColor(key.account)}` }}
+                            onClick={e => handleShowKeyBody(index)}>
+                            <div className="mb-3 d-flex align-items-start justify-content-between">
+                                <div className="d-flex align-items-center">
+                                    <AccountIcon account={key.account} />
+                                    <div>
+                                        <p className="key-account m-0">{key.account}</p>
+                                        <p className="key-username m-0">{key.username}</p>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        {index === selectedIndex &&
-                        <div className="key-body">
-                            {loading ?
-                            <div className="d-flex justify-content-center mt-3">
-                                <div className="spinner-border" role="status" style={{
-                                    borderColor: stringToColor(key.account),
-                                    borderRightColor: "transparent"
-                                }}>
-                                </div>                                
-                            </div> :
-                            <div>
-                                {error ?
-                                <p className="text-danger text-center m-0">{error}</p> :
-                                <div>
-                                    <div className="d-flex justify-content-center">
-                                        <div className="shrinking-div"></div>
-                                    </div>
-                                    <div className="d-flex align-items-center justify-content-center mt-3">                                
-                                        <p className="m-0 passkey">{password}</p>  
-                                        <button className="btn merriweather-light text-primary"
-                                            onClick={handleCopyPassword}><i className={copyIconClassName}></i> Copy</button>                              
-                                    </div>
-                                    <p className="text-center m-0"><strong>{timer}s</strong> until hide</p>
+                            {index === selectedIndex &&
+                                <div className="key-body">
+                                    {loading ?
+                                        <div className="d-flex justify-content-center mt-3">
+                                            <div className="spinner-border" role="status" style={{
+                                                borderColor: stringToColor(key.account),
+                                                borderRightColor: "transparent"
+                                            }}>
+                                            </div>
+                                        </div> :
+                                        <div>
+                                            {error ?
+                                                <p className="text-danger text-center m-0">{error}</p> :
+                                                <div>
+                                                    <div className="d-flex justify-content-center">
+                                                        <div className="shrinking-div"></div>
+                                                    </div>
+                                                    <div className="d-flex align-items-center justify-content-center mt-3">
+                                                        <p className="m-0 passkey">{password}</p>
+                                                        <button className="btn merriweather-light text-primary"
+                                                            onClick={handleCopyPassword}><i className={copyIconClassName}></i> Copy</button>
+                                                    </div>
+                                                    <p className="text-center m-0"><strong>{timer}s</strong> until hide</p>
+                                                </div>}
+                                        </div>}
                                 </div>}
-                            </div>}
-                        </div>}
-                    </div>
-                ))}
-                {filteredKeys.length === 0 && <p className="text-center merriweather-light">No keys found</p>}
+                        </div>
+                    ))}
+                    {filteredKeys.length === 0 && <p className="text-center merriweather-light">No keys found</p>}
+                </div>}
             </div>
         </div>
     );

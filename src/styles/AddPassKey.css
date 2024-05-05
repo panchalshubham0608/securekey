@@ -1,0 +1,30 @@
+.add-passkey-navbar {
+    padding: 10px;
+    box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
+}
+
+.add-passkey-navbar i {
+    font-size: 25px;
+    color: black;
+}
+
+.add-passkey-container {
+    padding: 20px 10px;
+}
+
+.account-provider {
+    padding: 10px;
+}
+.account-provider h4 {
+    font-size: 20px;
+}
+.account-provider img {
+    width: 40px;
+    height: 40px;
+    margin-right: 10px;
+}
+
+.account-provider:hover {
+    cursor: pointer;
+    background-color: #f2f4f6;
+}

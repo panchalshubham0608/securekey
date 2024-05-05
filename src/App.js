@@ -1,25 +1,14 @@
+import React, { useState } from 'react';
 import './App.css';
+import AddPassKey from './components/AddPassKey';
 import KeysList from './components/KeysList';
-import Navbar from './components/Navbar';
 
 function App() {
-  let keys = [
-    { account: "GitHub", username: "octocat", password: "password" },
-    { account: "LinkedIn", username: "octocat", password: "password" },
-    { account: "Google", username: "shubhampanchal9773@gmail.com", password: "password"},
-    { account: "SBI", username: "testsbiuser", password: "password" },
-    { account: "Microsoft", username: "octocat", password: "password" },
-    { account: "IncomeTax", username: "octocat", password: "password" },
-    { account: "UAN", username: "octocat", password: "password"},
-    { account: "UHCP", username: "octocat", password: "password" },
-    { account: "NPM", username: "octocat", password: "password" },
-    { account: "Udemy", username: "octocat", password: "password" },
-    { account: "Paypal", username: "octocat", password: "password" },
-  ].sort((a, b) => a.account.localeCompare(b.account));
+  const [selectedWidget, setSelectedWidget] = useState("add-key");
   return (
     <div className="App">
-      <Navbar />
-      <KeysList keys={keys} />
+      {selectedWidget === "keys" && <KeysList onAddKey={() => setSelectedWidget("add-key")} />}
+      {selectedWidget === "add-key" && <AddPassKey onBack={() => setSelectedWidget("keys")} />}
       <p className="text-center merriweather-light footer">Made with <i className="fa-solid fa-heart"></i> by <a href="https://www.linkedin.com/in/shubham-panchal-18bb6b187/">Shubham!</a></p>
     </div>
   );

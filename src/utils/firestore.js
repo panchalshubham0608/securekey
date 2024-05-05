@@ -24,7 +24,17 @@ let keys = [
 const getPassKeys = () => {
     return new Promise((resolve, reject) => {
         setTimeout(() => {
-            resolve(keys);
+            resolve(keys.sort((a, b) => a.account.localeCompare(b.account)));
+        }, 1000);
+    });
+}
+
+const upsertPassKey = ({account, username, password}) => {
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            keys.push({account, username, password});
+            console.log("Passkey added successfully", account);
+            resolve();
         }, 1000);
     });
 }
@@ -32,4 +42,5 @@ const getPassKeys = () => {
 module.exports = {
     getPassKeyValue,
     getPassKeys,
+    upsertPassKey
 }
