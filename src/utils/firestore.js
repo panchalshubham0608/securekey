@@ -1,4 +1,3 @@
-
 let keys = [
     { account: "GitHub", username: "octocat", password: "password" },
     { account: "LinkedIn", username: "octocat", password: "password" },
