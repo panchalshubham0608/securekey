@@ -7,9 +7,9 @@ import { upsertPassKey } from "../utils/firestore";
 export default function AddPassKey(props) {
     const [searchText, setSearchText] = useState("");
     const [filteredAccounts, setFilteredAccounts] = useState(Object.keys(AccountIconsList));
-    const [account, setAccount] = useState("");
-    const [username, setUsername] = useState("");
-    const [password, setPassword] = useState("");
+    const [account, setAccount] = useState(props.editItem?.account || "");
+    const [username, setUsername] = useState(props.editItem?.username || "");
+    const [password, setPassword] = useState();
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
     const [loading, setLoading] = useState(false);
@@ -32,6 +32,12 @@ export default function AddPassKey(props) {
     const handleClearInput = useCallback(() => {
         setSearchText("");
     }, [setSearchText]);
+
+    const handleSelectAccount = useCallback((account) => {
+        if (!props.editItem) {
+            setAccount(account);
+        }
+    }, [props.editItem]);
 
     const handleAddPassKey = useCallback((e) => {
         // prevent form submission
@@ -57,9 +63,10 @@ export default function AddPassKey(props) {
 
         // make request
         setLoading(true);
+        let editing = !!props.editItem;
         upsertPassKey({ account, username, password })
             .then(() => {
-                setSuccess("Passkey added successfully");
+                setSuccess(`Passkey ${editing ? "updated" : "added"} successfully`);
                 setAccount("");
                 setUsername("");
                 setPassword("");
@@ -68,13 +75,15 @@ export default function AddPassKey(props) {
                 if (error.message) {
                     setError(error.message);
                 } else {
-                    setError("Error adding passkey");
+                    setError(`Error ${editing ? "updating" : "adding"} passkey`);
                 }
             }).finally(() => {
                 setLoading(false);
             });
-    }, [account, username, password, setError]);
+    }, [account, username, password, setError, props.editItem]);
 
+    // check if we are editing an item
+    let editing = !!props.editItem;
 
     return (
         <div>
@@ -82,7 +91,7 @@ export default function AddPassKey(props) {
                 <button type="button" className="btn" onClick={props.onBack}>
                     <i className="fa-solid fa-arrow-left"></i>
                 </button>
-                <h4 className="merriweather-light m-0">Add Passkey</h4>
+                <h4 className="merriweather-light m-0">{editing ? "Edit" : "Add"} Passkey</h4>
             </div>
             <div className="add-passkey-container">
                 {error && <div className="alert alert-danger">{error}</div>}
@@ -93,12 +102,22 @@ export default function AddPassKey(props) {
                         <div className="mb-1">
                             <label htmlFor="account" className="form-label merriweather-light">Account</label>
                             <input type="text" className="form-control merriweather-light" id="account"
-                                value={account} onChange={e => setAccount(e.target.value)} />
+                                value={account} onChange={e => {
+                                    if (!editing) {
+                                        setAccount(e.target.value);
+                                    }
+                                }}
+                                disabled={editing}/>
                         </div>
                         <div className="mb-1">
                             <label htmlFor="username" className="form-label merriweather-light">Username</label>
                             <input type="text" className="form-control merriweather-light" id="username"
-                                value={username} onChange={e => setUsername(e.target.value)} />
+                                value={username} onChange={e => {
+                                    if (!editing) {
+                                        setUsername(e.target.value);
+                                    }
+                                }}
+                                disabled={editing}/>
                         </div>
                         <div className="mb-1">
                             <label htmlFor="password" className="form-label merriweather-light">Password</label>
@@ -109,7 +128,7 @@ export default function AddPassKey(props) {
                             <button type="submit" className="btn btn-success merriweather-light w-100"
                                 disabled={loading}>
                                     {loading && <div className="spinner-border spinner-border-sm mr-3" role="status"></div>}
-                                    {loading ? "Adding" : "Add"}
+                                    {loading ? (editing ? "Updating" : "Adding") : (editing ? "Update" : "Add")}
                             </button>
                         </div>
                     </form>
@@ -131,7 +150,7 @@ export default function AddPassKey(props) {
                 <div>
                     {filteredAccounts.map(account => (
                         <div className="d-flex align-items-start justify-content-between account-provider"
-                            key={account} onClick={() => setAccount(account)}>
+                            key={account} onClick={e => handleSelectAccount(account)}>
                             <div className="d-flex align-items-center">
                                 <AccountIcon account={account} />
                                 <h4 className="m-0 merriweather-light">{account}</h4>

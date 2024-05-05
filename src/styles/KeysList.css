@@ -39,13 +39,6 @@
     word-break: break-all;
 }
 
-.key-action {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 10px;
-}
-
 .key-body {
     border-top: 1px solid #e0e0e0;
 }
@@ -58,6 +51,28 @@
     font-size: 30px;
 }
 
+.key-action ul {
+    list-style-type: none;
+    padding: 0;
+    box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
+    position: absolute;
+    background-color: white;
+    z-index: 1000;
+}
+
+.key-action button {
+    padding: 0;
+}
+
+.key-action ul li {
+    padding: 10px;
+    padding-right: 20px;
+}
+
+.key-action ul li:hover {
+    cursor: pointer;
+    background-color: #f2f4f6;
+}
 
 .shrinking-div {
     width: 100%;

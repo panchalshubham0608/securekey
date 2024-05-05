@@ -19,6 +19,7 @@ export default function KeysList(props) {
     const [passKeyError, setPassKeyError] = useState("");
     const [error, setError] = useState("");
     const [copyIconClassName, setCopyIconClassName] = useState("fa-regular fa-copy");
+    const [openMenuIndex, setOpenMenuIndex] = useState(-1);
 
     const fetchPassKeys = useCallback(() => {
         setPassKeyError("");
@@ -43,6 +44,25 @@ export default function KeysList(props) {
         fetchPassKeys();
     }, [fetchPassKeys]);
 
+    useEffect(() => {
+        document.addEventListener("click", (event) => {
+            // if the click is inside the key container, do nothing
+            if (event.target.closest(".key-container")) {
+                return;
+            }
+            if (selectedIndex !== -1) {
+                setSelectedIndex(-1);
+                if (lastIntervalId) {
+                    clearInterval(lastIntervalId);
+                }
+                setTimer(30);
+            }
+            if (openMenuIndex !== -1) {
+                setOpenMenuIndex(-1);
+            }
+        });
+    }, [lastIntervalId, selectedIndex, openMenuIndex]);
+
     const debouncedSearch = debounce((searchText) => {
         setFilteredKeys(keys.filter(key => key.account.toLowerCase().includes(searchText.toLowerCase()) ||
             key.username.toLowerCase().includes(searchText.toLowerCase())));
@@ -63,6 +83,37 @@ export default function KeysList(props) {
     const handleClearInput = useCallback(() => {
         setSearchText("");
     }, [setSearchText]);
+
+    const handleToggleMenu = useCallback((e, index) => {
+        // don't show the key body when the menu is clicked
+        e.preventDefault();
+        e.stopPropagation();
+        // toggle the menu
+        setOpenMenuIndex(index);
+    }, [setOpenMenuIndex]);
+
+    const handleEditPassKey = useCallback((index) => {
+        const key = filteredKeys[index];
+        props.onEdit(key);
+    }, [filteredKeys, props]);
+
+    const handleDeletePassKey = useCallback((index) => {
+
+    }, []);
+
+    const handleAction = useCallback((event, index, action) => {
+        // stop the event from propagating to the parent div
+        event.preventDefault();
+        event.stopPropagation();
+        // close the menu
+        setOpenMenuIndex(-1);
+        // perform the action
+        if (action === "edit") {
+            handleEditPassKey(index);
+        } else if (action === "delete") {
+            handleDeletePassKey(index);
+        }
+    }, [handleEditPassKey, handleDeletePassKey]);
 
     const handleCopyPassword = useCallback(() => {
         if (navigator.clipboard) {
@@ -180,6 +231,16 @@ export default function KeysList(props) {
                                         <p className="key-account m-0">{key.account}</p>
                                         <p className="key-username m-0">{key.username}</p>
                                     </div>
+                                </div>
+                                <div className="key-action">
+                                    <button className="btn merriweather-light"
+                                        onClick={e => handleToggleMenu(e, index)}>
+                                        <i className="fa-solid fa-ellipsis"></i>
+                                    </button>
+                                    {index === openMenuIndex && <ul>
+                                        <li onClick={e => handleAction(e, index, "edit")}>Edit</li>
+                                        <li onClick={e => handleAction(e, index, "delete")}>Delete</li>
+                                    </ul>}
                                 </div>
                             </div>
                             {index === selectedIndex &&

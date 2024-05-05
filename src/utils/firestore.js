@@ -1,12 +1,4 @@
 
-const getPassKeyValue = ({account, username}) => {
-    return new Promise((resolve, reject) => {
-        setTimeout(() => {
-            resolve("password");
-        }, 1000);
-    });
-}
-
 let keys = [
     { account: "GitHub", username: "octocat", password: "password" },
     { account: "LinkedIn", username: "octocat", password: "password" },
@@ -25,7 +17,19 @@ const getPassKeys = () => {
     return new Promise((resolve, reject) => {
         setTimeout(() => {
             resolve(keys.sort((a, b) => a.account.localeCompare(b.account)));
-        }, 1000);
+        }, 0);
+    });
+}
+
+const getPassKeyValue = ({account, username}) => {
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            let key = keys.find(key => key.account === account && key.username === username);
+            if (!key) {
+                reject("Passkey not found");
+            }
+            resolve(key.password);
+        }, 0);
     });
 }
 
