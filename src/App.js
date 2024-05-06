@@ -1,34 +1,32 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import './App.css';
 import AddPassKey from './components/AddPassKey';
 import KeysList from './components/KeysList';
 import AuthForm from './components/AuthForm';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { onAuthStateChanged } from './utils/firebase';
 
 function App() {
-  const [selectedWidget, setSelectedWidget] = useState("keys");
   const [editItem, setEditItem] = useState(null);
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    onAuthStateChanged((user) => {
+      console.log(user);
+      setUser(user);
+    });
+  }, []);
+
   return (
     <div className="App">
       <Router>
         <Routes>
-          <Route path="/login" element={<AuthForm register={false} />} />
-          <Route path="/register" element={<AuthForm register={true} />} />
+          {<Route path="/login" element={user ? <Navigate to="/" /> : <AuthForm register={false} />} />}
+          {<Route path="/register" element={user ? <Navigate to="/" /> : <AuthForm register={true} />} />}
+          {<Route path="/" element={user ? <KeysList setEditItem={setEditItem} /> : <Navigate to="/login" />} />}
+          {<Route path="/add-key" element={user ? <AddPassKey editItem={editItem} setEditItem={setEditItem} /> : <Navigate to="/login" />} />}
         </Routes>
       </Router>
-
-      {/* {selectedWidget === "keys" &&
-        <KeysList onAddKey={() => setSelectedWidget("add-key")}
-          onEdit={(item) => {
-            setEditItem(item);
-            setSelectedWidget("add-key");
-      }} />}
-      {selectedWidget === "add-key" &&
-        <AddPassKey onBack={() => {
-          setEditItem(null);
-          setSelectedWidget("keys");
-        }} editItem={editItem} setEditItem={setEditItem}/>}
-      <p className="text-center merriweather-light footer">Made with <i className="fa-solid fa-heart"></i> by <a href="https://www.linkedin.com/in/shubham-panchal-18bb6b187/">Shubham!</a></p> */}
     </div>
   );
 }

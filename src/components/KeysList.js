@@ -5,6 +5,7 @@ import debounce from "../utils/debounce";
 import { getPassKeyValue, getPassKeys, deletePassKey } from "../utils/firestore";
 import Navbar from "./Navbar";
 import AccountIcon from "./AccountIcon";
+import { Navigate } from "react-router-dom";
 
 export default function KeysList(props) {
     const [keys, setKeys] = useState([]);
@@ -21,6 +22,7 @@ export default function KeysList(props) {
     const [copyIconClassName, setCopyIconClassName] = useState("fa-regular fa-copy");
     const [openMenuIndex, setOpenMenuIndex] = useState(-1);
     const [deleteIndex, setDeleteIndex] = useState(-1);
+    const [navigate, setNavigate] = useState(null);
 
     const fetchPassKeys = useCallback(() => {
         setPassKeyError("");
@@ -95,7 +97,8 @@ export default function KeysList(props) {
 
     const handleEditPassKey = useCallback((index) => {
         const key = filteredKeys[index];
-        props.onEdit(key);
+        props.setEditItem(key);
+        setNavigate(<Navigate to={"/add-key"} />);
     }, [filteredKeys, props]);
 
     const handleDeletePassKey = useCallback((index) => {
@@ -206,6 +209,11 @@ export default function KeysList(props) {
         return `#${hex}`;
     }, []);
 
+    // if navigate is set, return the Navigate component
+    if (navigate) {
+        return navigate;
+    }
+
     return (
         <div>            
             <div className="keys-list-container">
@@ -234,7 +242,7 @@ export default function KeysList(props) {
                     <div className="d-flex align-items-center justify-content-between mb-3">
                         <p className="m-0 merriweather-light"><strong>Accounts ({filteredKeys.length})</strong></p>
                         <button className="btn text-primary merriweather-light"
-                            onClick={props.onAddKey}><i className="fa-solid fa-plus"></i> Add</button>
+                            onClick={() => setNavigate(<Navigate to={"/add-key"} />)}><i className="fa-solid fa-plus"></i> Add</button>
                     </div>
                     {filteredKeys.map((key, index) => (
                         <div className="key-container mb-3 merriweather-light" key={`${key.account}_${key.username}`}

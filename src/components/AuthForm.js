@@ -3,6 +3,7 @@ import '../styles/AuthForm.css';
 import { Link } from "react-router-dom";
 import Logo from '../assets/logo.svg';
 import { signIn, signUp } from "../utils/firebase";
+import { Navigate } from "react-router-dom";
 
 export default function AuthForm(props) {
     const [credentials, setCredentials] = useState({
@@ -19,6 +20,7 @@ export default function AuthForm(props) {
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    const [navigate, setNavigate] = useState(null);
 
     const validateFields = useCallback(() => {
         let valid = true;
@@ -99,8 +101,8 @@ export default function AuthForm(props) {
             method({
                 email: credentials.email,
                 password: credentials.password
-            }).then((user) => {
-                console.log(user);                
+            }).then(() => {
+                setNavigate(<Navigate to="/" />);
             }).catch((error) => {
                 console.log(error);
                 if (error.message) {
@@ -120,6 +122,11 @@ export default function AuthForm(props) {
                 setLoading(false);
             });
         }
+    }
+
+    // if user is already logged in, navigate to home
+    if (navigate) {
+        return navigate;
     }
 
     let register = props.register;

@@ -14,7 +14,6 @@ export const signUp = ({ email, password }) => {
     return new Promise((resolve, reject) => {
         firebaseAuth.createUserWithEmailAndPassword(auth, email, password)
         .then((userCredential) => {
-            console.log(userCredential);
             const user = userCredential.user;
             resolve(user);
         })
@@ -29,7 +28,6 @@ export const signIn = ({ email, password }) => {
     return new Promise((resolve, reject) => {
         firebaseAuth.signInWithEmailAndPassword(auth, email, password)
         .then((userCredential) => {
-            console.log(userCredential);
             const user = userCredential.user;
             resolve(user);
         })
@@ -41,3 +39,11 @@ export const signIn = ({ email, password }) => {
 
 // Function to sign out
 export const signOut = () => firebaseAuth.signOut(auth);
+
+// Function to get the current user
+export const getCurrentUser = () => firebaseAuth.getAuth(auth).currentUser;
+
+// Function to register a callback for auth state changes
+export const onAuthStateChanged = (callback) => {
+    return firebaseAuth.onAuthStateChanged(auth, callback);
+}

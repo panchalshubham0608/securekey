@@ -1,6 +1,7 @@
 import React from "react";
 import '../styles/Navbar.css';
 import Logo from '../assets/logo.svg';
+import { signOut } from "../utils/firebase";
 
 export default function Navbar() {
     return (
@@ -10,7 +11,8 @@ export default function Navbar() {
                 <h4 className="m-0 text-primary sedgwick-ave-display-regular">SecureKey</h4>
             </div>
             <div>
-                <button className="btn text-primary merriweather-light">Logout</button>
+                <button className="btn text-primary merriweather-light"
+                    onClick={() => signOut()}>Logout</button>
             </div>
         </div>
     );

@@ -3,16 +3,18 @@ import '../styles/AddPassKey.css';
 import AccountIconsList from "../utils/AccountIconsList";
 import AccountIcon from "./AccountIcon";
 import { upsertPassKey } from "../utils/firestore";
+import { Navigate } from "react-router-dom";
 
 export default function AddPassKey(props) {
     const [searchText, setSearchText] = useState("");
     const [filteredAccounts, setFilteredAccounts] = useState(Object.keys(AccountIconsList));
     const [account, setAccount] = useState(props.editItem?.account || "");
     const [username, setUsername] = useState(props.editItem?.username || "");
-    const [password, setPassword] = useState();
+    const [password, setPassword] = useState("");
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
     const [loading, setLoading] = useState(false);
+    const [navigate, setNavigate] = useState(null);
 
     const debouncedSearch = useCallback((searchText) => {
         let accounts = Object.keys(AccountIconsList);
@@ -67,6 +69,9 @@ export default function AddPassKey(props) {
         upsertPassKey({ account, username, password })
             .then(() => {
                 setSuccess(`Passkey ${editing ? "updated" : "added"} successfully`);
+                if (editing) {
+                    props.setEditItem(null);                    
+                }
                 setAccount("");
                 setUsername("");
                 setPassword("");
@@ -80,7 +85,12 @@ export default function AddPassKey(props) {
             }).finally(() => {
                 setLoading(false);
             });
-    }, [account, username, password, setError, props.editItem]);
+    }, [account, username, password, setError, props]);
+
+    // if we have a navigate element, return it
+    if (navigate) {
+        return navigate;
+    }
 
     // check if we are editing an item
     let editing = !!props.editItem;
@@ -88,7 +98,7 @@ export default function AddPassKey(props) {
     return (
         <div>
             <div className="d-flex align-items-center add-passkey-navbar mb-1">
-                <button type="button" className="btn" onClick={props.onBack}>
+                <button type="button" className="btn" onClick={() => setNavigate(<Navigate to="/" />)}>
                     <i className="fa-solid fa-arrow-left"></i>
                 </button>
                 <h4 className="merriweather-light m-0">{editing ? "Edit" : "Add"} Passkey</h4>
