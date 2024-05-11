@@ -6,6 +6,7 @@ import { upsertPassKey } from "../utils/firestore";
 import { Navigate } from "react-router-dom";
 
 export default function AddPassKey(props) {
+    const { setEditItem } = props;
     const [searchText, setSearchText] = useState("");
     const [filteredAccounts, setFilteredAccounts] = useState(Object.keys(AccountIconsList));
     const [account, setAccount] = useState(props.editItem?.account || "");
@@ -70,7 +71,8 @@ export default function AddPassKey(props) {
             .then(() => {
                 setSuccess(`Passkey ${editing ? "updated" : "added"} successfully`);
                 if (editing) {
-                    props.setEditItem(null);                    
+                    props.setEditItem(null);    
+                    setNavigate(<Navigate to="/" />);                
                 }
                 setAccount("");
                 setUsername("");
@@ -98,7 +100,10 @@ export default function AddPassKey(props) {
     return (
         <div>
             <div className="d-flex align-items-center add-passkey-navbar mb-1">
-                <button type="button" className="btn" onClick={() => setNavigate(<Navigate to="/" />)}>
+                <button type="button" className="btn" onClick={() => {
+                    setEditItem(null);
+                    setNavigate(<Navigate to="/" />);
+                }}>
                     <i className="fa-solid fa-arrow-left"></i>
                 </button>
                 <h4 className="merriweather-light m-0">{editing ? "Edit" : "Add"} Passkey</h4>

@@ -35,8 +35,14 @@ const getPassKeyValue = ({account, username}) => {
 const upsertPassKey = ({account, username, password}) => {
     return new Promise((resolve, reject) => {
         setTimeout(() => {
-            keys.push({account, username, password});
-            console.log("Passkey added successfully", account);
+            let index = keys.findIndex(key => key.account === account && key.username === username);
+            if (index !== -1) {
+                keys[index].password = password;
+                console.log("Passkey updated successfully", account);
+            } else {
+                keys.push({account, username, password});
+                console.log("Passkey added successfully", account);
+            }
             resolve();
         }, 1000);
     });
