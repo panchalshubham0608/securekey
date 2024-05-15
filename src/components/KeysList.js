@@ -119,7 +119,6 @@ export default function KeysList(props) {
         return navigate;
     }
 
-    // console.log("Rendering KeysList", keys, filteredKeys)
     return (
         <div>            
             <div className="keys-list-container">
