@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main  # Change to your main branch name
+      - deployment
 
 jobs:
   deploy:
@@ -24,6 +25,7 @@ jobs:
       - name: Build
         env:
             REACT_APP_FIREBASE_CONFIG: ${{ secrets.REACT_APP_FIREBASE_CONFIG }}
+            REACT_APP_FIRESTORE_KEYS_COLLECTION_NAME: ${{ secrets.REACT_APP_FIRESTORE_KEYS_COLLECTION_NAME }}
         run: npm run build --prod
 
       - name: Deploy to GitHub Pages
