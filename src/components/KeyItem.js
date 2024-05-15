@@ -1,9 +1,11 @@
-import React, { useEffect, useState } from "react";
-import { getPassKeyValue } from "../utils/firestore";
+import React, { useContext, useEffect, useState } from "react";
+import { getPassKeyValue } from "../utils/firestoredb";
 import { str2color } from "../utils/str2color";
 import AccountIcon from "./AccountIcon";
+import UserContext from "../context/UserContext";
 
 export default function KeyItem(props) {
+  const userContext = useContext(UserContext);
   const {
     keyItem,
     selected, handleShowKeyBody, handleHideKeyBody,
@@ -23,6 +25,7 @@ export default function KeyItem(props) {
     setError("");
     setLoading(true);
     getPassKeyValue({
+      userContext,
       account: keyItem.account,
       username: keyItem.username
     }).then(password => {

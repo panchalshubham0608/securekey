@@ -1,11 +1,14 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useState, useContext } from "react";
 import "../styles/AuthForm.css";
 import { Link } from "react-router-dom";
 import Logo from "../assets/logo.svg";
 import { signIn, signUp } from "../utils/firebase";
 import { Navigate } from "react-router-dom";
+import UserContext from "../context/UserContext";
+import { createUserForContext } from "../utils/cryptoutil";
 
 export default function AuthForm(props) {
+  const userContext = useContext(UserContext);
   const [credentials, setCredentials] = useState({
     email: "",
     password: "",
@@ -102,6 +105,11 @@ export default function AuthForm(props) {
         email: credentials.email,
         password: credentials.password
       }).then(() => {
+        let userForContext = createUserForContext({
+          username: credentials.email,
+          password: credentials.password
+        });
+        userContext.setUser(userForContext);
         setNavigate(<Navigate to="/" />);
       }).catch((error) => {
         console.log(error);
