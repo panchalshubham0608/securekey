@@ -2,13 +2,13 @@ const mockInitializeApp = jest.fn();
 const mockGetAuth = jest.fn();
 const mockGetFirestore = jest.fn();
 
-jest.mock('firebase/app', () => {
+jest.mock("firebase/app", () => {
   return {
     initializeApp: mockInitializeApp,
   };
 });
 
-jest.mock('firebase/auth', () => {
+jest.mock("firebase/auth", () => {
   return {
     getAuth: mockGetAuth,
     createUserWithEmailAndPassword: jest.fn(),
@@ -17,7 +17,7 @@ jest.mock('firebase/auth', () => {
   };
 });
 
-jest.mock('firebase/firestore', () => {
+jest.mock("firebase/firestore", () => {
   return {
     getFirestore: mockGetFirestore,
   };
@@ -33,14 +33,14 @@ const setupFirebaseMocks = () => {
   mockGetFirestore.mockReturnValue(mockFirestoreObject);
 }
 
-describe('firebase', () => {
+describe("firebase", () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   test("should initialize resources", () => {
     setupFirebaseMocks();
-    require('./firebase');
+    require("./firebase");
     expect(mockInitializeApp).toHaveBeenCalled();
     expect(mockGetAuth).toHaveBeenCalledWith(mockAppObject);
     expect(mockGetFirestore).toHaveBeenCalledWith(mockAppObject);
@@ -55,8 +55,8 @@ describe("signUp", () => {
   test("should call createUserWithEmailAndPassword", async () => {
     setupFirebaseMocks();
 
-    const firebaseAuth = require('firebase/auth');
-    const { signUp } = require('./firebase');
+    const firebaseAuth = require("firebase/auth");
+    const { signUp } = require("./firebase");
     const email = "test@test.com";
     const password = "testpassword";
 
@@ -72,15 +72,15 @@ describe("signUp", () => {
   test("should reject with error", async () => {
     setupFirebaseMocks();
 
-    const firebaseAuth = require('firebase/auth');
-    const { signUp } = require('./firebase');
+    const firebaseAuth = require("firebase/auth");
+    const { signUp } = require("./firebase");
     const email = "test@test.com";
     const password = "testpassword";
 
     let error = new Error("error");
     firebaseAuth.createUserWithEmailAndPassword.mockRejectedValue(error);
 
-    expect(signUp({ email, password })).rejects.toEqual(error);
+    await expect(signUp({ email, password })).rejects.toEqual(error);
     expect(firebaseAuth.createUserWithEmailAndPassword).toHaveBeenCalledWith(mockAuthObject, email, password);
   });
 });
@@ -93,8 +93,8 @@ describe("signIn", () => {
   test("should call signInWithEmailAndPassword", async () => {
     setupFirebaseMocks();
 
-    const firebaseAuth = require('firebase/auth');
-    const { signIn } = require('./firebase');
+    const firebaseAuth = require("firebase/auth");
+    const { signIn } = require("./firebase");
     const email = "test@test.com";
     const password = "testpassword";
 
@@ -110,15 +110,15 @@ describe("signIn", () => {
   test("should reject with error", async () => {
     setupFirebaseMocks();
 
-    const firebaseAuth = require('firebase/auth');
-    const { signIn } = require('./firebase');
+    const firebaseAuth = require("firebase/auth");
+    const { signIn } = require("./firebase");
     const email = "test@test.com";
     const password = "testpassword";
 
     let error = new Error("error");
     firebaseAuth.signInWithEmailAndPassword.mockRejectedValue(error);
 
-    expect(signIn({ email, password })).rejects.toEqual(error);
+    await expect(signIn({ email, password })).rejects.toEqual(error);
     expect(firebaseAuth.signInWithEmailAndPassword).toHaveBeenCalledWith(mockAuthObject, email, password);
   });
 });
@@ -131,8 +131,8 @@ describe("signOut", () => {
   test("should call signOut", () => {
     setupFirebaseMocks();
 
-    const firebaseAuth = require('firebase/auth');
-    const { signOut } = require('./firebase');
+    const firebaseAuth = require("firebase/auth");
+    const { signOut } = require("./firebase");
 
     signOut();
 
@@ -148,8 +148,7 @@ describe("getCurrentUser", () => {
   test("should return current user", () => {
     setupFirebaseMocks();
 
-    const firebaseAuth = require('firebase/auth');
-    const { getCurrentUser } = require('./firebase');
+    const { getCurrentUser } = require("./firebase");
 
     let currentUser = { email: "test@test.com" };
     mockAuthObject.currentUser = currentUser;
