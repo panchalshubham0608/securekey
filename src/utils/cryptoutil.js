@@ -1,5 +1,5 @@
 // imports
-import CryptoJS from 'crypto-js';
+import CryptoJS from "crypto-js";
 
 // methods for encryption and decryption
 export const encrypt = ({plaintext, key}) => CryptoJS.AES.encrypt(plaintext, key).toString();

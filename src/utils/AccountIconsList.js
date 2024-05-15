@@ -11,17 +11,17 @@ import UANIcon from "../assets/UAN.svg";
 import UdemyIcon from "../assets/Udemy.webp";
 
 const AccountIconsList = {
-    "GitHub": GitHubIcon,
-    "Google": GoogleIcon,
-    "IncomeTax": IncomeTaxIcon,
-    "LinkedIn": LinkedInIcon,
-    "Microsoft": MicrosoftIcon,
-    "NPM": NPMIcon,
-    "Paypal": PaypalIcon,
-    "SBI": SBIIcon,
-    "UAN": UANIcon,
-    "Udemy": UdemyIcon,
-    "Other": OtherIcon,
+  "GitHub": GitHubIcon,
+  "Google": GoogleIcon,
+  "IncomeTax": IncomeTaxIcon,
+  "LinkedIn": LinkedInIcon,
+  "Microsoft": MicrosoftIcon,
+  "NPM": NPMIcon,
+  "Paypal": PaypalIcon,
+  "SBI": SBIIcon,
+  "UAN": UANIcon,
+  "Udemy": UdemyIcon,
+  "Other": OtherIcon,
 };
 
 export default AccountIconsList;

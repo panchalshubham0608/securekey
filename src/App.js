@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react';
-import './App.css';
-import AddPassKey from './components/AddPassKey';
-import KeysList from './components/KeysList';
-import AuthForm from './components/AuthForm';
-import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
-import { onAuthStateChanged } from './utils/firebase';
+import React, { useEffect, useState } from "react";
+import "./App.css";
+import AddPassKey from "./components/AddPassKey";
+import KeysList from "./components/KeysList";
+import AuthForm from "./components/AuthForm";
+import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-dom";
+import { onAuthStateChanged } from "./utils/firebase";
 
 function App() {
   const [editItem, setEditItem] = useState(null);
