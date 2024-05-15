@@ -1,8 +1,10 @@
 // imports
 import CryptoJS from "crypto-js";
+import { generateStrongPassword } from "./passwordutil";
+
 
 // only hashed passwords are stored
-const appSecurityKey = process.env.REACT_APP_SECURITY_KEY;
+const appSecurityKey = generateStrongPassword(32);
 
 // methods for encryption and decryption
 export const encrypt = ({ plaintext, key }) => CryptoJS.AES.encrypt(plaintext, key).toString();
