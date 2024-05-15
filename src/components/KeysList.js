@@ -1,12 +1,14 @@
-import React, { useCallback, useState, useEffect } from "react";
+import React, { useCallback, useState, useEffect, useContext } from "react";
 import debounce from "../utils/debounce";
-import { getPassKeys, deletePassKey } from "../utils/firestore";
+import { getPassKeys, deletePassKey } from "../utils/firestoredb";
 import Navbar from "./Navbar";
 import { Navigate } from "react-router-dom";
 import KeyItem from "./KeyItem";
 import "../styles/KeysList.css";
+import UserContext from "../context/UserContext";
 
 export default function KeysList(props) {
+  const userContext = useContext(UserContext);
   const [keys, setKeys] = useState([]);
   const [filteredKeys, setFilteredKeys] = useState([]);
 
@@ -14,6 +16,7 @@ export default function KeysList(props) {
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [openMenuIndex, setOpenMenuIndex] = useState(-1);
 
+  const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -35,8 +38,10 @@ export default function KeysList(props) {
   const fetchPassKeys = useCallback(() => {
     setError("");
     setLoading(true);
-    getPassKeys()
+    getPassKeys({ userContext })
       .then((keys) => {
+        // sort keys
+        keys.sort((a, b) => a.account.localeCompare(b.account) || a.username.localeCompare(b.username));
         setKeys(keys);
         setFilteredKeys(keys);
       }).catch((error) => {
@@ -96,9 +101,11 @@ export default function KeysList(props) {
   // function to delete a passkey
   const handleDeleteKey = useCallback((key) => {
     setError("");
+    setSuccess("");
     setLoading(true);
-    deletePassKey({ account: key.account, username: key.username })
+    deletePassKey({ userContext, account: key.account, username: key.username })
       .then(() => {
+        setSuccess("Passkey deleted successfully");
         fetchPassKeys();
       }).catch((error) => {
         console.error("Error deleting passkey", error);
@@ -124,6 +131,7 @@ export default function KeysList(props) {
       <div className="keys-list-container">
         <Navbar />
         {error && <div className="alert alert-danger">{error}</div>}
+        {success && <div className="alert alert-success">{success}</div>}
         <form method="post" action="#" className="mb-3">
           <div className="d-flex align-items-center justify-content-between search-input-container">
             <i className="fa-solid fa-magnifying-glass"></i>

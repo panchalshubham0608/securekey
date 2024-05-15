@@ -1,6 +1,7 @@
 // imports
 import { initializeApp } from "firebase/app";
 import * as firebaseAuth from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
 
 // Your web app's Firebase configuration
 const firebaseConfig = JSON.parse(process.env.REACT_APP_FIREBASE_CONFIG);
@@ -47,3 +48,6 @@ export const getCurrentUser = () => firebaseAuth.getAuth(auth).currentUser;
 export const onAuthStateChanged = (callback) => {
   return firebaseAuth.onAuthStateChanged(auth, callback);
 }
+
+// Export firestore database
+export const firestoreDb = getFirestore(app);

@@ -1,11 +1,13 @@
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback, useEffect, useContext } from "react";
 import "../styles/AddPassKey.css";
 import AccountIconsList from "../utils/AccountIconsList";
 import AccountIcon from "./AccountIcon";
-import { upsertPassKey } from "../utils/firestore";
+import { addPassKey, updatePassKey } from "../utils/firestoredb";
 import { Navigate } from "react-router-dom";
+import UserContext from "../context/UserContext";
 
 export default function AddPassKey(props) {
+  const userContext = useContext(UserContext);
   const { setEditItem } = props;
   const [searchText, setSearchText] = useState("");
   const [filteredAccounts, setFilteredAccounts] = useState(Object.keys(AccountIconsList));
@@ -67,26 +69,21 @@ export default function AddPassKey(props) {
     // make request
     setLoading(true);
     let editing = !!props.editItem;
-    upsertPassKey({ account, username, password })
-      .then(() => {
-        setSuccess(`Passkey ${editing ? "updated" : "added"} successfully`);
-        if (editing) {
-          props.setEditItem(null);    
-          setNavigate(<Navigate to="/" />);                
-        }
-        setAccount("");
-        setUsername("");
-        setPassword("");
-      }).catch((error) => {
-        console.error("Error adding passkey", error);
-        if (error.message) {
-          setError(error.message);
-        } else {
-          setError(`Error ${editing ? "updating" : "adding"} passkey`);
-        }
-      }).finally(() => {
-        setLoading(false);
-      });
+    let method = editing ? updatePassKey : addPassKey;
+    method({ userContext, account, username, password }).then(() => {
+      setSuccess(`Passkey ${editing ? "updated" : "added"} successfully`);
+      props.setEditItem(null);
+      setNavigate(<Navigate to="/" />);
+    }).catch((error) => {
+      console.error("Error adding/updating passkey", error);
+      if (error.message) {
+        setError(error.message);
+      } else {
+        setError(`Error ${editing ? "updating" : "adding"} passkey`);
+      }
+    }).finally(() => {
+      setLoading(false);
+    });
   }, [account, username, password, setError, props]);
 
   // if we have a navigate element, return it
@@ -122,7 +119,7 @@ export default function AddPassKey(props) {
                     setAccount(e.target.value);
                   }
                 }}
-                disabled={editing}/>
+                disabled={editing} />
             </div>
             <div className="mb-1">
               <label htmlFor="username" className="form-label merriweather-light">Username</label>
@@ -132,7 +129,7 @@ export default function AddPassKey(props) {
                     setUsername(e.target.value);
                   }
                 }}
-                disabled={editing}/>
+                disabled={editing} />
             </div>
             <div className="mb-1">
               <label htmlFor="password" className="form-label merriweather-light">Password</label>
