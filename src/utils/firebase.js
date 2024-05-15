@@ -44,10 +44,5 @@ export const signOut = () => firebaseAuth.signOut(auth);
 // Function to get the current user
 export const getCurrentUser = () => firebaseAuth.getAuth(auth).currentUser;
 
-// Function to register a callback for auth state changes
-export const onAuthStateChanged = (callback) => {
-  return firebaseAuth.onAuthStateChanged(auth, callback);
-}
-
 // Export firestore database
 export const firestoreDb = getFirestore(app);
