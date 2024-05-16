@@ -121,31 +121,27 @@ export const addPassKey = ({ userContext, account, username, password }) => {
 // Function to update an existing passkey
 export const updatePassKey = ({ userContext, account, username, password }) => {
   return new Promise((resolve, reject) => {
-    try {
-      userContext = validateUserContext(userContext);
-    } catch (error) {
-      console.error("Error validating user context: ", error);
-      reject({ message: "Error validating user context" });
-    }
+    validateUserContext(userContext).then(userContext => {
+      let owner = userContext.user.username;
+      let secretKey = getUserFromContext(userContext.user).password;
 
-    let owner = userContext.user.username;
-    let secretKey = getUserFromContext(userContext.user).password;
+      // encrypt the passkey
+      let ciphertext;
+      try {
+        ciphertext = encrypt({ plaintext: password, key: secretKey });
+      } catch (error) {
+        console.error("Error encrypting passkey: ", error);
+        reject({ message: "Error encrypting passkey" });
+        return;
+      }
 
-    // encrypt the passkey
-    let ciphertext;
-    try {
-      ciphertext = encrypt({ plaintext: password, key: secretKey });
-    } catch (error) {
-      console.error("Error encrypting passkey: ", error);
-      reject({ message: "Error encrypting passkey" });
-    }
-
-    // check if the passkey already exists
-    const q = query(keysCollection, where("owner", "==", owner), where("username", "==", username), where("account", "==", account), limit(1));
-    getDocs(q).then((querySnapshot) => {
-      if (querySnapshot.empty) {
-        reject({ message: "Passkey not found" });
-      } else {
+      // check if the passkey already exists
+      const q = query(keysCollection, where("owner", "==", owner), where("account", "==", account), where("username", "==", username), limit(1));
+      getDocs(q).then((querySnapshot) => {
+        if (querySnapshot.empty) {
+          reject({ message: "Passkey not found" });
+          return;
+        }
         // update the existing passkey
         let docRef = querySnapshot.docs[0].ref;
         updateDoc(docRef, {
@@ -157,10 +153,13 @@ export const updatePassKey = ({ userContext, account, username, password }) => {
           console.error("Error updating passkey in Firestore: ", error);
           reject({ message: "Error updating passkey in Firestore" });
         });
-      }
-    }).catch((error) => {
-      console.error("Error getting documents from Firestore: ", error);
-      reject({ message: "Error getting documents from Firestore" });
+      }).catch((error) => {
+        console.error("Error getting documents from Firestore: ", error);
+        reject({ message: "Error getting documents from Firestore" });
+      });
+    }).catch(error => {
+      console.error("Error validating user context: ", error);
+      reject({ message: "Error validating user context" });
     });
   });
 }
@@ -168,22 +167,27 @@ export const updatePassKey = ({ userContext, account, username, password }) => {
 // Function to delete a passkey
 export const deletePassKey = ({ userContext, account, username }) => {
   return new Promise((resolve, reject) => {
-    userContext = validateUserContext(userContext);
-    let owner = userContext.user.username;
-    const q = query(keysCollection, where("owner", "==", owner), where("username", "==", username), where("account", "==", account), limit(1));
-    getDocs(q).then((querySnapshot) => {
-      if (querySnapshot.empty) {
-        reject({ message: "Passkey not found" });
-      }
-      deleteDoc(querySnapshot.docs[0].ref).then(() => {
-        resolve();
+    validateUserContext(userContext).then(userContext => {
+      let owner = userContext.user.username;
+      const q = query(keysCollection, where("owner", "==", owner), where("account", "==", account), where("username", "==", username), limit(1));
+      getDocs(q).then((querySnapshot) => {
+        if (querySnapshot.empty) {
+          reject({ message: "Passkey not found" });
+          return;
+        }
+        deleteDoc(querySnapshot.docs[0].ref).then(() => {
+          resolve();
+        }).catch((error) => {
+          console.error("Error deleting passkey from Firestore: ", error);
+          reject({ message: "Error deleting passkey from Firestore" });
+        });
       }).catch((error) => {
-        console.error("Error deleting passkey from Firestore: ", error);
-        reject({ message: "Error deleting passkey from Firestore" });
+        console.error("Error getting documents from Firestore: ", error);
+        reject({ message: "Error getting documents from Firestore" });
       });
-    }).catch((error) => {
-      console.error("Error getting documents from Firestore: ", error);
-      reject({ message: "Error getting documents from Firestore" });
+    }).catch(error => {
+      console.error("Error validating user context: ", error);
+      reject({ message: "Error validating user context" });
     });
   });
 }
