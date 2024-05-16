@@ -23,9 +23,9 @@ jest.mock("firebase/firestore", () => {
   };
 });
 
-const mockAppObject = {};
-const mockAuthObject = {};
-const mockFirestoreObject = {};
+const mockAppObject = {x: 1, y: 2};
+const mockAuthObject = {a: 3, b: 4};
+const mockFirestoreObject = {p: 5, q: 6};
 
 const setupFirebaseMocks = () => {
   mockInitializeApp.mockReturnValue(mockAppObject);

@@ -5,7 +5,7 @@ import Logo from "../assets/logo.svg";
 import { signIn, signUp } from "../utils/firebase";
 import { Navigate } from "react-router-dom";
 import UserContext from "../context/UserContext";
-import { createUserForContext } from "../utils/cryptoutil";
+import { createUserForContext } from "../utils/contextutil";
 
 export default function AuthForm(props) {
   const userContext = useContext(UserContext);
