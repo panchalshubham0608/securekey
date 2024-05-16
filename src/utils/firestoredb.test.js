@@ -1,6 +1,39 @@
 jest.mock("./cryptoutil");
 jest.mock("./contextutil");
-jest.mock("firebase/firestore");
+
+// To enforce, ordering of where clauses, we need to mock the firestore module
+const mockWhereOwner = "whereOwner";
+const mockWhereAccount = "whereAccount";
+const mockWhereUsername = "whereUsername";
+function mockFirestore() {
+    const mockWhereFunc = jest.fn((field, operator) => {
+        if (operator !== "==") {
+            throw new Error("Invalid operator");
+        }
+        if (field === "owner") {
+            return mockWhereOwner;
+        }
+        if (field === "account") {
+            return mockWhereAccount;
+        }
+        if (field === "username") {
+            return mockWhereUsername;
+        }
+    });
+
+    jest.mock("firebase/firestore", () => {
+        return {
+            collection: jest.fn(),
+            query: jest.fn(),
+            where: mockWhereFunc,
+            limit: jest.fn(),
+            getDocs: jest.fn(),
+            addDoc: jest.fn(),
+            updateDoc: jest.fn(),
+            deleteDoc: jest.fn(),
+        };
+    });
+}
 
 const mockFirestoreDb = { x: 1, y: 2 };
 const mockCollection = jest.fn();
@@ -14,6 +47,8 @@ describe("firestoredb", () => {
     let env = process.env;
     beforeEach(() => {
         jest.resetModules();
+        jest.resetAllMocks();
+        mockFirestore();
         process.env = { ...env, REACT_APP_FIRESTORE_KEYS_COLLECTION_NAME: "testkeys" };
     });
     afterEach(() => {
@@ -46,6 +81,7 @@ describe("getPassKeys", () => {
     beforeEach(() => {
         jest.resetModules();
         jest.resetAllMocks();
+        mockFirestore();
         process.env = { ...env, REACT_APP_FIRESTORE_KEYS_COLLECTION_NAME: "testkeys" };
     });
     afterEach(() => {
@@ -67,10 +103,8 @@ describe("getPassKeys", () => {
         const { getPassKeys } = require("./firestoredb");
         const userContext = { user: { username: "testuser", password: "testpassword" } };
 
-        const mockWhere = "where";
         const mockQuery = "query";
         query.mockReturnValue(mockQuery);
-        where.mockReturnValue(mockWhere);
 
         let querySnapshot = {
             docs: [
@@ -83,7 +117,7 @@ describe("getPassKeys", () => {
         let keys = await getPassKeys({ userContext });
 
         expect(where).toHaveBeenCalledWith("owner", "==", userContext.user.username);
-        expect(query).toHaveBeenCalledWith(mockCollection, mockWhere);
+        expect(query).toHaveBeenCalledWith(mockCollection, mockWhereOwner);
         expect(getDocs).toHaveBeenCalledWith(mockQuery);
 
         expect(keys).toEqual([
@@ -106,23 +140,17 @@ describe("getPassKeys", () => {
 
 describe("getPassKeyValue", () => {
     let env = process.env;
-    const mockWhereOwner = "whereOwner";
-    const mockWhereAccount = "whereAccount";
-    const mockWhereUsername = "whereUsername";
     const mockQuery = "query";
     const mockLimit = "limit";
 
     beforeEach(() => {
         jest.resetModules();
         jest.resetAllMocks();
+        mockFirestore();
         process.env = { ...env, REACT_APP_FIRESTORE_KEYS_COLLECTION_NAME: "testkeys" };
 
-        const { collection, query, where, limit } = require("firebase/firestore");
+        const { collection, query, limit } = require("firebase/firestore");
         collection.mockReturnValue(mockCollection);
-        where.
-            mockReturnValueOnce(mockWhereOwner).
-            mockReturnValueOnce(mockWhereAccount).
-            mockReturnValueOnce(mockWhereUsername);
         query.mockReturnValue(mockQuery);
         limit.mockReturnValue(mockLimit);
     });
@@ -243,9 +271,6 @@ describe("getPassKeyValue", () => {
 
 describe("addPassKey", () => {
     const env = process.env;
-    const mockWhereOwner = "whereOwner";
-    const mockWhereAccount = "whereAccount";
-    const mockWhereUsername = "whereUsername";
     const mockQuery = "query";
     const mockLimit = "limit";
     const userContext = { user: { username: "testuser", password: "testpassword" } };
@@ -254,14 +279,11 @@ describe("addPassKey", () => {
     beforeEach(() => {
         jest.resetModules();
         jest.resetAllMocks();
+        mockFirestore();
         process.env = { ...env, REACT_APP_FIRESTORE_KEYS_COLLECTION_NAME: "testkeys" };
 
-        const { collection, query, where, limit } = require("firebase/firestore");
+        const { collection, query, limit } = require("firebase/firestore");
         collection.mockReturnValue(mockCollection);
-        where.
-            mockReturnValueOnce(mockWhereOwner).
-            mockReturnValueOnce(mockWhereAccount).
-            mockReturnValueOnce(mockWhereUsername);
         query.mockReturnValue(mockQuery);
         limit.mockReturnValue(mockLimit);
 
@@ -273,7 +295,7 @@ describe("addPassKey", () => {
     });
 
     function verifyArgs({ userContext, account, username }) {
-        const { query, where, limit, getDocs } = require("firebase/firestore");
+        const { query, where, limit } = require("firebase/firestore");
         const { getUserFromContext } = require("./contextutil");
         expect(where).toHaveBeenCalledWith("owner", "==", userContext.user.username);
         expect(where).toHaveBeenCalledWith("account", "==", account);
@@ -408,9 +430,6 @@ describe("addPassKey", () => {
 
 describe("updatePassKey", () => {
     const env = process.env;
-    const mockWhereOwner = "whereOwner";
-    const mockWhereAccount = "whereAccount";
-    const mockWhereUsername = "whereUsername";
     const mockQuery = "query";
     const mockLimit = "limit";
     const userContext = { user: { username: "testuser", password: "testpassword" } };
@@ -419,14 +438,11 @@ describe("updatePassKey", () => {
     beforeEach(() => {
         jest.resetModules();
         jest.resetAllMocks();
+        mockFirestore();
         process.env = { ...env, REACT_APP_FIRESTORE_KEYS_COLLECTION_NAME: "testkeys" };
 
-        const { collection, query, where, limit } = require("firebase/firestore");
+        const { collection, query, limit } = require("firebase/firestore");
         collection.mockReturnValue(mockCollection);
-        where.
-            mockReturnValueOnce(mockWhereOwner).
-            mockReturnValueOnce(mockWhereAccount).
-            mockReturnValueOnce(mockWhereUsername);
         query.mockReturnValue(mockQuery);
         limit.mockReturnValue(mockLimit);
 
@@ -438,7 +454,7 @@ describe("updatePassKey", () => {
     });
 
     function verifyArgs({ userContext, account, username }) {
-        const { query, where, limit, getDocs } = require("firebase/firestore");
+        const { query, where, limit } = require("firebase/firestore");
         const { getUserFromContext } = require("./contextutil");
         expect(where).toHaveBeenCalledWith("owner", "==", userContext.user.username);
         expect(where).toHaveBeenCalledWith("account", "==", account);
@@ -571,25 +587,18 @@ describe("updatePassKey", () => {
 
 describe("deletePassKey", () => {
     const env = process.env;
-    const mockWhereOwner = "whereOwner";
-    const mockWhereAccount = "whereAccount";
-    const mockWhereUsername = "whereUsername";
     const mockQuery = "query";
     const mockLimit = "limit";
     const userContext = { user: { username: "testuser", password: "testpassword" } };
-    const userDecodedPassword = "userplaintextpassword";
 
     beforeEach(() => {
         jest.resetModules();
         jest.resetAllMocks();
+        mockFirestore();
         process.env = { ...env, REACT_APP_FIRESTORE_KEYS_COLLECTION_NAME: "testkeys" };
 
-        const { collection, query, where, limit } = require("firebase/firestore");
+        const { collection, query, limit } = require("firebase/firestore");
         collection.mockReturnValue(mockCollection);
-        where.
-            mockReturnValueOnce(mockWhereOwner).
-            mockReturnValueOnce(mockWhereAccount).
-            mockReturnValueOnce(mockWhereUsername);
         query.mockReturnValue(mockQuery);
         limit.mockReturnValue(mockLimit);
     });
