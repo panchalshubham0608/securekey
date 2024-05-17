@@ -84,15 +84,15 @@ export default function KeyItem(props) {
       {
         // non-interactive elements with click handlers must have at least one keyboard event listener
         //eslint-disable-next-line
-        <div className="key-container mb-3 merriweather-light"
+        <div className="key-container mb-3 merriweather-light" data-testid="key-item"
           style={{ borderTop: `5px solid ${str2color(keyItem.account)}` }}
           onClick={() => handleShowKeyBody(index)}>
           <div className="mb-3 d-flex align-items-start justify-content-between">
             <div className="d-flex align-items-center">
               <AccountIcon account={keyItem.account} />
               <div>
-                <p className="key-account m-0">{keyItem.account}</p>
-                <p className="key-username m-0">{keyItem.username}</p>
+                <p className="key-account m-0" data-testid="key-account">{keyItem.account}</p>
+                <p className="key-username m-0" data-testid="key-username">{keyItem.username}</p>
               </div>
             </div>
             <div className="key-action">
