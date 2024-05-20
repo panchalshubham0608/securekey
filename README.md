@@ -1,4 +1,7 @@
 # Secure Key
+[![CI Pipeline](https://github.com/panchalshubham0608/securekey/actions/workflows/react_test.yml/badge.svg?branch=main)](https://github.com/panchalshubham0608/securekey/actions/workflows/react_test.yml)
+[![Deploy to GitHub Pages](https://github.com/panchalshubham0608/securekey/actions/workflows/deployment.yml/badge.svg?branch=main)](https://github.com/panchalshubham0608/securekey/actions/workflows/deployment.yml)   
+
 [SecureKey](https://panchalshubham0608.github.io/securekey/) is a web application that allows you to securely store your secrets. 
 
 ## Features
