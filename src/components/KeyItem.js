@@ -79,6 +79,13 @@ export default function KeyItem(props) {
     }, 1000);
   };
 
+  const hasExpired = () => {
+    // if updatedAt is more than 6 months ago, the key has expired
+    let updatedAt = keyItem.updatedAt;
+    let sixMonthsAgo = Date.now() - 6 * 30 * 24 * 60 * 60 * 1000;
+    return updatedAt < sixMonthsAgo;
+  }
+
   return (
     <div>
       {
@@ -91,7 +98,10 @@ export default function KeyItem(props) {
             <div className="d-flex align-items-center">
               <AccountIcon account={keyItem.account} />
               <div>
-                <p className="key-account m-0" data-testid="key-account">{keyItem.account}</p>
+                <p className="key-account m-0" data-testid="key-account">
+                  {keyItem.account}
+                  {hasExpired() && <span className="ml-3 badge text-bg-danger">Expired</span>}
+                </p>
                 <p className="key-username m-0" data-testid="key-username">{keyItem.username}</p>
               </div>
             </div>
