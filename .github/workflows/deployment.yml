@@ -30,6 +30,9 @@ jobs:
           echo "REACT_APP_FIRESTORE_KEYS_COLLECTION_NAME=${{ secrets.REACT_APP_FIRESTORE_KEYS_COLLECTION_NAME }}" >> $GITHUB_ENV
 
       - name: Build the React app
+        env:
+          REACT_APP_API_KEY: ${{ secrets.REACT_APP_API_KEY }}
+          REACT_APP_OTHER_SECRET: ${{ secrets.REACT_APP_OTHER_SECRET }}
         run: npm run build
 
       - name: Deploy to GitHub Pages
