@@ -130,12 +130,12 @@ export default function KeysList(props) {
     <div>            
       <div className="keys-list-container">
         <Navbar />
-        {error && <div className="alert alert-danger">{error}</div>}
-        {success && <div className="alert alert-success">{success}</div>}
+        {error && <div className="alert alert-danger" data-testid="keys-list-error">{error}</div>}
+        {success && <div className="alert alert-success" data-testid="keys-list-success">{success}</div>}
         <form method="post" action="#" className="mb-3">
           <div className="d-flex align-items-center justify-content-between search-input-container">
             <i className="fa-solid fa-magnifying-glass"></i>
-            <input type="text" className="form-control merriweather-light" placeholder="Search"
+            <input type="text" className="form-control merriweather-light" placeholder="Search" data-testid="search-input"
               value={searchText} onChange={e => setSearchText(e.target.value)} name="searchText" />
             <button type="button" className="btn" style={{
               visibility: searchText ? "visible" : "hidden"
@@ -145,7 +145,7 @@ export default function KeysList(props) {
           </div>
         </form>
         {loading ? 
-          <div className="d-flex justify-content-center mb-3">
+          <div className="d-flex justify-content-center mb-3" data-testid="loader">
             <div className="spinner-border" style={{
               borderColor: "#0d6efd",
               borderRightColor: "transparent"
@@ -153,7 +153,7 @@ export default function KeysList(props) {
           </div> :
           <div>
             <div className="d-flex align-items-center justify-content-between mb-3">
-              <p className="m-0 merriweather-light"><strong>Accounts ({filteredKeys.length})</strong></p>
+              <p className="m-0 merriweather-light" data-testid="keys-list-count"><strong>Accounts ({filteredKeys.length})</strong></p>
               <button className="btn text-primary merriweather-light"
                 onClick={() => setNavigate(<Navigate to={"/add-key"} />)}><i className="fa-solid fa-plus"></i> Add</button>
             </div>
@@ -170,7 +170,7 @@ export default function KeysList(props) {
                 handleDeleteKey={handleDeleteKey}
                 index={index}                    
               />)}
-            {filteredKeys.length === 0 && <p className="text-center merriweather-light">No keys found</p>}
+            {filteredKeys.length === 0 && <p className="text-center merriweather-light" data-testid="keys-list-no-keys">No keys found</p>}
           </div>}
       </div>
     </div>

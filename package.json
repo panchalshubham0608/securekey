@@ -13,6 +13,7 @@
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.23.0",
     "react-scripts": "5.0.1",
+    "text-encoding": "^0.7.0",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
@@ -20,7 +21,7 @@
     "deploy": "gh-pages -d build",
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "react-scripts test --watchAll=false --coverage",
+    "test": "react-scripts test --watchAll=false --silent --coverage",
     "eject": "react-scripts eject",
     "lint": "eslint \"src/**/*.{js,jsx}\"",
     "lint:fix": "eslint --fix \"src/**/*.{js,jsx}\""
