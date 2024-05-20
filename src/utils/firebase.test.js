@@ -23,9 +23,9 @@ jest.mock("firebase/firestore", () => {
   };
 });
 
-const mockAppObject = {x: 1, y: 2};
-const mockAuthObject = {a: 3, b: 4};
-const mockFirestoreObject = {p: 5, q: 6};
+const mockAppObject = { x: 1, y: 2 };
+const mockAuthObject = { a: 3, b: 4 };
+const mockFirestoreObject = { p: 5, q: 6 };
 
 const setupFirebaseMocks = () => {
   mockInitializeApp.mockReturnValue(mockAppObject);
@@ -34,22 +34,37 @@ const setupFirebaseMocks = () => {
 }
 
 describe("firebase", () => {
+  const oldEnv = process.env;
+  const mockFirebaseConfig = {a: 1, b: 2};
   beforeEach(() => {
+    jest.resetModules();
     jest.clearAllMocks();
+    process.env = { ...oldEnv, REACT_APP_FIREBASE_CONFIG: JSON.stringify(mockFirebaseConfig) };
+  });
+
+  afterEach(() => {
+    process.env = oldEnv;
   });
 
   test("should initialize resources", () => {
     setupFirebaseMocks();
     require("./firebase");
-    expect(mockInitializeApp).toHaveBeenCalled();
+    expect(mockInitializeApp).toHaveBeenCalledWith(mockFirebaseConfig);
     expect(mockGetAuth).toHaveBeenCalledWith(mockAppObject);
     expect(mockGetFirestore).toHaveBeenCalledWith(mockAppObject);
   });
 });
 
 describe("signUp", () => {
+  const oldEnv = process.env;
   beforeEach(() => {
+    jest.resetModules();
     jest.clearAllMocks();
+    process.env = { ...oldEnv, REACT_APP_FIREBASE_CONFIG: "{}" };
+  });
+
+  afterEach(() => {
+    process.env = oldEnv;
   });
 
   test("should call createUserWithEmailAndPassword", async () => {
@@ -86,8 +101,15 @@ describe("signUp", () => {
 });
 
 describe("signIn", () => {
+  const oldEnv = process.env;
   beforeEach(() => {
+    jest.resetModules();
     jest.clearAllMocks();
+    process.env = { ...oldEnv, REACT_APP_FIREBASE_CONFIG: "{}" };
+  });
+
+  afterEach(() => {
+    process.env = oldEnv;
   });
 
   test("should call signInWithEmailAndPassword", async () => {
@@ -124,8 +146,15 @@ describe("signIn", () => {
 });
 
 describe("signOut", () => {
+  const oldEnv = process.env;
   beforeEach(() => {
+    jest.resetModules();
     jest.clearAllMocks();
+    process.env = { ...oldEnv, REACT_APP_FIREBASE_CONFIG: "{}" };
+  });
+
+  afterEach(() => {
+    process.env = oldEnv;
   });
 
   test("should call signOut", () => {
@@ -141,8 +170,15 @@ describe("signOut", () => {
 });
 
 describe("getCurrentUser", () => {
+  const oldEnv = process.env;
   beforeEach(() => {
+    jest.resetModules();
     jest.clearAllMocks();
+    process.env = { ...oldEnv, REACT_APP_FIREBASE_CONFIG: "{}" };
+  });
+
+  afterEach(() => {
+    process.env = oldEnv;
   });
 
   test("should return current user", () => {

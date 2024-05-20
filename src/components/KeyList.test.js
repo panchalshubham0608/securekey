@@ -1,16 +1,20 @@
+// Mocking the dependencies
+jest.mock("../utils/firebase", () => {
+  return {
+    firestoreDb: jest.fn(),
+  }
+});
+jest.mock("../utils/firestoredb", () => ({
+  getPassKeys: jest.fn(),
+  deletePassKey: jest.fn(),
+}));
+
 import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom/extend-expect";
 import KeysList from "./KeysList";
 import UserContext from "../context/UserContext";
 import { getPassKeys } from "../utils/firestoredb";
-// import debounce from "../utils/debounce";
-
-// Mocking the dependencies
-jest.mock("../utils/firestoredb", () => ({
-  getPassKeys: jest.fn(),
-  deletePassKey: jest.fn(),
-}));
 
 const renderKeysListWithUserContext = (userContextValue, props = {}) => {
   return render(
