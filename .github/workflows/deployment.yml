@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - panchalshubham/deployment
   workflow_dispatch:
 
 
