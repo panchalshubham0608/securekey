@@ -1,3 +1,4 @@
+import AWSIcon from "../assets/AWS.png";
 import GitHubIcon from "../assets/GitHub.svg";
 import GoogleIcon from "../assets/Google.svg";
 import IncomeTaxIcon from "../assets/IncomeTax.png";
@@ -6,11 +7,12 @@ import MicrosoftIcon from "../assets/Microsoft.svg";
 import NPMIcon from "../assets/NPM.png";
 import OtherIcon from "../assets/Other.svg";
 import PaypalIcon from "../assets/PayPal.svg";
-import SBIIcon from "../assets/SBI.webp";
+import SBIIcon from "../assets/SBI.jpeg";
 import UANIcon from "../assets/UAN.svg";
-import UdemyIcon from "../assets/Udemy.webp";
+import UdemyIcon from "../assets/Udemy.svg";
 
 const AccountIconsList = {
+  "AWS": AWSIcon,
   "GitHub": GitHubIcon,
   "Google": GoogleIcon,
   "IncomeTax": IncomeTaxIcon,

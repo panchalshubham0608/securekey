@@ -1,6 +1,7 @@
 import AccountIconsList from "./AccountIconsList";
 
 const accountNames = [
+  "AWS",
   "GitHub",
   "Google",
   "IncomeTax",
