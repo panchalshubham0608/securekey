@@ -150,10 +150,11 @@ export default function AddPassKey(props) {
             <div className="d-flex align-items-center justify-content-between search-input-container">
               <i className="fa-solid fa-magnifying-glass"></i>
               <input type="text" className="form-control merriweather-light" placeholder="Search"
-                value={searchText} onChange={handleChangeSearchText} name="searchText" />
+                value={searchText} onChange={handleChangeSearchText}
+                name="searchText" data-testid="search-input"/>
               <button type="button" className="btn" style={{
                 visibility: searchText ? "visible" : "hidden"
-              }} onClick={handleClearInput}>
+              }} onClick={handleClearInput} data-testid="clear-button">
                 <i className="fa-solid fa-times"></i>
               </button>
             </div>
@@ -164,13 +165,20 @@ export default function AddPassKey(props) {
             // non-interactive elements with click handlers must have at least one keyboard event listener
             // eslint-disable-next-line
             <div className="d-flex align-items-start justify-content-between account-provider"
-              key={account} onClick={() => handleSelectAccount(account)}>
+              key={account} onClick={() => handleSelectAccount(account)}
+              data-testid="account-list-item">
               <div className="d-flex align-items-center">
                 <AccountIcon account={account} />
                 <h4 className="m-0 merriweather-light">{account}</h4>
               </div>
             </div>
           ))}
+          {filteredAccounts.length === 0 && (
+            <div className="d-flex align-items-center justify-content-center empty-list"
+              data-testid="empty-list">
+              <h4 className="m-0 merriweather-light">No accounts found</h4>
+            </div>
+          )}
         </div>
       </div>
     </div>
