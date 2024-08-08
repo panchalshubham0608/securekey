@@ -9,6 +9,7 @@ export default function Navbar() {
   const handleSignOut = () => {
     signOut();
     userContext.setUser(null);
+    useContext.setCredentials(null);
   };
 
   return (

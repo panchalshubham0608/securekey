@@ -104,11 +104,12 @@ export default function AuthForm(props) {
       method({
         email: credentials.email,
         password: credentials.password
-      }).then(() => {
+      }).then((userCredentials) => {
         let userForContext = createUserForContext({
           username: credentials.email,
           password: credentials.password
         });
+        userContext.setCredentials(userCredentials);
         userContext.setUser(userForContext);
         setNavigate(<Navigate to="/" />);
       }).catch((error) => {

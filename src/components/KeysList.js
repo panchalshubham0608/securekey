@@ -6,6 +6,7 @@ import { Navigate } from "react-router-dom";
 import KeyItem from "./KeyItem";
 import "../styles/KeysList.css";
 import UserContext from "../context/UserContext";
+import Settings from "./Settings";
 
 export default function KeysList(props) {
   const userContext = useContext(UserContext);
@@ -172,6 +173,7 @@ export default function KeysList(props) {
               />)}
             {filteredKeys.length === 0 && <p className="text-center merriweather-light" data-testid="keys-list-no-keys">No keys found</p>}
           </div>}
+        <Settings />
       </div>
     </div>
   );

@@ -9,7 +9,8 @@ import UserContext from "./context/UserContext";
 function App() {
   const [editItem, setEditItem] = useState(null);
   const [user, setUser] = useState(null);
-  const contextValue = { user, setUser };
+  const [credentials, setCredentials] = useState(null);
+  const contextValue = { user, setUser, credentials, setCredentials };
 
   return (
     <div className="App">

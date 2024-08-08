@@ -1,0 +1,39 @@
+.settings-icon {
+    position: fixed;
+    width: 400px;
+    bottom: 10px;
+    text-align: right;
+}
+
+.settings-icon .btn {
+    font-size: 30px;
+    width: 50px;
+    height: 50px;
+    margin-right: 10px;
+}
+
+.settings-page {
+    position: fixed;
+    top: 0;
+    height: 100vh;
+    width: 400px;
+    padding: 20px;
+    background-color: white;
+    box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
+}
+
+.mfa-form input {
+    outline-width: 0px !important;
+}
+
+
+@media (max-width: 400px) {
+    .settings-icon {
+      width: 90%;
+    }
+
+    .settings-page {
+        width: 90%;
+        top: 20px;
+    }
+}
