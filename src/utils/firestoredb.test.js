@@ -336,6 +336,7 @@ describe("addPassKey", () => {
       owner: userContext.user.username,
       ...requestData,
       password: ciphertext,
+      lastPasswords: [],
       createdAt: expect.any(Number),
       updatedAt: expect.any(Number),
     });
@@ -365,6 +366,7 @@ describe("addPassKey", () => {
       owner: userContext.user.username,
       ...requestData,
       password: ciphertext,
+      lastPasswords: [],
       createdAt: expect.any(Number),
       updatedAt: expect.any(Number),
     });

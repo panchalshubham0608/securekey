@@ -21,7 +21,10 @@
   .App {
     width: 100%;
   }
-  .keys-list-container {
+  .auth-form-container, .keys-list-container {
     padding: 20px;
   }    
+  .history-container {
+    width: 100% !important;
+  }
 }
