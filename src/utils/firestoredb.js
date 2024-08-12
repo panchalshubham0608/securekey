@@ -285,24 +285,26 @@ export const getHistory = ({ userContext, account, username }) => {
               return;
             }
             let secretKey = getUserFromContext(userContext.user).password;
-            let data =
-              querySnapshot.docs[0].data();
+            let data = querySnapshot.docs[0].data();
+            console.log(data);
             let history = data["history"] || [];
-            console.log(history);
             let decryptedHistory = [];
             for (let lp in history) {
-                // get the encrypted passkey
-                try {
-                  let password = decrypt({ ciphertext: lp.password, key: secretKey });
-                  let changedAt = formatFirestoreTimestamp(lp.changedAt);
-                  decryptedHistory.push({
-                    password,
-                    changedAt,
-                  });
-                } catch (error) {
-                  console.error("Error decrypting passkey: ", error);
-                  return reject({ message: "Error decrypting passkey" });
-                }
+              // get the encrypted passkey
+              try {
+                let password = decrypt({
+                  ciphertext: lp.password,
+                  key: secretKey,
+                });
+                let changedAt = formatFirestoreTimestamp(lp.changedAt);
+                decryptedHistory.push({
+                  password,
+                  changedAt,
+                });
+              } catch (error) {
+                console.error("Error decrypting passkey: ", error);
+                return reject({ message: "Error decrypting passkey" });
+              }
             }
             // reverse the contents
             decryptedHistory = decryptedHistory.reverse();

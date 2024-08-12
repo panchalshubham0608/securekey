@@ -1,23 +1,27 @@
 import React, { useEffect, useState, useContext } from "react";
 import UserContext from "../context/UserContext";
 import AccountIcon from "./AccountIcon";
-import { resolvepasswordsHistory } from "../utils/firestoredb";
+import { getHistory } from "../utils/firestoredb";
 import "../styles/History.css";
+import Loader from "./Loader";
 
 export default function History(props) {
   const userContext = useContext(UserContext);
   const { keyItem, setShowHistoryKeyItem } = props;
-  const [passwordsHistory, setpasswordsHistory] = useState(null);
+  const [history, setHistory] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
     if (!keyItem) return;
-    resolvepasswordsHistory({
+    setLoading(true);
+    getHistory({
       userContext,
-      passwordsHistory: keyItem.passwordsHistory,
+      account: keyItem.account,
+      username: keyItem.username,
     })
-      .then((passwords) => {
-        setpasswordsHistory(passwords);
+      .then((history) => {
+        setHistory(history);
       })
       .catch((error) => {
         console.error("Error fetching keys", error);
@@ -26,6 +30,9 @@ export default function History(props) {
         } else {
           setError("Error fetching keys");
         }
+      })
+      .finally(() => {
+        setLoading(false);
       });
   }, [keyItem]);
 
@@ -56,22 +63,26 @@ export default function History(props) {
       </div>
       <hr />
       {error && <div className="alert alert-danger">{error}</div>}
-      <div className="mt-3">
-        {passwordsHistory && passwordsHistory.length ? (
-          <div className="list">
-            {passwordsHistory.map((lp) => (
-              <div key={lp.password} className="list-item border p-3 mt-3">
-                <h5 className="text-break">{lp.password}</h5>
-                <p className="text-muted m-0">{lp.changedAt}</p>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div>
-            <p className="text-muted text-center">Nothing here yet!</p>
-          </div>
-        )}
-      </div>
+      {loading ? (
+        <Loader />
+      ) : (
+        <div className="mt-3">
+          {history && history.length ? (
+            <div className="list">
+              {history.map((lp) => (
+                <div key={lp.password} className="list-item border p-3 mt-3">
+                  <h5 className="text-break">{lp.password}</h5>
+                  <p className="text-muted m-0">{lp.changedAt}</p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div>
+              <p className="text-muted text-center">Nothing here yet!</p>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

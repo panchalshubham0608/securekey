@@ -3,6 +3,7 @@ import { getPassKeyValue } from "../utils/firestoredb";
 import { str2color } from "../utils/str2color";
 import AccountIcon from "./AccountIcon";
 import UserContext from "../context/UserContext";
+import Loader from "./Loader";
 
 export default function KeyItem(props) {
   const userContext = useContext(UserContext);
@@ -181,16 +182,7 @@ export default function KeyItem(props) {
           {selected && (
             <div className="key-body">
               {loading ? (
-                <div className="d-flex justify-content-center mt-3">
-                  <div
-                    className="spinner-border"
-                    role="status"
-                    style={{
-                      borderColor: str2color(keyItem.account),
-                      borderRightColor: "transparent",
-                    }}
-                  ></div>
-                </div>
+                <Loader borderColor={str2color(keyItem.account)} />
               ) : (
                 <div>
                   {error ? (

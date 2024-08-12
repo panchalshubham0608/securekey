@@ -7,6 +7,7 @@ import KeyItem from "./KeyItem";
 import "../styles/KeysList.css";
 import UserContext from "../context/UserContext";
 import History from "./History";
+import Loader from "./Loader";
 
 export default function KeysList(props) {
   const userContext = useContext(UserContext);
@@ -198,19 +199,7 @@ export default function KeysList(props) {
           </div>
         </form>
         {loading ? (
-          <div
-            className="d-flex justify-content-center mb-3"
-            data-testid="loader"
-          >
-            <div
-              className="spinner-border"
-              style={{
-                borderColor: "#0d6efd",
-                borderRightColor: "transparent",
-              }}
-              role="status"
-            ></div>
-          </div>
+          <Loader />
         ) : (
           <div>
             <div className="d-flex align-items-center justify-content-between mb-3">
