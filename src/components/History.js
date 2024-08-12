@@ -1,23 +1,23 @@
 import React, { useEffect, useState, useContext } from "react";
 import UserContext from "../context/UserContext";
 import AccountIcon from "./AccountIcon";
-import { resolveLastPasswords } from "../utils/firestoredb";
+import { resolvepasswordsHistory } from "../utils/firestoredb";
 import "../styles/History.css";
 
 export default function History(props) {
   const userContext = useContext(UserContext);
   const { keyItem, setShowHistoryKeyItem } = props;
-  const [lastPasswords, setLastPasswords] = useState(null);
+  const [passwordsHistory, setpasswordsHistory] = useState(null);
   const [error, setError] = useState("");
 
   useEffect(() => {
     if (!keyItem) return;
-    resolveLastPasswords({
+    resolvepasswordsHistory({
       userContext,
-      lastPasswords: keyItem.lastPasswords,
+      passwordsHistory: keyItem.passwordsHistory,
     })
       .then((passwords) => {
-        setLastPasswords(passwords);
+        setpasswordsHistory(passwords);
       })
       .catch((error) => {
         console.error("Error fetching keys", error);
@@ -57,9 +57,9 @@ export default function History(props) {
       <hr />
       {error && <div className="alert alert-danger">{error}</div>}
       <div className="mt-3">
-        {lastPasswords && lastPasswords.length ? (
+        {passwordsHistory && passwordsHistory.length ? (
           <div className="list">
-            {lastPasswords.map((lp) => (
+            {passwordsHistory.map((lp) => (
               <div key={lp.password} className="list-item border p-3 mt-3">
                 <h5 className="text-break">{lp.password}</h5>
                 <p className="text-muted m-0">{lp.changedAt}</p>

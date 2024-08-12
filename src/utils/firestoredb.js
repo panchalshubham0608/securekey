@@ -36,8 +36,8 @@ export const getPassKeys = ({ userContext }) => {
             // delete "password" field from each object
             matchingKeys.forEach((key) => {
               delete key.password;
-              if (key.lastPasswords) {
-                delete key.lastPasswords;
+              if (key["history"]) {
+                delete key["history"];
               }
             });
             // return matchingKeys;
@@ -134,7 +134,7 @@ export const addPassKey = ({ userContext, account, username, password }) => {
                 account,
                 username,
                 password: ciphertext,
-                lastPasswords: [],
+                history: [],
                 createdAt: Date.now(),
                 updatedAt: Date.now(),
               })
@@ -195,14 +195,14 @@ export const updatePassKey = ({ userContext, account, username, password }) => {
             let now = Date.now();
             let docRef = querySnapshot.docs[0].ref;
             let data = querySnapshot.docs[0].data();
-            let lastPasswords = data["lastPasswords"] || [];
-            lastPasswords.push({
+            let history = data["history"] || [];
+            history.push({
               password: data.password,
               changedAt: now,
             });
             updateDoc(docRef, {
               password: ciphertext,
-              lastPasswords,
+              history,
               updatedAt: now,
             })
               .then(() => {
@@ -265,31 +265,53 @@ export const deletePassKey = ({ userContext, account, username }) => {
   });
 };
 
-// Function to resolve last-passwords
-export const resolveLastPasswords = ({ userContext, lastPasswords }) => {
+// Function to get history
+export const getHistory = ({ userContext, account, username }) => {
   return new Promise((resolve, reject) => {
-    if (!lastPasswords) reject({ message: "LastPasswords is required" });
     validateUserContext(userContext)
       .then((userContext) => {
-        let resolvedPasswords = lastPasswords
-          .map((lp) => {
-            // get the encrypted passkey
-            let ciphertext = lp.password;
-            try {
-              let secretKey = getUserFromContext(userContext.user).password;
-              let password = decrypt({ ciphertext, key: secretKey });
-              let changedAt = formatFirestoreTimestamp(lp.changedAt);
-              return {
-                password,
-                changedAt,
-              };
-            } catch (error) {
-              console.error("Error decrypting passkey: ", error);
-              reject({ message: "Error decrypting passkey" });
+        let owner = userContext.user.username;
+        const q = query(
+          keysCollection,
+          where("owner", "==", owner),
+          where("account", "==", account),
+          where("username", "==", username),
+          limit(1)
+        );
+        getDocs(q)
+          .then((querySnapshot) => {
+            if (querySnapshot.empty) {
+              reject({ message: "Passkey not found" });
+              return;
             }
+            let secretKey = getUserFromContext(userContext.user).password;
+            let data =
+              querySnapshot.docs[0].data();
+            let history = data["history"] || [];
+            console.log(history);
+            let decryptedHistory = [];
+            for (let lp in history) {
+                // get the encrypted passkey
+                try {
+                  let password = decrypt({ ciphertext: lp.password, key: secretKey });
+                  let changedAt = formatFirestoreTimestamp(lp.changedAt);
+                  decryptedHistory.push({
+                    password,
+                    changedAt,
+                  });
+                } catch (error) {
+                  console.error("Error decrypting passkey: ", error);
+                  return reject({ message: "Error decrypting passkey" });
+                }
+            }
+            // reverse the contents
+            decryptedHistory = decryptedHistory.reverse();
+            resolve(decryptedHistory);
           })
-          .reverse();
-        resolve(resolvedPasswords);
+          .catch((error) => {
+            console.error("Error getting documents from Firestore: ", error);
+            reject({ message: "Error getting documents from Firestore" });
+          });
       })
       .catch((error) => {
         console.error("Error validating user context: ", error);
