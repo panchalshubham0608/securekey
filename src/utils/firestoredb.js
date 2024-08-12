@@ -34,7 +34,12 @@ export const getPassKeys = ({ userContext }) => {
               ...doc.data(),
             }));
             // delete "password" field from each object
-            matchingKeys.forEach((key) => delete key.password);
+            matchingKeys.forEach((key) => {
+              delete key.password;
+              if (key.lastPasswords) {
+                delete key.lastPasswords;
+              }
+            });
             // return matchingKeys;
             resolve(matchingKeys);
           })
@@ -263,24 +268,27 @@ export const deletePassKey = ({ userContext, account, username }) => {
 // Function to resolve last-passwords
 export const resolveLastPasswords = ({ userContext, lastPasswords }) => {
   return new Promise((resolve, reject) => {
+    if (!lastPasswords) reject({ message: "LastPasswords is required" });
     validateUserContext(userContext)
       .then((userContext) => {
-        let resolvedPasswords = lastPasswords.map((lp) => {
-          // get the encrypted passkey
-          let ciphertext = lp.password;
-          try {
-            let secretKey = getUserFromContext(userContext.user).password;
-            let password = decrypt({ ciphertext, key: secretKey });
-            let changedAt = formatFirestoreTimestamp(lp.changedAt);
-            return {
-              password,
-              changedAt
+        let resolvedPasswords = lastPasswords
+          .map((lp) => {
+            // get the encrypted passkey
+            let ciphertext = lp.password;
+            try {
+              let secretKey = getUserFromContext(userContext.user).password;
+              let password = decrypt({ ciphertext, key: secretKey });
+              let changedAt = formatFirestoreTimestamp(lp.changedAt);
+              return {
+                password,
+                changedAt,
+              };
+            } catch (error) {
+              console.error("Error decrypting passkey: ", error);
+              reject({ message: "Error decrypting passkey" });
             }
-          } catch (error) {
-            console.error("Error decrypting passkey: ", error);
-            reject({ message: "Error decrypting passkey" });
-          }
-        }).reverse();
+          })
+          .reverse();
         resolve(resolvedPasswords);
       })
       .catch((error) => {
