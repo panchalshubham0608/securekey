@@ -1,8 +1,8 @@
 import React, { useContext } from "react";
 import "../styles/Navbar.css";
 import Logo from "../assets/images/logo.svg";
-import { signOut } from "../utils/firebase";
 import UserContext from "../context/UserContext";
+import { signOut } from "../utils/firebase";
 
 export default function Navbar() {
   const userContext = useContext(UserContext);

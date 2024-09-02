@@ -1,10 +1,10 @@
 import React, { useState, useCallback, useEffect, useContext } from "react";
 import "../styles/AddPassKey.css";
-import AccountIconsList from "../utils/AccountIconsList";
-import AccountIcon from "./AccountIcon";
-import { addPassKey, updatePassKey } from "../utils/firestoredb";
 import { Navigate } from "react-router-dom";
 import UserContext from "../context/UserContext";
+import AccountIconsList from "../utils/AccountIconsList";
+import { addPassKey, updatePassKey } from "../utils/firestoredb";
+import AccountIcon from "./AccountIcon";
 
 export default function AddPassKey(props) {
   const userContext = useContext(UserContext);

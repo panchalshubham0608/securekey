@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useContext } from "react";
 import UserContext from "../context/UserContext";
-import AccountIcon from "./AccountIcon";
 import { getHistory } from "../utils/firestoredb";
+import AccountIcon from "./AccountIcon";
 import "../styles/History.css";
 import Loader from "./Loader";
 

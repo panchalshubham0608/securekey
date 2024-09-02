@@ -1,4 +1,5 @@
 // imports
+import "firebase/firestore";
 import {
   addDoc,
   collection,
@@ -9,11 +10,10 @@ import {
   updateDoc,
   where,
 } from "firebase/firestore";
-import { firestoreDb } from "./firebase";
-import "firebase/firestore";
-import { decrypt, encrypt } from "./cryptoutil";
 import { getUserFromContext } from "./contextutil";
+import { decrypt, encrypt } from "./cryptoutil";
 import { formatFirestoreTimestamp } from "./dateutil";
+import { firestoreDb } from "./firebase";
 
 // Firestore collection details
 const keysCollectionName = process.env.REACT_APP_FIRESTORE_KEYS_COLLECTION_NAME;

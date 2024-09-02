@@ -100,8 +100,6 @@ describe("getPassKeys", () => {
   test("throws error for invalid user context", async () => {
     const {
       getPassKeys,
-      resolvepasswordsHistory,
-      getHistory,
     } = require("./firestoredb");
     const invalidUserContexts = getInvalidUserContexts();
     for (let userContext of invalidUserContexts) {
