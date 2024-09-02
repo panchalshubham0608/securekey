@@ -31,7 +31,7 @@ describe("dateutil", () => {
     expect(formattedDate).toBe("12/08/2023 23:59");
   });
 
-  test("should handle an invalid timestamp gracefully", () => {
+  test("should throw fir invalid timestamps", () => {
     const invalidTimestamp = "invalid-date";
     expect(() => formatFirestoreTimestamp(invalidTimestamp)).toThrow();
   });
