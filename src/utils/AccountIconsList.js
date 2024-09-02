@@ -9,7 +9,7 @@ import LinkedInIcon from "../assets/images/LinkedIn.svg";
 import MicrosoftIcon from "../assets/images/Microsoft.svg";
 import NPMIcon from "../assets/images/NPM.svg";
 import OtherIcon from "../assets/images/Other.svg";
-import PaypalIcon from "../assets/images/PayPal.svg";
+import PaypalIcon from "../assets/images/Paypal.svg";
 import SBIIcon from "../assets/images/SBI.svg";
 import UANIcon from "../assets/images/UAN.svg";
 import UdemyIcon from "../assets/images/Udemy.svg";
