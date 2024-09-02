@@ -286,10 +286,9 @@ export const getHistory = ({ userContext, account, username }) => {
             }
             let secretKey = getUserFromContext(userContext.user).password;
             let data = querySnapshot.docs[0].data();
-            console.log(data);
             let history = data["history"] || [];
             let decryptedHistory = [];
-            for (let lp in history) {
+            for (let lp of history) {
               // get the encrypted passkey
               try {
                 let password = decrypt({

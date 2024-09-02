@@ -1225,7 +1225,7 @@ describe("getHistory", () => {
     }
   });
 
-  test("retrieves history when it does not exist", async () => {
+  test("retrieves empty history when it does not exist", async () => {
     // setup mocks for decrypt and getUserFromContext
     const userContext = {
       user: { username: "testuser", password: "encodedpassword" },
@@ -1299,8 +1299,8 @@ describe("getHistory", () => {
             username: "testusername2",
             password: "userpassword2",
             history: [
-              {password: "cipherpassword1", changedAt: now.toString()},
-              {password: "cipherpassword2", changedAt: now.toString()},
+              {password: "cipherpassword1", changedAt: now},
+              {password: "cipherpassword2", changedAt: now},
             ],
           }),
         },
@@ -1310,8 +1310,8 @@ describe("getHistory", () => {
     getDocs.mockResolvedValue(querySnapshot);
 
     // mock response for decrypter
-    decrypt.mockReturnValue("plainpassword1");
-    decrypt.mockReturnValue("plainpassword2");
+    decrypt.mockReturnValueOnce("plainpassword1");
+    decrypt.mockReturnValueOnce("plainpassword2");
 
     // call getHistory
     const { getHistory } = require("./firestoredb");
@@ -1340,118 +1340,136 @@ describe("getHistory", () => {
       key: decodedKey,
     });
     expect(history).toEqual([
-      {password: "plainpassword1", changedAt: expect.any(Number)},
-      {password: "plainpassword2", changedAt: expect.any(Number)},
+      {password: "plainpassword2", changedAt: expect.any(String)},
+      {password: "plainpassword1", changedAt: expect.any(String)},
     ]);
   });
 
-  // test("rejects if fails to decrypt", async () => {
-  //   // setup mocks for decrypt and getUserFromContext
-  //   const userContext = {
-  //     user: { username: "testuser", password: "encodedpassword" },
-  //   };
-  //   const { decrypt } = require("./cryptoutil");
-  //   const { getUserFromContext } = require("./contextutil");
-  //   const decodedKey = "decodedKey";
-  //   getUserFromContext.mockReturnValue({ password: decodedKey });
-  //   decrypt.mockImplementation(() => {
-  //     throw new Error("decryption error");
-  //   });
+  test("rejects if fails to decrypt", async () => {
+    // setup mocks for decrypt and getUserFromContext
+    const userContext = {
+      user: { username: "testuser", password: "encodedpassword" },
+    };
+    const { decrypt } = require("./cryptoutil");
+    const { getUserFromContext } = require("./contextutil");
+    const decodedKey = "decodedKey";
+    getUserFromContext.mockReturnValue({ password: decodedKey });
 
-  //   // setup mock response for getDocs
-  //   const { getDocs } = require("firebase/firestore");
-  //   let data = {
-  //     account: "testaccount",
-  //     username: "testusername",
-  //     password: "userpassword",
-  //   };
-  //   let querySnapshot = {
-  //     docs: [{ data: () => ({ ...data }) }],
-  //     empty: false,
-  //   };
-  //   getDocs.mockResolvedValue(querySnapshot);
+    // setup mock response for getDocs
+    const { getDocs } = require("firebase/firestore");
+    let now = Date.now();
+    let querySnapshot = {
+      docs: [
+        {
+          data: () => ({
+            account: "testaccount2",
+            username: "testusername2",
+            password: "userpassword2",
+            history: [
+              {password: "cipherpassword1", changedAt: now},
+              {password: "cipherpassword2", changedAt: now},
+            ],
+          }),
+        },
+      ],
+      empty: false,
+    };
+    getDocs.mockResolvedValue(querySnapshot);
 
-  //   // call getPassKeyValue
-  //   const { getPassKeyValue } = require("./firestoredb");
-  //   let requestData = {
-  //     account: "requestAccount",
-  //     username: "requestUsername",
-  //   };
-  //   await expect(
-  //     getPassKeyValue({
-  //       userContext,
-  //       account: requestData.account,
-  //       username: requestData.username,
-  //     })
-  //   ).rejects.toEqual({ message: "Error decrypting passkey" });
+    // mock response for decrypter
+    decrypt.mockImplementation(() => {
+      throw new Error("decryption error");
+    });
 
-  //   verifyArgs({
-  //     userContext,
-  //     account: requestData.account,
-  //     username: requestData.username,
-  //   });
-  //   expect(getUserFromContext).toHaveBeenCalledWith(userContext.user);
-  //   expect(decrypt).toHaveBeenCalledWith({
-  //     ciphertext: data.password,
-  //     key: decodedKey,
-  //   });
-  // });
+    // call getHistory
+    const { getHistory } = require("./firestoredb");
+    let requestData = {
+      account: "requestAccount",
+      username: "requestUsername",
+    };
+    await expect(getHistory({
+      userContext,
+      account: requestData.account,
+      username: requestData.username,
+    })).rejects.toEqual({ message: "Error decrypting passkey" });
 
-  // test("rejects if doc is not found", async () => {
-  //   const userContext = {
-  //     user: { username: "testuser", password: "encodedpassword" },
-  //   };
-  //   const { getDocs } = require("firebase/firestore");
-  //   let querySnapshot = {
-  //     docs: [],
-  //     empty: true,
-  //   };
-  //   getDocs.mockResolvedValue(querySnapshot);
+    verifyArgs({
+      userContext,
+      account: requestData.account,
+      username: requestData.username,
+    });
+    expect(getUserFromContext).toHaveBeenCalledWith(userContext.user);
+    expect(decrypt).toHaveBeenCalledWith({
+      ciphertext: "cipherpassword1",
+      key: decodedKey,
+    });
+  });
 
-  //   const { getPassKeyValue } = require("./firestoredb");
-  //   let requestData = {
-  //     account: "requestAccount",
-  //     username: "requestUsername",
-  //   };
-  //   await expect(
-  //     getPassKeyValue({
-  //       userContext,
-  //       account: requestData.account,
-  //       username: requestData.username,
-  //     })
-  //   ).rejects.toEqual({ message: "Passkey not found" });
+  test("rejects if doc is not found", async () => {
+    // setup mocks for decrypt and getUserFromContext
+    const userContext = {
+      user: { username: "testuser", password: "encodedpassword" },
+    };
+    const { getUserFromContext } = require("./contextutil");
+    const decodedKey = "decodedKey";
+    getUserFromContext.mockReturnValue({ password: decodedKey });
 
-  //   verifyArgs({
-  //     userContext,
-  //     account: requestData.account,
-  //     username: requestData.username,
-  //   });
-  // });
+    // setup mock response for getDocs
+    const { getDocs } = require("firebase/firestore");
+    let querySnapshot = {
+      docs: [],
+      empty: true,
+    };
+    getDocs.mockResolvedValue(querySnapshot);
 
-  // test("rejects is fails to getDocs", async () => {
-  //   const userContext = {
-  //     user: { username: "testuser", password: "encodedpassword" },
-  //   };
-  //   const { getDocs } = require("firebase/firestore");
-  //   getDocs.mockRejectedValue("error");
+    // call getHistory
+    const { getHistory } = require("./firestoredb");
+    let requestData = {
+      account: "requestAccount",
+      username: "requestUsername",
+    };
+    await expect(getHistory({
+      userContext,
+      account: requestData.account,
+      username: requestData.username,
+    })).rejects.toEqual({ message: "Passkey not found" });
 
-  //   const { getPassKeyValue } = require("./firestoredb");
-  //   let requestData = {
-  //     account: "requestAccount",
-  //     username: "requestUsername",
-  //   };
-  //   await expect(
-  //     getPassKeyValue({
-  //       userContext,
-  //       account: requestData.account,
-  //       username: requestData.username,
-  //     })
-  //   ).rejects.toEqual({ message: "Error getting documents from Firestore" });
+    verifyArgs({
+      userContext,
+      account: requestData.account,
+      username: requestData.username,
+    });
+  });
 
-  //   verifyArgs({
-  //     userContext,
-  //     account: requestData.account,
-  //     username: requestData.username,
-  //   });
-  // });
+  test("rejects if fails to getDocs", async () => {
+    // setup mocks for decrypt and getUserFromContext
+    const userContext = {
+      user: { username: "testuser", password: "encodedpassword" },
+    };
+    const { getUserFromContext } = require("./contextutil");
+    const decodedKey = "decodedKey";
+    getUserFromContext.mockReturnValue({ password: decodedKey });
+
+    // setup mock response for getDocs
+    const { getDocs } = require("firebase/firestore");
+    getDocs.mockRejectedValue("error");
+
+    // call getHistory
+    const { getHistory } = require("./firestoredb");
+    let requestData = {
+      account: "requestAccount",
+      username: "requestUsername",
+    };
+    await expect(getHistory({
+      userContext,
+      account: requestData.account,
+      username: requestData.username,
+    })).rejects.toEqual({ message: "Error getting documents from Firestore" });
+
+    verifyArgs({
+      userContext,
+      account: requestData.account,
+      username: requestData.username,
+    });
+  });
 });
