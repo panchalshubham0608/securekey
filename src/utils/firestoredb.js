@@ -11,6 +11,7 @@ import {
   where,
 } from "firebase/firestore";
 import { getUserFromContext } from "./contextutil";
+import { validateUserContext } from "./contextvalidator";
 import { decrypt, encrypt } from "./cryptoutil";
 import { formatFirestoreTimestamp } from "./dateutil";
 import { firestoreDb } from "./firebase";
@@ -318,30 +319,5 @@ export const getHistory = ({ userContext, account, username }) => {
         console.error("Error validating user context: ", error);
         reject({ message: "Error validating user context" });
       });
-  });
-};
-
-// validate user context
-const validateUserContext = (userContext) => {
-  return new Promise((resolve, reject) => {
-    if (!userContext) {
-      reject("User context not found");
-      return;
-    }
-    if (!userContext.user) {
-      reject("User not found in user context");
-      return;
-    }
-    if (!userContext.user.username) {
-      reject("Username not found in user context");
-      return;
-    }
-
-    if (!userContext.user.password) {
-      reject("Password not found in user context");
-      return;
-    }
-
-    resolve(userContext);
   });
 };
