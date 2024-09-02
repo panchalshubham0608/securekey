@@ -1297,8 +1297,8 @@ describe("getHistory", () => {
             username: "testusername2",
             password: "userpassword2",
             history: [
-              {password: "cipherpassword1", changedAt: now},
-              {password: "cipherpassword2", changedAt: now},
+              { password: "cipherpassword1", changedAt: now },
+              { password: "cipherpassword2", changedAt: now },
             ],
           }),
         },
@@ -1338,8 +1338,8 @@ describe("getHistory", () => {
       key: decodedKey,
     });
     expect(history).toEqual([
-      {password: "plainpassword2", changedAt: expect.any(String)},
-      {password: "plainpassword1", changedAt: expect.any(String)},
+      { password: "plainpassword2", changedAt: expect.any(String) },
+      { password: "plainpassword1", changedAt: expect.any(String) },
     ]);
   });
 
@@ -1364,8 +1364,8 @@ describe("getHistory", () => {
             username: "testusername2",
             password: "userpassword2",
             history: [
-              {password: "cipherpassword1", changedAt: now},
-              {password: "cipherpassword2", changedAt: now},
+              { password: "cipherpassword1", changedAt: now },
+              { password: "cipherpassword2", changedAt: now },
             ],
           }),
         },
