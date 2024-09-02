@@ -1,7 +1,6 @@
 // Import modules
-const { generateStrongPassword } = require("./passwordutil");
-const { encrypt, decrypt } = require("./cryptoutil");
 const { createUserForContext, getUserFromContext } = require("./contextutil");
+const { encrypt, decrypt } = require("./cryptoutil");
 
 // Mock implementations
 const strongPassword = "strongpassword";

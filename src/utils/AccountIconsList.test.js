@@ -28,7 +28,7 @@ describe("AccountIconsList", () => {
     expect(svgFileKeys).toEqual(mappedKeys);
   });
 
-  test('should correctly map string keys to icon components', () => {
+  test("should correctly map string keys to icon components", () => {
     const svgFileKeys = getAllSVGKeys();
     svgFileKeys.forEach(key => {
       expect(AccountIconsList[key]).toBe(`${key}.svg`);
