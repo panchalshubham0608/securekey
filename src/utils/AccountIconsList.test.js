@@ -13,6 +13,9 @@ const accountNames = [
   "UAN",
   "Udemy",
   "Other",
+  "Facebook",
+  "Instagram",
+  "Docker"
 ];
 
 describe("AccountIconsList", () => {
