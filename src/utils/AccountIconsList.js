@@ -10,7 +10,7 @@ import MicrosoftIcon from "../assets/Microsoft.svg";
 import NPMIcon from "../assets/NPM.svg";
 import OtherIcon from "../assets/Other.svg";
 import PaypalIcon from "../assets/PayPal.svg";
-import SBIIcon from "../assets/SBI.png";
+import SBIIcon from "../assets/SBI.svg";
 import UANIcon from "../assets/UAN.svg";
 import UdemyIcon from "../assets/Udemy.svg";
 
