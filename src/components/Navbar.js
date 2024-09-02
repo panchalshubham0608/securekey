@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
 import "../styles/Navbar.css";
-import Logo from "../assets/logo.svg";
+import Logo from "../assets/images/logo.svg";
 import { signOut } from "../utils/firebase";
 import UserContext from "../context/UserContext";
 

@@ -1,0 +1,28 @@
+name: Check Assets for SVGs
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  check-assets:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Find non-SVG files in src/assets/images
+      run: |
+        non_svg_files=$(find src/assets/images -type f ! -name "*.svg")
+        if [ -n "$non_svg_files" ]; then
+          echo "Non-SVG files found:"
+          echo "$non_svg_files"
+          exit 1
+        else
+          echo "All files in src/assets are SVGs."
+        fi

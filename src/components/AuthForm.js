@@ -1,7 +1,7 @@
 import React, { useCallback, useState, useContext } from "react";
 import "../styles/AuthForm.css";
 import { Link } from "react-router-dom";
-import Logo from "../assets/logo.svg";
+import Logo from "../assets/images/logo.svg";
 import { signIn, signUp } from "../utils/firebase";
 import { Navigate } from "react-router-dom";
 import UserContext from "../context/UserContext";
