@@ -123,13 +123,6 @@ export default function AuthForm(props) {
           } else {
             setError(error.message);
           }
-
-          let userForContext = createUserForContext({
-            username: credentials.email,
-            password: credentials.password
-          });
-          userContext.setUser(userForContext);
-          setNavigate(<Navigate to="/" />);  
         } else {
           setError("An error occurred. Please try again later");
         }
