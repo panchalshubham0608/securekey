@@ -1,4 +1,4 @@
-import { encrypt, decrypt } from "./cryptoutil";
+import { decrypt, encrypt } from "./cryptoutil";
 import { generateStrongPassword } from "./passwordutil";
 
 // only hashed passwords are stored

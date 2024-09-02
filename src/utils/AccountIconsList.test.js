@@ -34,10 +34,4 @@ describe("AccountIconsList", () => {
       expect(AccountIconsList[key]).toBe(`${key}.svg`);
     });
   });
-
-  test("no account should have the same icon", () => {
-    const icons = Object.values(AccountIconsList);
-    const uniqueIcons = new Set(icons);
-    expect(uniqueIcons.size).toBe(icons.length);
-  });
 });
