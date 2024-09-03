@@ -1,6 +1,7 @@
 import {
   addDoc,
   collection,
+  deleteDoc,
   getDocs,
   limit,
   query,
@@ -729,6 +730,102 @@ describe("Firestore Functions", () => {
         ],
         updatedAt: expect.any(Number),
       });
+    });
+  });
+
+  describe("deletePassKey", () => {
+    test("successfully deletes passkey", async () => {
+      const mockUserContext = { user: { username: "testuser" } };
+      validateUserContext.mockResolvedValue(mockUserContext);
+      getDocs.mockResolvedValue({ docs: [{ ref: "testDocRef" }], empty: false });
+      deleteDoc.mockResolvedValue();
+
+      await firestoreFunctions.deletePassKey({
+        userContext: mockUserContext,
+        account: "testaccount",
+        username: "testusername",
+      });
+
+      expect(validateUserContext).toHaveBeenCalledWith(mockUserContext);
+      expect(where).toHaveBeenCalledWith("owner", "==", mockUserContext.user.username);
+      expect(where).toHaveBeenCalledWith("owner", "==", mockUserContext.user.username);
+      expect(where).toHaveBeenCalledWith("account", "==", "testaccount");
+      expect(where).toHaveBeenCalledWith("username", "==", "testusername");
+      expect(limit).toHaveBeenCalledWith(1);
+      expect(query).toHaveBeenCalledWith(
+        "testCollection",
+        whereOwnerMock,
+        whereAccountMock,
+        whereUsernameMock,
+        limitMock,
+      );
+      expect(getDocs).toHaveBeenCalledWith("testQuery");
+      expect(deleteDoc).toHaveBeenCalledWith("testDocRef");
+    });
+
+    test("rejects when context validation fails", async () => {
+      const mockUserContext = { user: {} };
+      validateUserContext.mockRejectedValue(new Error("Validation error"));
+
+      await expect(firestoreFunctions.deletePassKey({
+        userContext: mockUserContext,
+        account: "testaccount",
+        username: "testusername",
+      })).rejects.toEqual({ message: "Error validating user context" });
+
+      expect(validateUserContext).toHaveBeenCalledWith(mockUserContext);
+      expect(getDocs).not.toHaveBeenCalled();
+      expect(deleteDoc).not.toHaveBeenCalled();
+    });
+
+
+    test("rejects if fails to retrieve docs", async () => {
+      const mockUserContext = { user: { username: "testuser" } };
+      validateUserContext.mockResolvedValue(mockUserContext);
+      getDocs.mockRejectedValue(new Error("Firestore error"));
+
+      await expect(firestoreFunctions.deletePassKey({
+        userContext: mockUserContext,
+        account: "testaccount",
+        username: "testusername",
+      })).rejects.toEqual({ message: "Error getting documents from Firestore" })
+
+      expect(validateUserContext).toHaveBeenCalledWith(mockUserContext);
+      expect(getDocs).toHaveBeenCalledWith("testQuery");
+      expect(deleteDoc).not.toHaveBeenCalled();
+    });
+
+    test("rejects if key does not exist", async () => {
+      const mockUserContext = { user: { username: "testuser" } };
+      validateUserContext.mockResolvedValue(mockUserContext);
+      getDocs.mockResolvedValue({ empty: true });
+
+      await expect(firestoreFunctions.deletePassKey({
+        userContext: mockUserContext,
+        account: "testaccount",
+        username: "testusername",
+      })).rejects.toEqual({ message: "Passkey not found" })
+
+      expect(validateUserContext).toHaveBeenCalledWith(mockUserContext);
+      expect(getDocs).toHaveBeenCalledWith("testQuery");
+      expect(deleteDoc).not.toHaveBeenCalled();
+    });
+
+    test("rejects if fails to delete passkey", async () => {
+      const mockUserContext = { user: { username: "testuser" } };
+      validateUserContext.mockResolvedValue(mockUserContext);
+      getDocs.mockResolvedValue({ docs: [{ ref: "testDocRef" }], empty: false });
+      deleteDoc.mockRejectedValue(new Error("Firestore error"));
+
+      await expect(firestoreFunctions.deletePassKey({
+        userContext: mockUserContext,
+        account: "testaccount",
+        username: "testusername",
+      })).rejects.toEqual({ message: "Error deleting passkey from Firestore" });
+
+      expect(validateUserContext).toHaveBeenCalledWith(mockUserContext);
+      expect(getDocs).toHaveBeenCalledWith("testQuery");
+      expect(deleteDoc).toHaveBeenCalledWith("testDocRef");
     });
   });
 });
