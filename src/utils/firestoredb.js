@@ -104,7 +104,16 @@ export const addPassKey = ({ userContext, account, username, password }) => {
     validateUserContext(userContext)
       .then((userContext) => {
         let owner = userContext.user.username;
-        let secretKey = getUserFromContext(userContext.user).password;
+
+        // decode user context to get the secret key
+        let secretKey;
+        try {
+          secretKey = getUserFromContext(userContext.user).password;
+        } catch (error) {
+          console.error("Error getting user from context: ", error);
+          reject({ message: "Error decoding user context" });
+          return;
+        }
 
         // encrypt the passkey
         let ciphertext;
@@ -166,7 +175,16 @@ export const updatePassKey = ({ userContext, account, username, password }) => {
     validateUserContext(userContext)
       .then((userContext) => {
         let owner = userContext.user.username;
-        let secretKey = getUserFromContext(userContext.user).password;
+
+        // decode user context to get the secret key
+        let secretKey;
+        try {
+          secretKey = getUserFromContext(userContext.user).password;
+        } catch (error) {
+          console.error("Error getting user from context: ", error);
+          reject({ message: "Error decoding user context" });
+          return;
+        }
 
         // encrypt the passkey
         let ciphertext;
@@ -196,11 +214,10 @@ export const updatePassKey = ({ userContext, account, username, password }) => {
             let now = Date.now();
             let docRef = querySnapshot.docs[0].ref;
             let data = querySnapshot.docs[0].data();
-            let history = data["history"] || [];
-            history.push({
-              password: data.password,
-              changedAt: now,
-            });
+            let history = [
+              ...(data["history"] || []),
+              { password: data.password, changedAt: now },
+            ];
             updateDoc(docRef, {
               password: ciphertext,
               history,
