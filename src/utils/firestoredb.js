@@ -318,21 +318,32 @@ export const getHistory = ({ userContext, account, username }) => {
             let decryptedHistory = [];
             for (let lp of history) {
               // get the encrypted passkey
+              let password = null;
               try {
-                let password = decrypt({
+                password = decrypt({
                   ciphertext: lp.password,
                   key: secretKey,
-                });
-                let changedAt = formatFirestoreTimestamp(lp.changedAt);
-                decryptedHistory.push({
-                  password,
-                  changedAt,
                 });
               } catch (error) {
                 console.error("Error decrypting passkey: ", error);
                 return reject({ message: "Error decrypting passkey" });
               }
+
+              let changedAt = null;
+              try {
+                changedAt = formatFirestoreTimestamp(lp.changedAt);
+              } catch (error) {
+                console.error("Error formatting timestamp: ", error);
+                return reject({ message: "Error formatting timestamp" });
+              }
+
+              // add password to list
+              decryptedHistory.push({
+                password,
+                changedAt,
+              });
             }
+
             // reverse the contents
             decryptedHistory = decryptedHistory.reverse();
             resolve(decryptedHistory);
