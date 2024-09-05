@@ -289,6 +289,17 @@ export const getHistory = ({ userContext, account, username }) => {
     validateUserContext(userContext)
       .then((userContext) => {
         let owner = userContext.user.username;
+
+        // decode user context to get the secret key
+        let secretKey;
+        try {
+          secretKey = getUserFromContext(userContext.user).password;
+        } catch (error) {
+          console.error("Error getting user from context: ", error);
+          reject({ message: "Error decoding user context" });
+          return;
+        }
+
         const q = query(
           keysCollection,
           where("owner", "==", owner),
@@ -302,7 +313,6 @@ export const getHistory = ({ userContext, account, username }) => {
               reject({ message: "Passkey not found" });
               return;
             }
-            let secretKey = getUserFromContext(userContext.user).password;
             let data = querySnapshot.docs[0].data();
             let history = data["history"] || [];
             let decryptedHistory = [];

@@ -116,7 +116,7 @@ export default function KeyItem(props) {
                     <span className="ml-3 badge text-bg-danger">Expired</span>
                   )}
                 </p>
-                <p className="key-username m-0" data-testid="key-username">
+                <p className="key-username m-0 text-break" data-testid="key-username">
                   {keyItem.username}
                 </p>
               </div>
@@ -193,7 +193,7 @@ export default function KeyItem(props) {
                         <div className="shrinking-div"></div>
                       </div>
                       <div className="d-flex align-items-center justify-content-center mt-3">
-                        <p className="m-0 passkey">{password}</p>
+                        <p className="m-0 passkey text-break">{password}</p>
                         <button
                           className="btn merriweather-light text-primary"
                           onClick={handleCopyPassword}
