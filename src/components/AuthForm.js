@@ -126,12 +126,6 @@ export default function AuthForm(props) {
         } else {
           setError("An error occurred. Please try again later");
         }
-        let userForContext = createUserForContext({
-          username: credentials.email,
-          password: credentials.password
-        });
-        userContext.setUser(userForContext);
-        setNavigate(<Navigate to="/" />);
       }).finally(() => {
         setLoading(false);
       });
