@@ -37,10 +37,13 @@
     ]
   },
   "devDependencies": {
+    "@aws-sdk/client-amplify": "^3.645.0",
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
+    "aws-sdk": "^2.1691.0",
     "eslint": "^8.57.0",
     "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-jsx-a11y": "^6.8.0",
-    "eslint-plugin-react": "^7.34.1"
+    "eslint-plugin-react": "^7.34.1",
+    "yargs": "^17.7.2"
   }
 }
