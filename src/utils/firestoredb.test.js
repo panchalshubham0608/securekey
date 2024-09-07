@@ -360,7 +360,7 @@ describe("Firestore Functions", () => {
       });
     });
 
-    test("throws error when context validation fails", async () => {
+    test("rejects error when context validation fails", async () => {
       const mockUserContext = { user: {} };
       validateUserContext.mockRejectedValue(new Error("Validation Error"));
 
@@ -378,7 +378,7 @@ describe("Firestore Functions", () => {
       expect(addDoc).not.toHaveBeenCalled();
     });
 
-    test("throws error when getting user from context fails", async () => {
+    test("rejects error when getting user from context fails", async () => {
       const mockUserContext = { user: { username: "testuser" } };
       validateUserContext.mockResolvedValue(mockUserContext);
       getUserFromContext.mockImplementation(() => {
@@ -400,7 +400,7 @@ describe("Firestore Functions", () => {
       expect(addDoc).not.toHaveBeenCalled();
     });
 
-    test("throws error when encryption fails", async () => {
+    test("rejects error when encryption fails", async () => {
       const mockUserContext = { user: { username: "testuser" } };
       const mockSecretKey = "secretkey";
 
@@ -426,7 +426,7 @@ describe("Firestore Functions", () => {
       expect(addDoc).not.toHaveBeenCalled();
     });
 
-    test("throws error if retreiving firestore documents fails", async () => {
+    test("rejects error if retreiving firestore documents fails", async () => {
       const mockUserContext = { user: { username: "testuser" } };
       const mockSecretKey = "secretkey";
       const mockEncryptedPassword = "encryptedpassword";
@@ -452,7 +452,7 @@ describe("Firestore Functions", () => {
       expect(addDoc).not.toHaveBeenCalled();
     });
 
-    test("throws error when passkey already exists", async () => {
+    test("rejects error when passkey already exists", async () => {
       const mockUserContext = { user: { username: "testuser" } };
       const mockSecretKey = "secretkey";
       const mockEncryptedPassword = "encryptedpassword";
@@ -479,7 +479,7 @@ describe("Firestore Functions", () => {
       expect(addDoc).not.toHaveBeenCalled();
     });
 
-    test("throws error when saving passkey fails", async () => {
+    test("rejects error when saving passkey fails", async () => {
       const mockUserContext = { user: { username: "testuser" } };
       const mockSecretKey = "secretkey";
       const mockEncryptedPassword = "encryptedpassword";
@@ -585,7 +585,7 @@ describe("Firestore Functions", () => {
       });
     });
 
-    test("throws error when context validation fails", async () => {
+    test("rejects error when context validation fails", async () => {
       const mockUserContext = { user: {} };
       validateUserContext.mockRejectedValue(new Error("Validation Error"));
 
@@ -603,7 +603,7 @@ describe("Firestore Functions", () => {
       expect(updateDoc).not.toHaveBeenCalled();
     });
 
-    test("throws error when getting user from context fails", async () => {
+    test("rejects error when getting user from context fails", async () => {
       const mockUserContext = { user: { username: "testuser" } };
       validateUserContext.mockResolvedValue(mockUserContext);
       getUserFromContext.mockImplementation(() => {
@@ -625,7 +625,7 @@ describe("Firestore Functions", () => {
       expect(updateDoc).not.toHaveBeenCalled();
     });
 
-    test("throws error when encryption fails", async () => {
+    test("rejects error when encryption fails", async () => {
       const mockUserContext = { user: { username: "testuser" } };
       const mockSecretKey = "secretkey";
 
@@ -651,7 +651,7 @@ describe("Firestore Functions", () => {
       expect(updateDoc).not.toHaveBeenCalled();
     });
 
-    test("throws error if retreiving firestore documents fails", async () => {
+    test("rejects error if retreiving firestore documents fails", async () => {
       const mockUserContext = { user: { username: "testuser" } };
       const mockSecretKey = "secretkey";
       const mockEncryptedPassword = "encryptedpassword";
@@ -677,7 +677,7 @@ describe("Firestore Functions", () => {
       expect(updateDoc).not.toHaveBeenCalled();
     });
 
-    test("throws error when passkey does not exists", async () => {
+    test("rejects error when passkey does not exists", async () => {
       const mockUserContext = { user: { username: "testuser" } };
       const mockSecretKey = "secretkey";
       const mockEncryptedPassword = "encryptedpassword";
@@ -712,7 +712,7 @@ describe("Firestore Functions", () => {
           { password: "password2", changedAt: Date.now() },
         ]
       }]
-    ])("throws error when updating passkey fails", async (args) => {
+    ])("rejects error when updating passkey fails", async (args) => {
       const mockUserContext = { user: { username: "testuser" } };
       const mockSecretKey = "secretkey";
       const mockEncryptedPassword = "encryptedpassword";
@@ -989,7 +989,7 @@ describe("Firestore Functions", () => {
       expect(result).toEqual([]);
     });
 
-    test("throws on first timestamp formatting error", async () => {
+    test("rejects on first timestamp formatting error", async () => {
       const mockUserContext = { user: { username: "testuser" } };
       const mockSecretKey = "secretkey";
 
@@ -1019,7 +1019,7 @@ describe("Firestore Functions", () => {
       expect(formatFirestoreTimestamp).not.toHaveBeenCalledWith(history[2].changedAt);
     });
 
-    test("throws on first decrypt error", async () => {
+    test("rejects on first decrypt error", async () => {
       const mockUserContext = { user: { username: "testuser" } };
       const mockSecretKey = "secretkey";
 
@@ -1047,6 +1047,87 @@ describe("Firestore Functions", () => {
       expect(formatFirestoreTimestamp).toHaveBeenCalledWith(history[0].changedAt);
       expect(formatFirestoreTimestamp).not.toHaveBeenCalledWith(history[1].changedAt);
       expect(formatFirestoreTimestamp).not.toHaveBeenCalledWith(history[2].changedAt);
+    });
+
+    test("rejects when passkey does not exist", async () => {
+      const mockUserContext = { user: { username: "testuser" } };
+      const mockSecretKey = "secretkey";
+
+      validateUserContext.mockResolvedValue(mockUserContext);
+      getUserFromContext.mockReturnValue({ password: mockSecretKey });
+      getDocs.mockResolvedValue({ docs: [], empty: true});
+
+      await expect(firestoreFunctions.getHistory({
+        userContext: mockUserContext,
+        account: mockAccount,
+        username: mockUsername,
+      })).rejects.toEqual({ message: "Passkey not found" });
+
+      expect(validateUserContext).toHaveBeenCalledWith(mockUserContext);
+      expect(getUserFromContext).toHaveBeenCalledWith(mockUserContext.user);
+      expect(getDocs).toHaveBeenCalledWith(mockQuery);
+      expect(decrypt).not.toHaveBeenCalled();
+      expect(formatFirestoreTimestamp).not.toHaveBeenCalled();
+    });
+
+    test("rejects when fails to query firestore", async () => {
+      const mockUserContext = { user: { username: "testuser" } };
+      const mockSecretKey = "secretkey";
+
+      validateUserContext.mockResolvedValue(mockUserContext);
+      getUserFromContext.mockReturnValue({ password: mockSecretKey });
+      getDocs.mockRejectedValue(new Error("Firestore error"));
+
+      await expect(firestoreFunctions.getHistory({
+        userContext: mockUserContext,
+        account: mockAccount,
+        username: mockUsername,
+      })).rejects.toEqual({ message: "Error getting documents from Firestore" });
+
+      expect(validateUserContext).toHaveBeenCalledWith(mockUserContext);
+      expect(getUserFromContext).toHaveBeenCalledWith(mockUserContext.user);
+      expect(getDocs).toHaveBeenCalledWith(mockQuery);
+      expect(decrypt).not.toHaveBeenCalled();
+      expect(formatFirestoreTimestamp).not.toHaveBeenCalled();
+    });
+
+    test("rejects when fails to get user from context", async () => {
+      const mockUserContext = { user: { username: "testuser" } };
+
+      validateUserContext.mockResolvedValue(mockUserContext);
+      getUserFromContext.mockImplementation(() => {
+        throw new Error("Oops");
+      });
+
+      await expect(firestoreFunctions.getHistory({
+        userContext: mockUserContext,
+        account: mockAccount,
+        username: mockUsername,
+      })).rejects.toEqual({ message: "Error decoding user context" });
+
+      expect(validateUserContext).toHaveBeenCalledWith(mockUserContext);
+      expect(getUserFromContext).toHaveBeenCalledWith(mockUserContext.user);
+      expect(getDocs).not.toHaveBeenCalled();
+      expect(decrypt).not.toHaveBeenCalled();
+      expect(formatFirestoreTimestamp).not.toHaveBeenCalled();
+    });
+
+    test("rejects when fails to validate user context", async () => {
+      const mockUserContext = { user: { username: "testuser" } };
+
+      validateUserContext.mockRejectedValue(new Error("Validation error"));
+
+      await expect(firestoreFunctions.getHistory({
+        userContext: mockUserContext,
+        account: mockAccount,
+        username: mockUsername,
+      })).rejects.toEqual({ message: "Error validating user context" });
+
+      expect(validateUserContext).toHaveBeenCalledWith(mockUserContext);
+      expect(getUserFromContext).not.toHaveBeenCalled();
+      expect(getDocs).not.toHaveBeenCalled();
+      expect(decrypt).not.toHaveBeenCalled();
+      expect(formatFirestoreTimestamp).not.toHaveBeenCalled();
     });
   });
 });
