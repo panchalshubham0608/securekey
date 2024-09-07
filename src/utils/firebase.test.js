@@ -1,84 +1,66 @@
+// Mocks for Firebase methods
 const mockInitializeApp = jest.fn();
 const mockGetAuth = jest.fn();
 const mockGetFirestore = jest.fn();
-
-jest.mock("firebase/app", () => {
-  return {
-    initializeApp: mockInitializeApp,
-  };
-});
-
-jest.mock("firebase/auth", () => {
-  return {
-    getAuth: mockGetAuth,
-    createUserWithEmailAndPassword: jest.fn(),
-    signInWithEmailAndPassword: jest.fn(),
-    signOut: jest.fn(),
-  };
-});
-
-jest.mock("firebase/firestore", () => {
-  return {
-    getFirestore: mockGetFirestore,
-  };
-});
-
 const mockAppObject = { x: 1, y: 2 };
 const mockAuthObject = { a: 3, b: 4 };
 const mockFirestoreObject = { p: 5, q: 6 };
+
+jest.mock("firebase/app", () => ({
+  initializeApp: mockInitializeApp,
+}));
+
+jest.mock("firebase/auth", () => ({
+  getAuth: mockGetAuth,
+  createUserWithEmailAndPassword: jest.fn(),
+  signInWithEmailAndPassword: jest.fn(),
+  signOut: jest.fn(),
+}));
+
+jest.mock("firebase/firestore", () => ({
+  getFirestore: mockGetFirestore,
+}));
 
 const setupFirebaseMocks = () => {
   mockInitializeApp.mockReturnValue(mockAppObject);
   mockGetAuth.mockReturnValue(mockAuthObject);
   mockGetFirestore.mockReturnValue(mockFirestoreObject);
-}
+};
 
-describe("firebase", () => {
-  const oldEnv = process.env;
-  const mockFirebaseConfig = {a: 1, b: 2};
+describe("Firebase Initialization", () => {
   beforeEach(() => {
     jest.resetModules();
     jest.clearAllMocks();
-    process.env = { ...oldEnv, REACT_APP_FIREBASE_CONFIG: JSON.stringify(mockFirebaseConfig) };
-  });
-
-  afterEach(() => {
-    process.env = oldEnv;
+    process.env.REACT_APP_FIREBASE_CONFIG = JSON.stringify({ a: 1, b: 2 });
   });
 
   test("should initialize resources", () => {
     setupFirebaseMocks();
     require("./firebase");
-    expect(mockInitializeApp).toHaveBeenCalledWith(mockFirebaseConfig);
+    expect(mockInitializeApp).toHaveBeenCalledWith({ a: 1, b: 2 });
     expect(mockGetAuth).toHaveBeenCalledWith(mockAppObject);
     expect(mockGetFirestore).toHaveBeenCalledWith(mockAppObject);
   });
 });
 
 describe("signUp", () => {
-  const oldEnv = process.env;
   beforeEach(() => {
     jest.resetModules();
     jest.clearAllMocks();
-    process.env = { ...oldEnv, REACT_APP_FIREBASE_CONFIG: "{}" };
+    process.env.REACT_APP_FIREBASE_CONFIG = "{}";
   });
 
-  afterEach(() => {
-    process.env = oldEnv;
-  });
-
-  test("should call createUserWithEmailAndPassword", async () => {
+  test("should call createUserWithEmailAndPassword and resolve with user", async () => {
     setupFirebaseMocks();
-
     const firebaseAuth = require("firebase/auth");
     const { signUp } = require("./firebase");
     const email = "test@test.com";
     const password = "testpassword";
+    const userCredential = { user: { email } };
 
-    let userCredential = { user: { email } };
     firebaseAuth.createUserWithEmailAndPassword.mockResolvedValue(userCredential);
 
-    let user = await signUp({ email, password });
+    const user = await signUp({ email, password });
 
     expect(firebaseAuth.createUserWithEmailAndPassword).toHaveBeenCalledWith(mockAuthObject, email, password);
     expect(user).toEqual(userCredential.user);
@@ -86,44 +68,37 @@ describe("signUp", () => {
 
   test("should reject with error", async () => {
     setupFirebaseMocks();
-
     const firebaseAuth = require("firebase/auth");
     const { signUp } = require("./firebase");
     const email = "test@test.com";
     const password = "testpassword";
+    const error = new Error("error");
 
-    let error = new Error("error");
     firebaseAuth.createUserWithEmailAndPassword.mockRejectedValue(error);
 
-    await expect(signUp({ email, password })).rejects.toEqual(error);
+    await expect(signUp({ email, password })).rejects.toThrow("error");
     expect(firebaseAuth.createUserWithEmailAndPassword).toHaveBeenCalledWith(mockAuthObject, email, password);
   });
 });
 
 describe("signIn", () => {
-  const oldEnv = process.env;
   beforeEach(() => {
     jest.resetModules();
     jest.clearAllMocks();
-    process.env = { ...oldEnv, REACT_APP_FIREBASE_CONFIG: "{}" };
+    process.env.REACT_APP_FIREBASE_CONFIG = "{}";
   });
 
-  afterEach(() => {
-    process.env = oldEnv;
-  });
-
-  test("should call signInWithEmailAndPassword", async () => {
+  test("should call signInWithEmailAndPassword and resolve with user", async () => {
     setupFirebaseMocks();
-
     const firebaseAuth = require("firebase/auth");
     const { signIn } = require("./firebase");
     const email = "test@test.com";
     const password = "testpassword";
+    const userCredential = { user: { email } };
 
-    let userCredential = { user: { email } };
     firebaseAuth.signInWithEmailAndPassword.mockResolvedValue(userCredential);
 
-    let user = await signIn({ email, password });
+    const user = await signIn({ email, password });
 
     expect(firebaseAuth.signInWithEmailAndPassword).toHaveBeenCalledWith(mockAuthObject, email, password);
     expect(user).toEqual(userCredential.user);
@@ -131,35 +106,28 @@ describe("signIn", () => {
 
   test("should reject with error", async () => {
     setupFirebaseMocks();
-
     const firebaseAuth = require("firebase/auth");
     const { signIn } = require("./firebase");
     const email = "test@test.com";
     const password = "testpassword";
+    const error = new Error("error");
 
-    let error = new Error("error");
     firebaseAuth.signInWithEmailAndPassword.mockRejectedValue(error);
 
-    await expect(signIn({ email, password })).rejects.toEqual(error);
+    await expect(signIn({ email, password })).rejects.toThrow("error");
     expect(firebaseAuth.signInWithEmailAndPassword).toHaveBeenCalledWith(mockAuthObject, email, password);
   });
 });
 
 describe("signOut", () => {
-  const oldEnv = process.env;
   beforeEach(() => {
     jest.resetModules();
     jest.clearAllMocks();
-    process.env = { ...oldEnv, REACT_APP_FIREBASE_CONFIG: "{}" };
-  });
-
-  afterEach(() => {
-    process.env = oldEnv;
+    process.env.REACT_APP_FIREBASE_CONFIG = "{}";
   });
 
   test("should call signOut", () => {
     setupFirebaseMocks();
-
     const firebaseAuth = require("firebase/auth");
     const { signOut } = require("./firebase");
 
@@ -170,26 +138,19 @@ describe("signOut", () => {
 });
 
 describe("getCurrentUser", () => {
-  const oldEnv = process.env;
   beforeEach(() => {
     jest.resetModules();
     jest.clearAllMocks();
-    process.env = { ...oldEnv, REACT_APP_FIREBASE_CONFIG: "{}" };
-  });
-
-  afterEach(() => {
-    process.env = oldEnv;
+    process.env.REACT_APP_FIREBASE_CONFIG = "{}";
   });
 
   test("should return current user", () => {
     setupFirebaseMocks();
-
     const { getCurrentUser } = require("./firebase");
-
-    let currentUser = { email: "test@test.com" };
+    const currentUser = { email: "test@test.com" };
     mockAuthObject.currentUser = currentUser;
 
-    let user = getCurrentUser();
+    const user = getCurrentUser();
 
     expect(user).toEqual(currentUser);
   });

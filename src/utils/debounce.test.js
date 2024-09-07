@@ -11,7 +11,7 @@ describe("debounce", () => {
     expect(func).not.toHaveBeenCalled();
 
     jest.runAllTimers();
-    expect(func).toHaveBeenCalled();
+    expect(func).toHaveBeenCalledTimes(1);
   });
 
   test("should call the function only once", () => {
@@ -38,5 +38,6 @@ describe("debounce", () => {
 
     jest.runAllTimers();
     expect(func).toHaveBeenCalledWith(1, 2, 3);
+    expect(func).toHaveBeenCalledTimes(1);
   });
 });

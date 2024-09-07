@@ -15,12 +15,32 @@
         "react/prop-types": 0,
         "indent": [
             "error",
-            2
+            2,
+            {
+                "SwitchCase": 1
+            }
         ],
         "linebreak-style": 1,
         "quotes": [
             "error",
             "double"
+        ],
+        "import/order": [
+            "error",
+            {
+                "groups": [
+                    "builtin",
+                    "external",
+                    "internal",
+                    "parent",
+                    "sibling",
+                    "index"
+                ],
+                "alphabetize": {
+                    "order": "asc",
+                    "caseInsensitive": true
+                }
+            }
         ]
     },
     "parserOptions": {
@@ -45,7 +65,7 @@
             "files": [
                 "**/*.js",
                 "**/*.jsx"
-            ]            
+            ]
         },
         {
             "files": [
