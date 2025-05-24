@@ -1,0 +1,31 @@
+{
+  "files": {
+    "main.css": "/securekey/static/css/main.6d206553.css",
+    "main.js": "/securekey/static/js/main.79e2884c.js",
+    "static/js/453.1226a37f.chunk.js": "/securekey/static/js/453.1226a37f.chunk.js",
+    "static/media/IncomeTax.svg": "/securekey/static/media/IncomeTax.be301d7bde059bf074ffc76c688914bd.svg",
+    "static/media/AWS.svg": "/securekey/static/media/AWS.b17afa36b724800d9783c40834034ef0.svg",
+    "static/media/GitHub.svg": "/securekey/static/media/GitHub.c57108f56cb8321f6bdf6da0e774f646.svg",
+    "static/media/UAN.svg": "/securekey/static/media/UAN.351ddf692d0d10884f0fa896d65d8409.svg",
+    "static/media/Instagram.svg": "/securekey/static/media/Instagram.bbfb8661737f42d9b1238115c966ad53.svg",
+    "index.html": "/securekey/index.html",
+    "static/media/Google.svg": "/securekey/static/media/Google.fc4f52a0dd129319bc68fc612d4effa3.svg",
+    "static/media/LinkedIn.svg": "/securekey/static/media/LinkedIn.c304a4148cde039a54532585f4d47b48.svg",
+    "static/media/Udemy.svg": "/securekey/static/media/Udemy.66768067ef0afa61de46d5c4044fcf52.svg",
+    "static/media/Paypal.svg": "/securekey/static/media/Paypal.7c4f4da6b878d830cca66372b788aeb4.svg",
+    "static/media/Docker.svg": "/securekey/static/media/Docker.9e17371a75cda52d2dd0c9212c1265cd.svg",
+    "static/media/logo.svg": "/securekey/static/media/logo.637ddc048039c8e5826665e50888e141.svg",
+    "static/media/Other.svg": "/securekey/static/media/Other.5063f85aa688ecc1d357582578bb6ab9.svg",
+    "static/media/Microsoft.svg": "/securekey/static/media/Microsoft.88b0427e23da27e615168391f6a36531.svg",
+    "static/media/Facebook.svg": "/securekey/static/media/Facebook.ba66220cd69d2a63909a480c51e35906.svg",
+    "static/media/NPM.svg": "/securekey/static/media/NPM.4b8e3d4a216d8c578bb45c9b827ff83f.svg",
+    "static/media/SBI.svg": "/securekey/static/media/SBI.aa98839b45cdfddb5157e28f630d0174.svg",
+    "main.6d206553.css.map": "/securekey/static/css/main.6d206553.css.map",
+    "main.79e2884c.js.map": "/securekey/static/js/main.79e2884c.js.map",
+    "453.1226a37f.chunk.js.map": "/securekey/static/js/453.1226a37f.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.6d206553.css",
+    "static/js/main.79e2884c.js"
+  ]
+}
