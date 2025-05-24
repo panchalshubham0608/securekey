@@ -24,9 +24,8 @@
     "eject": "react-scripts eject",
     "lint": "eslint \"src/**/*.{js,jsx}\"",
     "lint:fix": "eslint --fix \"src/**/*.{js,jsx}\"",
-    "predeploy": "npm run build:prod",
-    "deploy": "gh-pages -d build",
-    "build:prod": "env-cmd -f .env.prod react-scripts build"
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
   },
   "browserslist": {
     "production": [
