@@ -18,5 +18,5 @@ jobs:
         with:
           node-version: '18'
       - run: npm ci
-      - run: npm run build:prod
+      - run: npm run build
       - run: npx gh-pages -d build
