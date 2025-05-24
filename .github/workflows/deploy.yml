@@ -6,17 +6,33 @@ on:
       - main
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
-    env:
-      REACT_APP_FIREBASE_CONFIG: ${{ secrets.REACT_APP_FIREBASE_CONFIG }}
-      REACT_APP_FIRESTORE_KEYS_COLLECTION_NAME: ${{ secrets.REACT_APP_FIRESTORE_KEYS_COLLECTION_NAME }}
     steps:
-      - uses: actions/checkout@v3
-      - name: Use Node.js
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
-      - run: npm ci
-      - run: npm run build
-      - run: npx gh-pages -d build
+          node-version: '18' 
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build the app
+        env:
+          REACT_APP_FIREBASE_CONFIG: ${{ secrets.REACT_APP_FIREBASE_CONFIG }}
+          REACT_APP_FIRESTORE_KEYS_COLLECTION_NAME: ${{ secrets.REACT_APP_FIRESTORE_KEYS_COLLECTION_NAME }}
+        run: npm run build
+
+      - name: Configure Git identity
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Deploy to GitHub Pages
+        run: npm run deploy
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
