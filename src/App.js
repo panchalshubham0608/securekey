@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import { useState } from "react";
+import { Navigate, Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import "./App.css";
-import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-dom";
 import AddPassKey from "./components/AddPassKey";
 import AuthForm from "./components/AuthForm";
 import KeysList from "./components/KeysList";
@@ -14,7 +14,7 @@ function App() {
   return (
     <div className="App">
       <UserContext.Provider value={contextValue}>
-        <Router>
+        <Router basename="/securekey">
           <Routes>
             {<Route path="/login" element={user ? <Navigate to="/" /> : <AuthForm register={false} />} />}
             {<Route path="/register" element={user ? <Navigate to="/" /> : <AuthForm register={true} />} />}

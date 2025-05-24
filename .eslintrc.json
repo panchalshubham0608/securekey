@@ -41,7 +41,8 @@
                     "caseInsensitive": true
                 }
             }
-        ]
+        ],
+        "react/react-in-jsx-scope": "off"
     },
     "parserOptions": {
         "ecmaVersion": 2021,

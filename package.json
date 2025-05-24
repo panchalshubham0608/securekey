@@ -2,6 +2,7 @@
   "name": "securekey",
   "version": "0.1.0",
   "private": true,
+  "homepage": "https://panchalshubham0608.github.io/securekey",
   "dependencies": {
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
@@ -22,7 +23,10 @@
     "test": "react-scripts test --watchAll=false --silent --coverage",
     "eject": "react-scripts eject",
     "lint": "eslint \"src/**/*.{js,jsx}\"",
-    "lint:fix": "eslint --fix \"src/**/*.{js,jsx}\""
+    "lint:fix": "eslint --fix \"src/**/*.{js,jsx}\"",
+    "predeploy": "npm run build:prod",
+    "deploy": "gh-pages -d build",
+    "build:prod": "env-cmd -f .env.prod react-scripts build"
   },
   "browserslist": {
     "production": [
@@ -40,10 +44,12 @@
     "@aws-sdk/client-amplify": "^3.645.0",
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
     "aws-sdk": "^2.1691.0",
+    "env-cmd": "^10.1.0",
     "eslint": "^8.57.0",
     "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-jsx-a11y": "^6.8.0",
     "eslint-plugin-react": "^7.34.1",
+    "gh-pages": "^6.3.0",
     "yargs": "^17.7.2"
   }
 }

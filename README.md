@@ -1,7 +1,9 @@
 # Secure Key
 [![CI Pipeline](https://github.com/panchalshubham0608/securekey/actions/workflows/react_test.yml/badge.svg?branch=main)](https://github.com/panchalshubham0608/securekey/actions/workflows/react_test.yml)
+![Deploy React App](https://github.com/panchalshubham0608/securekey/actions/workflows/deploy.yml/badge.svg)
 
-[SecureKey](https://main.d1io7b6nj2kxkf.amplifyapp.com) is a web application that allows you to securely store your secrets. 
+
+[SecureKey](https://panchalshubham0608.github.io/securekey) is a web application that allows you to securely store your secrets. 
 
 ## Features
 - Securely store your secrets
@@ -42,37 +44,27 @@ Please make sure to remember your password. If you forget your password, you wil
      ```sh
      npm start
      ```
-   - The application will be available at `http://localhost:3000`.
+   - The application will be available at `http://localhost:3000/securekey`.
 
 5. **Make Changes and Test Locally**:
-   - Make your changes and test them locally.
-   - Ensure that your branch name is not `test` or `main`.  
+   - Make your changes and test them locally.  
    **Tip:** Use a descriptive branch name for your feature or fix.
 
-6. **Test Your Changes on test environment**:
-   - Once you are satisfied with your changes, push them to the `test` branch:
-     ```sh
-     git checkout -b test
-     git push origin test --force
-     ```
-   - After pushing to the `test` branch, test your changes in the test environment available at [https://test.d1io7b6nj2kxkf.amplifyapp.com](https://test.d1io7b6nj2kxkf.amplifyapp.com).
-
-7. **Create a Pull Request**:
+6. **Create a Pull Request**:
    - Once you have tested your changes, create a pull request from your branch to the `main` branch.
    - Provide a detailed description of the changes and any relevant information.
 
-8. **Wait for Approval**:
+7. **Wait for Approval**:
    - Wait for the pull request to be reviewed and approved by the maintainers.
 
-9. **Production Deployment**:
+8. **Production Deployment**:
     - After your pull request is merged into the `main` branch, a production deployment will be triggered automatically.
 
-10. **Observe Production**:
+9. **Observe Production**:
     - Observe production for any issues with your deployment, if you see something is broken then create a roll-back of your changes.
 
 ## Additional Notes
 
-- **Branch Naming**: Do not use `test` or `main` as branch names. Choose descriptive names for feature branches.
 - **Coding Style**: Follow the project's coding style and conventions.
 - **Testing**: Ensure that all tests pass before submitting your pull request.
 
