@@ -30,8 +30,8 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
         run: |
-          git config --global user.name "panchalshubham0608"
+          git config --global user.name "Shubham Panchal"
           git config --global user.email "panchalshubham0608@gmail.com"
 
-          npx gh-pages -d build -u "panchalshubham0608 panchalshubham0608@gmail.com" -r https://x-access-token:${GH_TOKEN}@github.com/panchalshubham0608/securekey.git
+          npx gh-pages -d build -u "Shubham Panchal panchalshubham0608@gmail.com" -r https://x-access-token:${GH_TOKEN}@github.com/panchalshubham0608/securekey.git
 
