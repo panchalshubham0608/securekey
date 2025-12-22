@@ -1,41 +1,41 @@
 import { useEffect, useState } from "react";
+import { useAppContext } from "../context/AppContext";
 import "../styles/History.css";
+import { formatFirestoreTimestamp } from "../utils/dateutil";
+import { getVaultItemHistory } from "../utils/vault/vaultService";
 import AccountIcon from "./AccountIcon";
 import Loader from "./Loader";
 
 export default function History(props) {
-  // const { } = useAppContext();
+  const { user, mek } = useAppContext();
   const { keyItem, setShowHistoryKeyItem } = props;
-  const [history,] = useState(null);
-  const [loading,] = useState(false);
-  const [error,] = useState("");
+  const [history, setHistory] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    // if (!keyItem) return;
-    // setLoading(true);
-    // getHistory({
-    //   userContext,
-    //   account: keyItem.account,
-    //   username: keyItem.username,
-    // })
-    //   .then((history) => {
-    //     setHistory(history);
-    //   })
-    //   .catch((error) => {
-    //     console.error("Error fetching keys", error);
-    //     if (error.message) {
-    //       setError(error.message);
-    //     } else {
-    //       setError("Error fetching keys");
-    //     }
-    //   })
-    //   .finally(() => {
-    //     setLoading(false);
-    //   });
+    if (!keyItem) return;
+    setLoading(true);
+    getVaultItemHistory({ uid: user.uid, itemId: keyItem.id, mek })
+      .then((history) => {
+        setHistory(history);
+      })
+      .catch((error) => {
+        console.error("Error fetching keys", error);
+        if (error.message) {
+          setError(error.message);
+        } else {
+          setError("Error fetching keys");
+        }
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, [keyItem]);
 
   return (
     <div className="history-container merriweather-light">
+      <Loader visible={loading} />
       <div className="d-flex align-items-center justify-content-between">
         <h4 className="m-0">History</h4>
         <button
@@ -61,26 +61,22 @@ export default function History(props) {
       </div>
       <hr />
       {error && <div className="alert alert-danger">{error}</div>}
-      {loading ? (
-        <Loader />
-      ) : (
-        <div className="mt-3">
-          {history && history.length ? (
-            <div className="list">
-              {history.map((lp) => (
-                <div key={lp.password} className="list-item border p-3 mt-3">
-                  <h5 className="text-break">{lp.password}</h5>
-                  <p className="text-muted m-0">{lp.changedAt}</p>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div>
-              <p className="text-muted text-center">Nothing here yet!</p>
-            </div>
-          )}
-        </div>
-      )}
+      <div className="mt-3">
+        {history && history.length ? (
+          <div className="list">
+            {history.map((lp) => (
+              <div key={lp.password} className="list-item border p-3 mt-3">
+                <h5 className="text-break">{lp.password}</h5>
+                <p className="text-muted m-0">{formatFirestoreTimestamp(lp.changedAt)}</p>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div>
+            <p className="text-muted text-center">Nothing here yet!</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

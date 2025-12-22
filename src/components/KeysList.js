@@ -10,195 +10,161 @@ import History from "./History";
 import KeyItem from "./KeyItem";
 import Loader from "./Loader";
 
-export default function KeysList(props) {
+export default function KeysList({ setEditItem }) {
   const { user } = useAppContext();
   const { alert, showAlert } = useAlert();
+
   const [keys, setKeys] = useState([]);
   const [filteredKeys, setFilteredKeys] = useState([]);
-
   const [searchText, setSearchText] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [openMenuIndex, setOpenMenuIndex] = useState(-1);
   const [historyKeyItem, setShowHistoryKeyItem] = useState(null);
-
   const [loading, setLoading] = useState(false);
   const [navigate, setNavigate] = useState(null);
 
-  // register a click event listener to close the menu
+  /** ---------- EFFECT: Close menu on outside click ---------- **/
   useEffect(() => {
-    document.addEventListener("click", (event) => {
-      // if the click is inside the key container, do nothing
-      if (event.target.closest(".key-container")) {
-        return;
+    const handleClickOutside = (event) => {
+      if (!event.target.closest(".key-container")) {
+        setSelectedIndex(-1);
+        setOpenMenuIndex(-1);
       }
-      setSelectedIndex(-1);
-      setOpenMenuIndex(-1);
-    });
+    };
+
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
   }, []);
 
-  // function to fetch passkeys
-  const fetchPassKeys = useCallback(() => {
+  /** ---------- Fetch Vault Items ---------- **/
+  const fetchVaultItems = useCallback(async () => {
     setLoading(true);
-    listVaultItems({ uid: user.uid })
-      .then((keys) => {
-        // sort keys
-        keys.sort(
-          (a, b) =>
-            a.account.localeCompare(b.account) ||
-            a.username.localeCompare(b.username)
-        );
-        setKeys(keys);
-        setFilteredKeys(keys);
-      })
-      .catch((error) => {
-        console.error("Error fetching keys", error);
-        if (error.message) {
-          showAlert(error.message, "error");
-        } else {
-          showAlert("Error fetching keys", "error");
-        }
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  }, []);
-
-  // fetch passkeys when the component mounts
-  useEffect(fetchPassKeys, [fetchPassKeys]);
-
-  // debounced search
-  // eslint-disable-next-line
-  const debouncedSearch = useCallback(
-    debounce((searchText) => {
-      setFilteredKeys(
-        keys.filter(
-          (key) =>
-            key.account.toLowerCase().includes(searchText.toLowerCase()) ||
-            key.username.toLowerCase().includes(searchText.toLowerCase())
-        )
+    try {
+      const vaultKeys = await listVaultItems({ uid: user.uid });
+      vaultKeys.sort(
+        (a, b) =>
+          a.account.localeCompare(b.account) ||
+          a.username.localeCompare(b.username)
       );
-    }, 500),
-    [keys]
-  );
+      setKeys(vaultKeys);
+      setFilteredKeys(vaultKeys);
+    } catch (error) {
+      console.error("Error fetching keys", error);
+      showAlert(error.message || "Error fetching keys", "error");
+    } finally {
+      setLoading(false);
+    }
+  }, [user.uid, showAlert]);
 
   useEffect(() => {
-    // do a debounced search
-    debouncedSearch(searchText);
-  }, [searchText, debouncedSearch]);
+    fetchVaultItems();
+  }, [fetchVaultItems]);
 
-  // function to show the key body
+  /** ---------- Debounced search ---------- **/
+  useEffect(() => {
+    const debounced = debounce((text) => {
+      const filtered = keys.filter(
+        (key) =>
+          key.account.toLowerCase().includes(text.toLowerCase()) ||
+          key.username.toLowerCase().includes(text.toLowerCase())
+      );
+      setFilteredKeys(filtered);
+    }, 500);
+
+    debounced(searchText);
+  }, [searchText, keys]);
+
+  /** ---------- Handlers ---------- **/
   const handleShowKeyBody = useCallback(
-    (index) => {
-      if (selectedIndex !== index) {
-        setSelectedIndex(index);
-      }
-    },
-    [selectedIndex]
+    (index) => setSelectedIndex(index),
+    []
   );
 
-  // function to hide the key body
-  const handleHideKeyBody = useCallback(() => {
-    setSelectedIndex(-1);
-  }, []);
+  const handleHideKeyBody = useCallback(() => setSelectedIndex(-1), []);
 
-  // function to toggle the menu
   const handleToggleMenu = useCallback((e, index) => {
-    // don't show the key body when the menu is clicked
     e.preventDefault();
     e.stopPropagation();
-    // toggle the menu
-    setOpenMenuIndex(index);
+    setOpenMenuIndex((prev) => (prev === index ? -1 : index));
   }, []);
 
-  // function to edit a passkey
   const handleEditKey = useCallback(
     (key) => {
-      // props.setEditItem(key);
-      setNavigate(<Navigate to={`/edit/${key.id}`} />);
+      setEditItem?.(key);
+      setNavigate(<Navigate to={`/edit/${key.id}`} replace />);
     },
-    [props]
+    [setEditItem]
   );
 
-  // function to delete a passkey
   const handleDeleteKey = useCallback(
-    (key) => {
+    async (key) => {
       setLoading(true);
-      deleteVaultItem({ uid: user.uid, itemId: key.id })
-        .then(() => {
-          showAlert("Entry deleted successfully", "success");
-          fetchPassKeys();
-        })
-        .catch((error) => {
-          console.error("Error deleting passkey", error);
-          if (error.message) {
-            showAlert(error.message, "error");
-          } else {
-            showAlert("Error deleting passkey", "error");
-          }
-        })
-        .finally(() => {
-          setLoading(false);
-        });
+      try {
+        await deleteVaultItem({ uid: user.uid, itemId: key.id });
+        showAlert("Entry deleted successfully", "success");
+        fetchVaultItems();
+      } catch (error) {
+        console.error("Error deleting passkey", error);
+        showAlert(error.message || "Error deleting passkey", "error");
+      } finally {
+        setLoading(false);
+      }
     },
-    [fetchPassKeys]
+    [user.uid, showAlert, fetchVaultItems]
   );
 
   const handleShowHistory = useCallback((key) => {
     setShowHistoryKeyItem(key);
   }, []);
 
-  // if navigate is set, return the Navigate component
-  if (navigate) {
-    return navigate;
-  }
+  /** ---------- JSX ---------- **/
+  if (navigate) return navigate;
 
   return (
-    <div>
+    <div className="keys-list-page">
       <Alert alert={alert} />
       <Loader visible={loading} />
+
       <div className="keys-list-container">
-        <form method="post" action="#" className="mb-3">
-          <div className="d-flex align-items-center justify-content-between search-input-container">
-            <i className="fa-solid fa-magnifying-glass"></i>
+        {/* Search */}
+        <form className="mb-3">
+          <div className="search-input-container d-flex align-items-center">
+            <i className="fa-solid fa-magnifying-glass" />
             <input
               type="text"
               className="form-control merriweather-light"
               placeholder="Search"
-              data-testid="search-input"
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
-              name="searchText"
             />
-            <button
-              type="button"
-              className="btn"
-              style={{
-                visibility: searchText ? "visible" : "hidden",
-              }}
-              onClick={() => setSearchText("")}
-            >
-              <i className="fa-solid fa-times"></i>
-            </button>
+            {searchText && (
+              <button
+                type="button"
+                className="btn"
+                onClick={() => setSearchText("")}
+              >
+                <i className="fa-solid fa-times" />
+              </button>
+            )}
           </div>
         </form>
-        <div>
-          <div className="d-flex align-items-center justify-content-between mb-3">
-            <p
-              className="m-0 merriweather-light"
-              data-testid="keys-list-count"
-            >
-              <strong>Accounts ({filteredKeys.length})</strong>
-            </p>
-            <button
-              className="btn text-primary merriweather-light"
-              onClick={() => setNavigate(<Navigate to={"/add"} />)}
-            >
-              <i className="fa-solid fa-plus"></i> Add
-            </button>
-          </div>
-          {filteredKeys.map((key, index) => (
+
+        {/* Header */}
+        <div className="d-flex align-items-center justify-content-between mb-3">
+          <p className="m-0">Accounts ({filteredKeys.length})</p>
+          <button
+            className="btn text-primary"
+            onClick={() => setNavigate(<Navigate to="/add" replace />)}
+          >
+            <i className="fa-solid fa-plus" /> Add
+          </button>
+        </div>
+
+        {/* Keys List */}
+        {filteredKeys.length > 0 ? (
+          filteredKeys.map((key, index) => (
             <KeyItem
-              key={`${key.account}_${key.username}`}
+              key={key.id || `${key.account}_${key.username}`}
               keyItem={key}
               selected={selectedIndex === index}
               handleShowKeyBody={handleShowKeyBody}
@@ -210,18 +176,19 @@ export default function KeysList(props) {
               handleShowHistory={handleShowHistory}
               index={index}
             />
-          ))}
-          {filteredKeys.length === 0 && (
-            <p
-              className="text-center merriweather-light"
-              data-testid="keys-list-no-keys"
-            >
-              No keys found
-            </p>
-          )}
-        </div>
+          ))
+        ) : (
+          <p className="text-center merriweather-light">No keys found</p>
+        )}
       </div>
-      {historyKeyItem && <History keyItem={historyKeyItem} setShowHistoryKeyItem={setShowHistoryKeyItem} />}
+
+      {/* History Modal */}
+      {historyKeyItem && (
+        <History
+          keyItem={historyKeyItem}
+          setShowHistoryKeyItem={setShowHistoryKeyItem}
+        />
+      )}
     </div>
   );
 }

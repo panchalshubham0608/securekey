@@ -200,3 +200,41 @@ export const deleteVaultItem = async ({ uid, itemId }) => {
   const ref = vaultsDocReference({ uid, itemId });
   await deleteDoc(ref);
 };
+
+/**
+ * Retrieves the history of passwords for a vault item
+ * @param {string} uid - User ID
+ * @param {string} itemId - Vault item ID
+ * @param {Uint8Array} mek - Master Encryption Key
+ * @returns {Promise<Array<{password: string, changedAt: number}>>}
+ */
+export const getVaultItemHistory = async ({ uid, itemId, mek }) => {
+  try {
+    const itemRef = vaultsDocReference({ uid, itemId });
+    const itemSnap = await getDoc(itemRef);
+
+    if (!itemSnap.exists()) {
+      throw new Error("Vault item not found");
+    }
+
+    const data = itemSnap.data();
+    if (!data.history || !Array.isArray(data.history)) {
+      return [];
+    }
+
+    // Decrypt all password entries in history
+    const decryptedHistory = await Promise.all(
+      data.history.map(async (entry) => {
+        return {
+          password: await decryptWithMEK({ encrypted: entry.password, mek }),
+          changedAt: entry.updatedAt
+        };
+      })
+    );
+
+    return decryptedHistory.reverse();
+  } catch (error) {
+    console.error("Error fetching vault history", error);
+    throw error;
+  }
+};
