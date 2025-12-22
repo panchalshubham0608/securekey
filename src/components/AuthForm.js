@@ -21,6 +21,7 @@ export default function AuthForm(props) {
   });
 
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberDevice, setRememberDevice] = useState(!!localStorage.getItem("encryptedMEK"));
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [navigate, setNavigate] = useState(null);
@@ -103,11 +104,12 @@ export default function AuthForm(props) {
       let method = props.register ? secureSignUp : secureSignIn;
       method({
         email: credentials.email,
-        password: credentials.password
-      }).then(() => {
+        password: credentials.password,
+        rememberDevice,
+      }).then(authenticatedUser => {
         let userForContext = createUserForContext({
-          username: credentials.email,
-          password: credentials.password
+          username: authenticatedUser.user.email,
+          password: authenticatedUser.mek
         });
         userContext.setUser(userForContext);
         setNavigate(<Navigate to="/" />);
@@ -182,6 +184,11 @@ export default function AuthForm(props) {
             {loading && <span className="spinner-border spinner-border mr-3"></span>}
             {register ? "Register" : "Login"}
           </button>
+        </div>
+        <div className="mb-3 form-check">
+          <input type="checkbox" className="form-check-input" id="rememberDevice"
+            value={rememberDevice} checked={rememberDevice} onChange={e => setRememberDevice(e.target.checked)} />
+          <label htmlFor="rememberDevice" className="form-check-label">Remember this device</label>
         </div>
         {register && <p>Already have an account? <Link to="/login">Login</Link></p>}
         {!register && <p>Don&apos;t have an account? <Link to="/register">Signup</Link></p>}

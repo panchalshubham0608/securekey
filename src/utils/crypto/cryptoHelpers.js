@@ -34,6 +34,14 @@ export const generateSalt = () => {
   return crypto.getRandomValues(new Uint8Array(16));
 };
 
+export const generateDeviceKey = async () => {
+  return crypto.subtle.generateKey(
+    { name: "AES-GCM", length: 256 },
+    true, // extractable only if needed
+    ["encrypt", "decrypt"]
+  );
+};
+
 /* =========================
    Derive KEK from password
 ========================= */
@@ -82,6 +90,19 @@ export const encryptMEK = async (mek, kek) => {
   };
 };
 
+export const encryptMEKForDevice = async ({ mek, deviceKey }) => {
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ciphertext = await crypto.subtle.encrypt(
+    { name: "AES-GCM", iv },
+    deviceKey,
+    mek.buffer
+  );
+  return {
+    ciphertext: toBase64(ciphertext),
+    iv: toBase64(iv)
+  };
+};
+
 /* =========================
    Decrypt MEK
 ========================= */
@@ -96,4 +117,25 @@ export const decryptMEK = async (encryptedMEK, kek) => {
   );
 
   return new Uint8Array(plaintext);
+};
+
+/**
+ * Decrypts MEK previously encrypted for device
+ * @param {{ ciphertext: string, iv: string }} encryptedMEK
+ * @param {CryptoKey} deviceKey - AES-GCM key used to encrypt MEK
+ * @returns {Uint8Array} decrypted MEK
+ */
+export const decryptMEKFromDevice = async ({ encryptedMEK, deviceKey }) => {
+  const { ciphertext, iv } = encryptedMEK;
+
+  const decryptedBuffer = await crypto.subtle.decrypt(
+    {
+      name: "AES-GCM",
+      iv: fromBase64(iv)
+    },
+    deviceKey,
+    fromBase64(ciphertext)
+  );
+
+  return new Uint8Array(decryptedBuffer);
 };

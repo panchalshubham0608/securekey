@@ -50,7 +50,8 @@ export const unlockVault = async ({ user, password }) => {
   const snap = await getDoc(cryptoRef);
 
   if (!snap.exists()) {
-    throw new Error("Crypto metadata not found");
+    // For existing users, who are already registered before migration
+    return await initializeVault({ uid: user.uid, password });
   }
 
   const {
