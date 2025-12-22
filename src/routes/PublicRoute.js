@@ -1,15 +1,20 @@
-import { useContext } from "react";
-import { Navigate } from "react-router-dom";
-import UserContext from "../context/UserContext";
+import { Navigate, Outlet } from "react-router-dom";
+import Loader from "../components/Loader";
+import { useAppContext } from "../context/AppContext";
 
-const PublicRoute = ({ children }) => {
-  const { user } = useContext(UserContext);
+export default function PublicRoute() {
+  const {
+    isAuthenticated,
+    vaultUnlocked,
+    authLoading
+  } = useAppContext();
 
-  if (user) {
-    return <Navigate to="/dashboard" replace />;
+  if (authLoading) return <Loader visible={true} />
+
+  // User fully logged in & unlocked → block public pages
+  if (isAuthenticated && vaultUnlocked) {
+    return <Navigate to="/" replace />;
   }
 
-  return children;
-};
-
-export default PublicRoute;
+  return <Outlet />;
+}

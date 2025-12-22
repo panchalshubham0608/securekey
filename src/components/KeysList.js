@@ -1,16 +1,15 @@
-import React, { useCallback, useContext, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
-import UserContext from "../context/UserContext";
+import { useAppContext } from "../context/AppContext";
 import "../styles/KeysList.css";
 import debounce from "../utils/debounce";
-import { deletePassKey, getPassKeys } from "../utils/firestoredb";
 import History from "./History";
 import KeyItem from "./KeyItem";
 import Loader from "./Loader";
 import Navbar from "./Navbar";
 
 export default function KeysList(props) {
-  const userContext = useContext(UserContext);
+  const { } = useAppContext();
   const [keys, setKeys] = useState([]);
   const [filteredKeys, setFilteredKeys] = useState([]);
 
@@ -39,30 +38,30 @@ export default function KeysList(props) {
 
   // function to fetch passkeys
   const fetchPassKeys = useCallback(() => {
-    setError("");
-    setLoading(true);
-    getPassKeys({ userContext })
-      .then((keys) => {
-        // sort keys
-        keys.sort(
-          (a, b) =>
-            a.account.localeCompare(b.account) ||
-            a.username.localeCompare(b.username)
-        );
-        setKeys(keys);
-        setFilteredKeys(keys);
-      })
-      .catch((error) => {
-        console.error("Error fetching keys", error);
-        if (error.message) {
-          setError(error.message);
-        } else {
-          setError("Error fetching keys");
-        }
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+    // setError("");
+    // setLoading(true);
+    // getPassKeys({ userContext })
+    //   .then((keys) => {
+    //     // sort keys
+    //     keys.sort(
+    //       (a, b) =>
+    //         a.account.localeCompare(b.account) ||
+    //         a.username.localeCompare(b.username)
+    //     );
+    //     setKeys(keys);
+    //     setFilteredKeys(keys);
+    //   })
+    //   .catch((error) => {
+    //     console.error("Error fetching keys", error);
+    //     if (error.message) {
+    //       setError(error.message);
+    //     } else {
+    //       setError("Error fetching keys");
+    //     }
+    //   })
+    //   .finally(() => {
+    //     setLoading(false);
+    //   });
   }, []);
 
   // fetch passkeys when the component mounts
@@ -124,29 +123,29 @@ export default function KeysList(props) {
   // function to delete a passkey
   const handleDeleteKey = useCallback(
     (key) => {
-      setError("");
-      setSuccess("");
-      setLoading(true);
-      deletePassKey({
-        userContext,
-        account: key.account,
-        username: key.username,
-      })
-        .then(() => {
-          setSuccess("Passkey deleted successfully");
-          fetchPassKeys();
-        })
-        .catch((error) => {
-          console.error("Error deleting passkey", error);
-          if (error.message) {
-            setError(error.message);
-          } else {
-            setError("Error deleting passkey");
-          }
-        })
-        .finally(() => {
-          setLoading(false);
-        });
+      // setError("");
+      // setSuccess("");
+      // setLoading(true);
+      // deletePassKey({
+      //   userContext,
+      //   account: key.account,
+      //   username: key.username,
+      // })
+      //   .then(() => {
+      //     setSuccess("Passkey deleted successfully");
+      //     fetchPassKeys();
+      //   })
+      //   .catch((error) => {
+      //     console.error("Error deleting passkey", error);
+      //     if (error.message) {
+      //       setError(error.message);
+      //     } else {
+      //       setError("Error deleting passkey");
+      //     }
+      //   })
+      //   .finally(() => {
+      //     setLoading(false);
+      //   });
     },
     [fetchPassKeys]
   );

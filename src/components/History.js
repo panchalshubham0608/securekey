@@ -1,39 +1,38 @@
-import React, { useEffect, useState, useContext } from "react";
-import UserContext from "../context/UserContext";
-import { getHistory } from "../utils/firestoredb";
-import AccountIcon from "./AccountIcon";
+import { useEffect, useState } from "react";
+import { useAppContext } from "../context/AppContext";
 import "../styles/History.css";
+import AccountIcon from "./AccountIcon";
 import Loader from "./Loader";
 
 export default function History(props) {
-  const userContext = useContext(UserContext);
+  const { } = useAppContext();
   const { keyItem, setShowHistoryKeyItem } = props;
   const [history, setHistory] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (!keyItem) return;
-    setLoading(true);
-    getHistory({
-      userContext,
-      account: keyItem.account,
-      username: keyItem.username,
-    })
-      .then((history) => {
-        setHistory(history);
-      })
-      .catch((error) => {
-        console.error("Error fetching keys", error);
-        if (error.message) {
-          setError(error.message);
-        } else {
-          setError("Error fetching keys");
-        }
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+    // if (!keyItem) return;
+    // setLoading(true);
+    // getHistory({
+    //   userContext,
+    //   account: keyItem.account,
+    //   username: keyItem.username,
+    // })
+    //   .then((history) => {
+    //     setHistory(history);
+    //   })
+    //   .catch((error) => {
+    //     console.error("Error fetching keys", error);
+    //     if (error.message) {
+    //       setError(error.message);
+    //     } else {
+    //       setError("Error fetching keys");
+    //     }
+    //   })
+    //   .finally(() => {
+    //     setLoading(false);
+    //   });
   }, [keyItem]);
 
   return (

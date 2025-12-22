@@ -1,32 +1,24 @@
-import { onAuthStateChanged } from "firebase/auth";
-import { useContext, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import UserContext from "../context/UserContext";
-import { readMEKFromDevice } from "../utils/auth/mek";
-import { createUserForContext } from "../utils/contextutil";
-import { auth } from "../utils/firebase/firebase";
+import { Navigate, Outlet } from "react-router-dom";
+import Loader from "../components/Loader";
+import { useAppContext } from "../context/AppContext";
 
-const ProtectedRoute = ({ children }) => {
-  const navigate = useNavigate();
-  const userContext = useContext(UserContext);
+export default function ProtectedRoute() {
+  const {
+    isAuthenticated,
+    vaultUnlocked,
+    authLoading
+  } = useAppContext();
 
-  useEffect(() => {
-    // If the user is already present in the context, simply proceed
-    if (userContext.user) return;
+  // Wait until auth state is known
+  if (authLoading) return <Loader visible={true} />
 
-    // If the user is authenticated and we have MEK persisted locally, build user's context
-    const unsub = onAuthStateChanged(auth, async (user) => {
-      if (!user) return navigate("/", { replace: true });  // Redirect to home if not logged in
-      const mek = readMEKFromDevice();
-      if (!mek) return navigate("/", { replace: true });  // Redirect to home if we cannot retrieve MEK
-      const userForContext = createUserForContext({ username: user.email, password: mek });
-      userContext.setUser(userForContext);
-    });
+  if (!isAuthenticated) {
+    return <Navigate to="/welcome" replace />;
+  }
 
-    return () => unsub();
-  }, [navigate]);
+  if (!vaultUnlocked) {
+    return <Navigate to="/welcome" replace />;
+  }
 
-  return <>{children}</>;
-};
-
-export default ProtectedRoute;
+  return <Outlet />;
+}

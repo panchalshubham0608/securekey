@@ -14,5 +14,5 @@ export const secureSignIn = async ({ email, password, rememberDevice }) => {
     await saveMEKToDevice({ mek });
   }
 
-  return { user, mek };
+  return { mek };
 };

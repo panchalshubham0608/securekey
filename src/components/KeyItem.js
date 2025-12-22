@@ -1,12 +1,12 @@
-import React, { useContext, useEffect, useState } from "react";
-import UserContext from "../context/UserContext";
-import { getPassKeyValue } from "../utils/firestoredb";
+import { useEffect, useState } from "react";
+import { useAppContext } from "../context/AppContext";
 import { str2color } from "../utils/str2color";
 import AccountIcon from "./AccountIcon";
 import Loader from "./Loader";
 
 export default function KeyItem(props) {
-  const userContext = useContext(UserContext);
+  // const userContext = useContext(UserContext);
+  const { } = useAppContext();
   const {
     keyItem,
     selected,
@@ -28,41 +28,41 @@ export default function KeyItem(props) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
-    if (!selected) return;
-    setError("");
-    setLoading(true);
-    getPassKeyValue({
-      userContext,
-      account: keyItem.account,
-      username: keyItem.username,
-    })
-      .then((password) => {
-        // set password and hide it after 30 seconds
-        setPassword(password);
-        setTimer(30);
-        let interval = setInterval(() => {
-          setTimer((timer) => {
-            let newTimer = timer - 1;
-            if (newTimer <= 0) {
-              clearInterval(interval);
-              handleHideKeyBody(index);
-              return 0;
-            }
-            return newTimer;
-          });
-        }, 1000);
-      })
-      .catch((error) => {
-        console.log("Error getting password", error);
-        if (error.message) {
-          setError(error.message);
-        } else {
-          setError("Error: Could not get password");
-        }
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+    // if (!selected) return;
+    // setError("");
+    // setLoading(true);
+    // getPassKeyValue({
+    //   userContext,
+    //   account: keyItem.account,
+    //   username: keyItem.username,
+    // })
+    //   .then((password) => {
+    //     // set password and hide it after 30 seconds
+    //     setPassword(password);
+    //     setTimer(30);
+    //     let interval = setInterval(() => {
+    //       setTimer((timer) => {
+    //         let newTimer = timer - 1;
+    //         if (newTimer <= 0) {
+    //           clearInterval(interval);
+    //           handleHideKeyBody(index);
+    //           return 0;
+    //         }
+    //         return newTimer;
+    //       });
+    //     }, 1000);
+    //   })
+    //   .catch((error) => {
+    //     console.log("Error getting password", error);
+    //     if (error.message) {
+    //       setError(error.message);
+    //     } else {
+    //       setError("Error: Could not get password");
+    //     }
+    //   })
+    //   .finally(() => {
+    //     setLoading(false);
+    //   });
   }, [selected, keyItem.account, keyItem.username, handleHideKeyBody, index]);
 
   // utility function to copy password to clipboard

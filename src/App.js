@@ -1,54 +1,100 @@
-import { useState } from "react";
+import { onAuthStateChanged } from "firebase/auth";
+import { useEffect, useState } from "react";
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import "./App.css";
 import AuthForm from "./components/AuthForm";
 import Dashboard from "./components/Dashboard";
 import Home from "./components/Home";
-import UserContext from "./context/UserContext";
+import { AppContext } from "./context/AppContext";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import PublicRoute from "./routes/PublicRoute";
+import { clearStorage, readMEKFromDevice } from "./utils/auth/mek";
+import { auth } from "./utils/firebase/firebase";
 
 function App() {
   const [user, setUser] = useState(null);
-  const contextValue = { user, setUser };
+  const [authLoading, setAuthLoading] = useState(true);
+  const [mek, setMek] = useState(null);
+  const [vaultUnlocked, setVaultUnlocked] = useState(false);
+
+  // Listen to auth state
+  useEffect(() => {
+    setAuthLoading(true);
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      setUser(firebaseUser);
+      setAuthLoading(false);
+
+      if (firebaseUser) {
+        // Try auto-unlock vault
+        const deviceMek = await readMEKFromDevice();
+        if (deviceMek) {
+          setMek(deviceMek);
+          setVaultUnlocked(true);
+        }
+      } else {
+        // Logout cleanup
+        setMek(null);
+        setVaultUnlocked(false);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  // Called after password or biometric unlock
+  const unlockVault = (mek) => {
+    setMek(mek);
+    setVaultUnlocked(true);
+  };
+
+  // Explicit lock
+  const lockVault = () => {
+    setMek(null);
+    setVaultUnlocked(false);
+    clearStorage();
+  };
+
+  // Post logout, vault will be locked
+  const logout = async () => {
+    await auth.signOut();
+    lockVault();
+  };
+
+  const contextValue = {
+    user,
+    authLoading,
+    setAuthLoading,
+    isAuthenticated: !!user,
+
+    mek,
+    vaultUnlocked,
+
+    unlockVault,
+    lockVault,
+    logout
+  };
 
   return (
     <div className="App">
-      <UserContext.Provider value={contextValue}>
+      <AppContext.Provider value={contextValue}>
         <Router basename="/securekey">
           <Routes>
-            <Route
-              path="/login"
-              element={
-                <PublicRoute>
-                  <AuthForm register={false} />
-                </PublicRoute>
-              }
-            />
-            <Route
-              path="/register"
-              element={
-                <PublicRoute>
-                  <AuthForm register={true} />
-                </PublicRoute>
-              }
-            />
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute>
-                  <Dashboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/"
-              element={
-                <PublicRoute><Home /></PublicRoute>
-              } />
+
+            {/* Public routes */}
+            <Route element={<PublicRoute />}>
+              <Route path="/login" element={<AuthForm register={false} />} />
+              <Route path="/register" element={<AuthForm register={true} />} />
+              <Route path="/welcome" element={<Home />} />
+            </Route>
+
+            {/* Private routes */}
+            <Route element={<ProtectedRoute />}>
+              <Route path="/" element={<Dashboard />} />
+            </Route>
+
           </Routes>
         </Router>
-      </UserContext.Provider>
+      </AppContext.Provider>
     </div>
   );
 }

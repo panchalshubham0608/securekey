@@ -1,18 +1,16 @@
-import { useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import Logo from "../assets/images/logo.svg";
-import UserContext from "../context/UserContext";
+import { useAppContext } from "../context/AppContext";
 import "../styles/Navbar.css";
-import { signOut } from "../utils/firebase";
 
 export default function Navbar() {
   const navigate = useNavigate();
-  const userContext = useContext(UserContext);
-  const handleSignOut = () => {
-    signOut();
-    userContext.setUser(null);
-    navigate("/", { replace: true });
-  };
+  const { logout } = useAppContext();
+
+  const handleSignout = async () => {
+    await logout();
+    navigate("/welcome", { replace: true });
+  }
 
   return (
     <div className="custom-navbar mb-3 d-flex align-items-center justify-content-between" data-testid="navbar">
@@ -22,7 +20,7 @@ export default function Navbar() {
       </div>
       <div>
         <button className="btn text-primary merriweather-light" data-testid="logout-button"
-          onClick={handleSignOut}>Logout</button>
+          onClick={handleSignout}>Logout</button>
       </div>
     </div>
   );
