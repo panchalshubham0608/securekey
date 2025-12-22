@@ -1,11 +1,11 @@
-import React, { useCallback, useState, useContext } from "react";
-import "../styles/AuthForm.css";
-import { Link } from "react-router-dom";
-import { Navigate } from "react-router-dom";
+import { useCallback, useContext, useState } from "react";
+import { Link, Navigate } from "react-router-dom";
 import Logo from "../assets/images/logo.svg";
 import UserContext from "../context/UserContext";
+import "../styles/AuthForm.css";
+import { secureSignIn } from "../utils/auth/secureSignIn";
+import { secureSignUp } from "../utils/auth/secureSignUp";
 import { createUserForContext } from "../utils/contextutil";
-import { signIn, signUp } from "../utils/firebase";
 
 export default function AuthForm(props) {
   const userContext = useContext(UserContext);
@@ -100,7 +100,7 @@ export default function AuthForm(props) {
     if (validateFields()) {
       setLoading(true);
       setError("");
-      let method = props.register ? signUp : signIn;
+      let method = props.register ? secureSignUp : secureSignIn;
       method({
         email: credentials.email,
         password: credentials.password
