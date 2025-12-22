@@ -15,9 +15,11 @@
 .account-provider {
     padding: 10px;
 }
+
 .account-provider h4 {
     font-size: 20px;
 }
+
 .account-provider img {
     width: 40px;
     height: 40px;
@@ -27,4 +29,25 @@
 .account-provider:hover {
     cursor: pointer;
     background-color: #f2f4f6;
+}
+
+.dropdown-scrollable {
+    max-height: 250px;
+    /* approximate height for 5 items */
+    overflow-y: auto;
+    border: 1px solid #ccc;
+    border-radius: 0.25rem;
+    background: #fff;
+    z-index: 1000;
+    /* ensure it floats above other elements */
+    position: absolute;
+}
+
+.dropdown-scrollable .dropdown-item {
+    cursor: pointer;
+    padding: 0.5rem 1rem;
+}
+
+.dropdown-scrollable .dropdown-item:hover {
+    background-color: #f0f0f0;
 }

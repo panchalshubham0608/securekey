@@ -1,15 +1,18 @@
 import { useCallback, useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { useAppContext } from "../context/AppContext";
+import { useAlert } from "../hooks/useAlert";
 import "../styles/KeysList.css";
 import debounce from "../utils/debounce";
+import { deleteVaultItem, listVaultItems } from "../utils/vault/vaultService";
+import Alert from "./Alert";
 import History from "./History";
 import KeyItem from "./KeyItem";
 import Loader from "./Loader";
-import Navbar from "./Navbar";
 
 export default function KeysList(props) {
-  const { } = useAppContext();
+  const { user } = useAppContext();
+  const { alert, showAlert } = useAlert();
   const [keys, setKeys] = useState([]);
   const [filteredKeys, setFilteredKeys] = useState([]);
 
@@ -18,10 +21,7 @@ export default function KeysList(props) {
   const [openMenuIndex, setOpenMenuIndex] = useState(-1);
   const [historyKeyItem, setShowHistoryKeyItem] = useState(null);
 
-  const [success, setSuccess] = useState("");
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-
   const [navigate, setNavigate] = useState(null);
 
   // register a click event listener to close the menu
@@ -38,30 +38,29 @@ export default function KeysList(props) {
 
   // function to fetch passkeys
   const fetchPassKeys = useCallback(() => {
-    // setError("");
-    // setLoading(true);
-    // getPassKeys({ userContext })
-    //   .then((keys) => {
-    //     // sort keys
-    //     keys.sort(
-    //       (a, b) =>
-    //         a.account.localeCompare(b.account) ||
-    //         a.username.localeCompare(b.username)
-    //     );
-    //     setKeys(keys);
-    //     setFilteredKeys(keys);
-    //   })
-    //   .catch((error) => {
-    //     console.error("Error fetching keys", error);
-    //     if (error.message) {
-    //       setError(error.message);
-    //     } else {
-    //       setError("Error fetching keys");
-    //     }
-    //   })
-    //   .finally(() => {
-    //     setLoading(false);
-    //   });
+    setLoading(true);
+    listVaultItems({ uid: user.uid })
+      .then((keys) => {
+        // sort keys
+        keys.sort(
+          (a, b) =>
+            a.account.localeCompare(b.account) ||
+            a.username.localeCompare(b.username)
+        );
+        setKeys(keys);
+        setFilteredKeys(keys);
+      })
+      .catch((error) => {
+        console.error("Error fetching keys", error);
+        if (error.message) {
+          showAlert(error.message, "error");
+        } else {
+          showAlert("Error fetching keys", "error");
+        }
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, []);
 
   // fetch passkeys when the component mounts
@@ -114,8 +113,8 @@ export default function KeysList(props) {
   // function to edit a passkey
   const handleEditKey = useCallback(
     (key) => {
-      props.setEditItem(key);
-      setNavigate(<Navigate to={"/add-key"} />);
+      // props.setEditItem(key);
+      setNavigate(<Navigate to={`/edit/${key.id}`} />);
     },
     [props]
   );
@@ -123,29 +122,23 @@ export default function KeysList(props) {
   // function to delete a passkey
   const handleDeleteKey = useCallback(
     (key) => {
-      // setError("");
-      // setSuccess("");
-      // setLoading(true);
-      // deletePassKey({
-      //   userContext,
-      //   account: key.account,
-      //   username: key.username,
-      // })
-      //   .then(() => {
-      //     setSuccess("Passkey deleted successfully");
-      //     fetchPassKeys();
-      //   })
-      //   .catch((error) => {
-      //     console.error("Error deleting passkey", error);
-      //     if (error.message) {
-      //       setError(error.message);
-      //     } else {
-      //       setError("Error deleting passkey");
-      //     }
-      //   })
-      //   .finally(() => {
-      //     setLoading(false);
-      //   });
+      setLoading(true);
+      deleteVaultItem({ uid: user.uid, itemId: key.id })
+        .then(() => {
+          showAlert("Entry deleted successfully", "success");
+          fetchPassKeys();
+        })
+        .catch((error) => {
+          console.error("Error deleting passkey", error);
+          if (error.message) {
+            showAlert(error.message, "error");
+          } else {
+            showAlert("Error deleting passkey", "error");
+          }
+        })
+        .finally(() => {
+          setLoading(false);
+        });
     },
     [fetchPassKeys]
   );
@@ -161,18 +154,9 @@ export default function KeysList(props) {
 
   return (
     <div>
+      <Alert alert={alert} />
+      <Loader visible={loading} />
       <div className="keys-list-container">
-        <Navbar />
-        {error && (
-          <div className="alert alert-danger" data-testid="keys-list-error">
-            {error}
-          </div>
-        )}
-        {success && (
-          <div className="alert alert-success" data-testid="keys-list-success">
-            {success}
-          </div>
-        )}
         <form method="post" action="#" className="mb-3">
           <div className="d-flex align-items-center justify-content-between search-input-container">
             <i className="fa-solid fa-magnifying-glass"></i>
@@ -197,49 +181,45 @@ export default function KeysList(props) {
             </button>
           </div>
         </form>
-        {loading ? (
-          <Loader />
-        ) : (
-          <div>
-            <div className="d-flex align-items-center justify-content-between mb-3">
-              <p
-                className="m-0 merriweather-light"
-                data-testid="keys-list-count"
-              >
-                <strong>Accounts ({filteredKeys.length})</strong>
-              </p>
-              <button
-                className="btn text-primary merriweather-light"
-                onClick={() => setNavigate(<Navigate to={"/add-key"} />)}
-              >
-                <i className="fa-solid fa-plus"></i> Add
-              </button>
-            </div>
-            {filteredKeys.map((key, index) => (
-              <KeyItem
-                key={`${key.account}_${key.username}`}
-                keyItem={key}
-                selected={selectedIndex === index}
-                handleShowKeyBody={handleShowKeyBody}
-                handleHideKeyBody={handleHideKeyBody}
-                showMenu={openMenuIndex === index}
-                handleToggleMenu={handleToggleMenu}
-                handleEditKey={handleEditKey}
-                handleDeleteKey={handleDeleteKey}
-                handleShowHistory={handleShowHistory}
-                index={index}
-              />
-            ))}
-            {filteredKeys.length === 0 && (
-              <p
-                className="text-center merriweather-light"
-                data-testid="keys-list-no-keys"
-              >
-                No keys found
-              </p>
-            )}
+        <div>
+          <div className="d-flex align-items-center justify-content-between mb-3">
+            <p
+              className="m-0 merriweather-light"
+              data-testid="keys-list-count"
+            >
+              <strong>Accounts ({filteredKeys.length})</strong>
+            </p>
+            <button
+              className="btn text-primary merriweather-light"
+              onClick={() => setNavigate(<Navigate to={"/add"} />)}
+            >
+              <i className="fa-solid fa-plus"></i> Add
+            </button>
           </div>
-        )}
+          {filteredKeys.map((key, index) => (
+            <KeyItem
+              key={`${key.account}_${key.username}`}
+              keyItem={key}
+              selected={selectedIndex === index}
+              handleShowKeyBody={handleShowKeyBody}
+              handleHideKeyBody={handleHideKeyBody}
+              showMenu={openMenuIndex === index}
+              handleToggleMenu={handleToggleMenu}
+              handleEditKey={handleEditKey}
+              handleDeleteKey={handleDeleteKey}
+              handleShowHistory={handleShowHistory}
+              index={index}
+            />
+          ))}
+          {filteredKeys.length === 0 && (
+            <p
+              className="text-center merriweather-light"
+              data-testid="keys-list-no-keys"
+            >
+              No keys found
+            </p>
+          )}
+        </div>
       </div>
       {historyKeyItem && <History keyItem={historyKeyItem} setShowHistoryKeyItem={setShowHistoryKeyItem} />}
     </div>

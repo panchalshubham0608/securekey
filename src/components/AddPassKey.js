@@ -1,177 +1,204 @@
-import React, { useState, useCallback, useEffect, useContext } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Navigate, useParams } from "react-router-dom";
+import { useAppContext } from "../context/AppContext";
+import { useAlert } from "../hooks/useAlert";
 import "../styles/AddPassKey.css";
-import { Navigate } from "react-router-dom";
-import UserContext from "../context/UserContext";
 import AccountIconsList from "../utils/AccountIconsList";
-import { addPassKey, updatePassKey } from "../utils/firestoredb";
+import {
+  addVaultItem,
+  getVaultItemById,
+  updateVaultItem
+} from "../utils/vault/vaultService";
 import AccountIcon from "./AccountIcon";
+import Alert from "./Alert";
+import Loader from "./Loader";
 
-export default function AddPassKey(props) {
-  const userContext = useContext(UserContext);
-  const { setEditItem } = props;
-  const [searchText, setSearchText] = useState("");
-  const [filteredAccounts, setFilteredAccounts] = useState(Object.keys(AccountIconsList));
-  const [account, setAccount] = useState(props.editItem?.account || "");
-  const [username, setUsername] = useState(props.editItem?.username || "");
+const ALL_ACCOUNTS = Object.keys(AccountIconsList);
+
+export default function AddPassKey() {
+  const { itemId } = useParams();
+  const editing = Boolean(itemId);
+
+  const { user, mek } = useAppContext();
+  const { alert, showAlert } = useAlert();
+
+  const [account, setAccount] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
   const [navigate, setNavigate] = useState(null);
 
-  const debouncedSearch = useCallback((searchText) => {
-    let accounts = Object.keys(AccountIconsList);
-    setFilteredAccounts(
-      accounts.filter(account => account.toLowerCase().includes(searchText.toLowerCase()))
-    );
-  }, [setFilteredAccounts]);
+  const [accountSearch, setAccountSearch] = useState("");
+  const [showDropdown, setShowDropdown] = useState(false);
 
+  /* ------------------ Fetch item for edit ------------------ */
   useEffect(() => {
-    debouncedSearch(searchText);
-  }, [searchText, debouncedSearch]);
+    if (!editing) return;
 
-  const handleChangeSearchText = useCallback((e) => {
-    setSearchText(e.target.value);
-  }, [setSearchText]);
-
-  const handleClearInput = useCallback(() => {
-    setSearchText("");
-  }, [setSearchText]);
-
-  const handleSelectAccount = useCallback((account) => {
-    if (!props.editItem) {
-      setAccount(account);
-    }
-  }, [props.editItem]);
-
-  const handleAddPassKey = useCallback((e) => {
-    // prevent form submission
-    e.preventDefault();
-    e.stopPropagation();
-
-    // clear error and success messages
-    setError("");
-
-    // validate account, username and password
-    if (!account) {
-      setError("Account is required");
-      return;
-    }
-    if (!username) {
-      setError("Username is required");
-      return;
-    }
-    if (!password) {
-      setError("Password is required");
-      return;
-    }
-
-    // make request
-    setLoading(true);
-    let editing = !!props.editItem;
-    let method = editing ? updatePassKey : addPassKey;
-    method({ userContext, account, username, password }).then(() => {
-      setSuccess(`Passkey ${editing ? "updated" : "added"} successfully`);
-      props.setEditItem(null);
-      setNavigate(<Navigate to="/" />);
-    }).catch((error) => {
-      console.error("Error adding/updating passkey", error);
-      if (error.message) {
-        setError(error.message);
-      } else {
-        setError(`Error ${editing ? "updating" : "adding"} passkey`);
+    const fetchItem = async () => {
+      setLoading(true);
+      try {
+        const item = await getVaultItemById({
+          uid: user.uid,
+          itemId
+        });
+        setAccount(item.account);
+        setUsername(item.username);
+      } catch (err) {
+        console.log(err);
+        showAlert(err.message || "Error fetching vault item", "error");
+        setNavigate(<Navigate to="/" replace />);
+      } finally {
+        setLoading(false);
       }
-    }).finally(() => {
+    };
+
+    fetchItem();
+  }, [editing, itemId, user.uid, showAlert]);
+
+  /* ------------------ Derived filtered accounts ------------------ */
+  const filteredAccounts = useMemo(() => {
+    return ALL_ACCOUNTS.filter(a =>
+      a.toLowerCase().includes(accountSearch.toLowerCase())
+    );
+  }, [accountSearch]);
+
+  /* ------------------ Handlers ------------------ */
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!account || !username || !password) {
+      showAlert("All fields are required", "error");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      if (editing) {
+        await updateVaultItem({
+          uid: user.uid,
+          itemId,
+          mek,
+          newPassword: password
+        });
+      } else {
+        await addVaultItem({
+          uid: user.uid,
+          mek,
+          account,
+          username,
+          password
+        });
+      }
+      setNavigate(<Navigate to="/" replace />);
+    } catch (err) {
+      showAlert(err.message || "Operation failed", "error");
+    } finally {
       setLoading(false);
-    });
-  }, [account, username, password, setError, props]);
+    }
+  };
 
-  // if we have a navigate element, return it
-  if (navigate) {
-    return navigate;
-  }
+  const handleSelectAccount = useCallback((value) => {
+    setAccount(value);
+    setAccountSearch("");
+    setShowDropdown(false);
+  }, []);
 
-  // check if we are editing an item
-  let editing = !!props.editItem;
+  if (navigate) return navigate;
 
   return (
     <div>
+      <Alert alert={alert} />
+      <Loader visible={loading} />
+
+      {/* Header */}
       <div className="d-flex align-items-center add-passkey-navbar mb-1">
-        <button type="button" className="btn" onClick={() => {
-          setEditItem(null);
-          setNavigate(<Navigate to="/" />);
-        }}>
-          <i className="fa-solid fa-arrow-left"></i>
+        <button className="btn" onClick={() => setNavigate(<Navigate to="/" />)}>
+          <i className="fa-solid fa-arrow-left" />
         </button>
-        <h4 className="merriweather-light m-0">{editing ? "Edit" : "Add"} Passkey</h4>
+        <h4 className="m-0">
+          {editing ? "Edit" : "Add"} Passkey
+        </h4>
       </div>
+
       <div className="add-passkey-container">
-        {error && <div className="alert alert-danger">{error}</div>}
-        {success && <div className="alert alert-success">{success}</div>}
-        <div>
-          <form method="post" action="#" className="mb-3 border p-3"
-            onSubmit={handleAddPassKey}>
-            <div className="mb-1">
-              <label htmlFor="account" className="form-label merriweather-light">Account</label>
-              <input type="text" className="form-control merriweather-light" id="account"
-                value={account} onChange={e => {
-                  if (!editing) {
-                    setAccount(e.target.value);
-                  }
-                }}
-                disabled={editing} />
-            </div>
-            <div className="mb-1">
-              <label htmlFor="username" className="form-label merriweather-light">Username</label>
-              <input type="text" className="form-control merriweather-light" id="username"
-                value={username} onChange={e => {
-                  if (!editing) {
-                    setUsername(e.target.value);
-                  }
-                }}
-                disabled={editing} />
-            </div>
-            <div className="mb-1">
-              <label htmlFor="password" className="form-label merriweather-light">Password</label>
-              <input type="text" className="form-control merriweather-light" id="password"
-                value={password} onChange={e => setPassword(e.target.value)} />
-            </div>
-            <div className="d-flex justify-content-end mt-3">
-              <button type="submit" className="btn btn-success merriweather-light w-100"
-                disabled={loading}>
-                {loading && <div className="spinner-border spinner-border-sm mr-3" role="status"></div>}
-                {loading ? (editing ? "Updating" : "Adding") : (editing ? "Update" : "Add")}
-              </button>
-            </div>
-          </form>
-        </div>
-        <div>
-          <form method="post" action="#" className="mb-3">
-            <div className="d-flex align-items-center justify-content-between search-input-container">
-              <i className="fa-solid fa-magnifying-glass"></i>
-              <input type="text" className="form-control merriweather-light" placeholder="Search"
-                value={searchText} onChange={handleChangeSearchText} name="searchText" />
-              <button type="button" className="btn" style={{
-                visibility: searchText ? "visible" : "hidden"
-              }} onClick={handleClearInput}>
-                <i className="fa-solid fa-times"></i>
-              </button>
-            </div>
-          </form>
-        </div>
-        <div>
-          {filteredAccounts.map(account => (
-            // non-interactive elements with click handlers must have at least one keyboard event listener
-            // eslint-disable-next-line
-            <div className="d-flex align-items-start justify-content-between account-provider"
-              key={account} onClick={() => handleSelectAccount(account)}>
-              <div className="d-flex align-items-center">
-                <AccountIcon account={account} />
-                <h4 className="m-0 merriweather-light">{account}</h4>
+        <form className="border p-3 mb-3" onSubmit={handleSubmit}>
+
+          {/* Account with searchable dropdown */}
+          <div className="mb-2 position-relative">
+            <label className="form-label" htmlFor="accountInput">Account</label>
+            <input
+              type="text"
+              id="accountInput"
+              className="form-control"
+              value={editing ? account : accountSearch || account}
+              disabled={editing}
+              placeholder="Search account"
+              onFocus={() => !editing && setShowDropdown(true)}
+              onChange={(e) => {
+                setAccountSearch(e.target.value);
+                setAccount("");
+              }}
+            />
+
+            {!editing && showDropdown && (
+              <div className="dropdown-menu show dropdown-scrollable w-100 mt-1">
+                {filteredAccounts.length === 0 && (
+                  <div className="dropdown-item text-muted">
+                    No results
+                  </div>
+                )}
+                {filteredAccounts.map(acc => (
+                  <button
+                    type="button"
+                    key={acc}
+                    className="dropdown-item d-flex align-items-center"
+                    onClick={() => handleSelectAccount(acc)}
+                  >
+                    <AccountIcon account={acc} />
+                    <span className="ms-2">{acc}</span>
+                  </button>
+                ))}
               </div>
-            </div>
-          ))}
-        </div>
+            )}
+          </div>
+
+          {/* Username */}
+          <div className="mb-2">
+            <label className="form-label" htmlFor="usernameInput">Username</label>
+            <input
+              id="usernameInput"
+              type="text"
+              className="form-control"
+              value={username}
+              disabled={editing}
+              onChange={e => !editing && setUsername(e.target.value)}
+            />
+          </div>
+
+          {/* Password */}
+          <div className="mb-2">
+            <label className="form-label" htmlFor="passwordInput">Password</label>
+            <input
+              id="passwordInput"
+              type="password"
+              className="form-control"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+            />
+          </div>
+
+          {/* Submit */}
+          <button
+            type="submit"
+            className="btn btn-success w-100"
+            disabled={loading}
+          >
+            {loading
+              ? editing ? "Updating..." : "Adding..."
+              : editing ? "Update" : "Add"}
+          </button>
+        </form>
       </div>
     </div>
   );

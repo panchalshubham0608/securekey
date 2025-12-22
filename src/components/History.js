@@ -1,15 +1,14 @@
 import { useEffect, useState } from "react";
-import { useAppContext } from "../context/AppContext";
 import "../styles/History.css";
 import AccountIcon from "./AccountIcon";
 import Loader from "./Loader";
 
 export default function History(props) {
-  const { } = useAppContext();
+  // const { } = useAppContext();
   const { keyItem, setShowHistoryKeyItem } = props;
-  const [history, setHistory] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [history,] = useState(null);
+  const [loading,] = useState(false);
+  const [error,] = useState("");
 
   useEffect(() => {
     // if (!keyItem) return;

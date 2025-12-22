@@ -1,4 +1,4 @@
-import { toBase64 } from "./cryptoHelpers";
+import { fromBase64, toBase64 } from "./cryptoHelpers";
 
 /**
  * Encrypt a plaintext password using MEK
@@ -6,7 +6,7 @@ import { toBase64 } from "./cryptoHelpers";
  * @param {Uint8Array} mek
  * @returns {{ ciphertext: string, iv: string, version: number }}
  */
-export const encryptPasswordWithMEK = async ({ plaintext, mek }) => {
+export const encryptWithMEK = async ({ plaintext, mek }) => {
   const iv = crypto.getRandomValues(new Uint8Array(12));
 
   const mekKey = await crypto.subtle.importKey(
@@ -36,7 +36,7 @@ export const encryptPasswordWithMEK = async ({ plaintext, mek }) => {
  * @param {Uint8Array} mek
  * @returns {string} plaintext password
  */
-export const decryptPasswordWithMEK = async ({ encrypted, mek }) => {
+export const decryptWithMEK = async ({ encrypted, mek }) => {
   const mekKey = await crypto.subtle.importKey(
     "raw",
     mek,

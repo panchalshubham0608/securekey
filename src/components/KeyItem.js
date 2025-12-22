@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { useAppContext } from "../context/AppContext";
 import { str2color } from "../utils/str2color";
+import { getPasswordByAccountAndUsername } from "../utils/vault/vaultService";
 import AccountIcon from "./AccountIcon";
-import Loader from "./Loader";
+import CircularLoader from "./CircularLoader";
 
 export default function KeyItem(props) {
-  // const userContext = useContext(UserContext);
-  const { } = useAppContext();
+  const { user, mek } = useAppContext();
   const {
     keyItem,
     selected,
@@ -28,41 +28,37 @@ export default function KeyItem(props) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
-    // if (!selected) return;
-    // setError("");
-    // setLoading(true);
-    // getPassKeyValue({
-    //   userContext,
-    //   account: keyItem.account,
-    //   username: keyItem.username,
-    // })
-    //   .then((password) => {
-    //     // set password and hide it after 30 seconds
-    //     setPassword(password);
-    //     setTimer(30);
-    //     let interval = setInterval(() => {
-    //       setTimer((timer) => {
-    //         let newTimer = timer - 1;
-    //         if (newTimer <= 0) {
-    //           clearInterval(interval);
-    //           handleHideKeyBody(index);
-    //           return 0;
-    //         }
-    //         return newTimer;
-    //       });
-    //     }, 1000);
-    //   })
-    //   .catch((error) => {
-    //     console.log("Error getting password", error);
-    //     if (error.message) {
-    //       setError(error.message);
-    //     } else {
-    //       setError("Error: Could not get password");
-    //     }
-    //   })
-    //   .finally(() => {
-    //     setLoading(false);
-    //   });
+    if (!selected) return;
+    setError("");
+    setLoading(true);
+    getPasswordByAccountAndUsername({ uid: user.uid, username: keyItem.username, account: keyItem.account, mek })
+      .then((password) => {
+        // set password and hide it after 30 seconds
+        setPassword(password);
+        setTimer(30);
+        let interval = setInterval(() => {
+          setTimer((timer) => {
+            let newTimer = timer - 1;
+            if (newTimer <= 0) {
+              clearInterval(interval);
+              handleHideKeyBody(index);
+              return 0;
+            }
+            return newTimer;
+          });
+        }, 1000);
+      })
+      .catch((error) => {
+        console.log("Error getting password", error);
+        if (error.message) {
+          setError(error.message);
+        } else {
+          setError("Error: Could not get password");
+        }
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, [selected, keyItem.account, keyItem.username, handleHideKeyBody, index]);
 
   // utility function to copy password to clipboard
@@ -182,7 +178,7 @@ export default function KeyItem(props) {
           {selected && (
             <div className="key-body">
               {loading ? (
-                <Loader borderColor={str2color(keyItem.account)} />
+                <CircularLoader borderColor={str2color(keyItem.account)} />
               ) : (
                 <div>
                   {error ? (
