@@ -99,7 +99,7 @@ export default function VaultItemChangeHistory() {
               >
                 <h5 className="text-break">{entry.password}</h5>
                 <p className="text-muted m-0">
-                  {formatFirestoreTimestamp(entry.changedAt)}
+                  {formatFirestoreTimestamp(entry.updatedAt)}
                 </p>
               </div>
             ))}

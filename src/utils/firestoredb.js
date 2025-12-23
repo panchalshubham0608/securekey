@@ -17,7 +17,7 @@ import { formatFirestoreTimestamp } from "./dateutil";
 import { firestoreDb } from "./firebase";
 
 // Firestore collection details
-const keysCollectionName = process.env.REACT_APP_FIRESTORE_KEYS_COLLECTION_NAME;
+export const keysCollectionName = process.env.REACT_APP_FIRESTORE_KEYS_COLLECTION_NAME;
 const keysCollection = collection(firestoreDb, keysCollectionName);
 
 // Function to get passkeys for a user

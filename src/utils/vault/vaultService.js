@@ -26,7 +26,8 @@ export const addVaultItem = async ({
   mek,
   account,
   username,
-  password
+  password,
+  history = []
 }) => {
   if (!account || !username || !password) {
     throw new Error("Missing required fields");
@@ -51,13 +52,22 @@ export const addVaultItem = async ({
 
   // 2️⃣ Encrypt password with MEK
   const encryptedPassword = await encryptWithMEK({ plaintext: password, mek });
+  const encryptedHistory = await Promise.all(
+    history.map(async (h) => ({
+      ...h,
+      password: await encryptWithMEK({
+        plaintext: h.password,
+        mek,
+      }),
+    }))
+  );
 
   // 3️⃣ Insert new vault item
   await addDoc(itemsRef, {
     account,
     username,
     password: encryptedPassword,
-    history: [],
+    history: encryptedHistory,
     createdAt: Date.now(),
     updatedAt: Date.now()
   });
@@ -115,6 +125,7 @@ export const getPasswordByAccountAndUsername = async ({
 
   const docSnap = snap.docs[0];
   const data = docSnap.data();
+  console.log(data);
 
   const decryptedPassword = await decryptWithMEK({ encrypted: data.password, mek });
   return decryptedPassword;
@@ -227,7 +238,7 @@ export const getVaultItemHistory = async ({ uid, itemId, mek }) => {
       data.history.map(async (entry) => {
         return {
           password: await decryptWithMEK({ encrypted: entry.password, mek }),
-          changedAt: entry.updatedAt
+          updatedAt: entry.updatedAt
         };
       })
     );

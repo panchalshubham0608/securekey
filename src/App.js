@@ -19,6 +19,7 @@ function App() {
   const [authLoading, setAuthLoading] = useState(true);
   const [mek, setMek] = useState(null);
   const [vaultUnlocked, setVaultUnlocked] = useState(false);
+  const [showUpgradeWarning, setShowUpgradeWarning] = useState(true);
 
   // Listen to auth state
   useEffect(() => {
@@ -65,6 +66,9 @@ function App() {
     lockVault();
   };
 
+  // Dismiss the upgrade warning
+  const dismissUpgradeWarning = () => setShowUpgradeWarning(false);
+
   const contextValue = {
     user,
     authLoading,
@@ -93,7 +97,7 @@ function App() {
 
             {/* Private routes */}
             <Route element={<ProtectedRoute />}>
-              <Route path="/" element={<Dashboard />} />
+              <Route path="/" element={<Dashboard showUpgradeWarning={showUpgradeWarning} dismissUpgradeWarning={dismissUpgradeWarning} />} />
               <Route path="/add" element={<VaultItemForm />} />
               <Route path="/edit/:itemId" element={<VaultItemForm />} />
               <Route path="/history/:itemId" element={<VaultItemChangeHistory />} />
