@@ -125,7 +125,6 @@ export const getPasswordByAccountAndUsername = async ({
 
   const docSnap = snap.docs[0];
   const data = docSnap.data();
-  console.log(data);
 
   const decryptedPassword = await decryptWithMEK({ encrypted: data.password, mek });
   return decryptedPassword;
