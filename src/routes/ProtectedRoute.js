@@ -10,13 +10,9 @@ export default function ProtectedRoute() {
   } = useAppContext();
 
   // Wait until auth state is known
-  if (authLoading) return <Loader visible={true} />
+  if (authLoading) return <Loader visible />
 
-  if (!isAuthenticated) {
-    return <Navigate to="/welcome" replace />;
-  }
-
-  if (!vaultUnlocked) {
+  if (!isAuthenticated || !vaultUnlocked) {
     return <Navigate to="/welcome" replace />;
   }
 

@@ -44,7 +44,8 @@ function App() {
   }, []);
 
   // Called after password or biometric unlock
-  const unlockVault = (mek) => {
+  const unlockVault = ({ mek }) => {
+    if (!mek) return;
     setMek(mek);
     setVaultUnlocked(true);
   };
@@ -59,13 +60,13 @@ function App() {
   // Post logout, vault will be locked
   const logout = async () => {
     await auth.signOut();
+    setUser(null);
     lockVault();
   };
 
   const contextValue = {
     user,
     authLoading,
-    setAuthLoading,
     isAuthenticated: !!user,
 
     mek,

@@ -9,7 +9,7 @@ export default function PublicRoute() {
     authLoading
   } = useAppContext();
 
-  if (authLoading) return <Loader visible={true} />
+  if (authLoading) return <Loader visible />
 
   // User fully logged in & unlocked → block public pages
   if (isAuthenticated && vaultUnlocked) {

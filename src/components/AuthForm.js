@@ -7,7 +7,7 @@ import { secureSignIn } from "../utils/auth/secureSignIn";
 import { secureSignUp } from "../utils/auth/secureSignUp";
 
 export default function AuthForm(props) {
-  const { setAuthLoading, unlockVault } = useAppContext();
+  const { unlockVault } = useAppContext();
   const navigate = useNavigate();
 
   const [error, setError] = useState("");
@@ -16,6 +16,7 @@ export default function AuthForm(props) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const validateFields = () => {
     if (!email) {
@@ -38,21 +39,22 @@ export default function AuthForm(props) {
     return true;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     // prevent form submission
     e.preventDefault();
     e.stopPropagation();
     if (!validateFields()) return;
 
     setError("");
-    setAuthLoading(true);
+    setLoading(true);
     try {
       const { mek } = props.register
-        ? secureSignUp({ email, password, rememberDevice })
-        : secureSignIn({ email, password, rememberDevice });
-      unlockVault(mek);
+        ? await secureSignUp({ email, password, rememberDevice })
+        : await secureSignIn({ email, password, rememberDevice });
+      unlockVault({ mek });
       navigate("/", { replace: true });
     } catch (error) {
+      console.log(error);
       if (error.message) {
         if (error.message.includes("auth/email-already-in-use")) {
           setError("Email is already in use");
@@ -66,6 +68,8 @@ export default function AuthForm(props) {
       } else {
         setError("An error occurred. Please try again later");
       }
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -103,7 +107,9 @@ export default function AuthForm(props) {
             value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} />
         </div>}
         <div className="mb-3 w-100">
-          <button type="submit" className="btn btn-primary w-100 d-flex align-items-center justify-content-center">
+          <button type="submit" className="btn btn-primary w-100 d-flex align-items-center justify-content-center"
+            disabled={loading}>
+            {loading && <span className="spinner-border spinner-border mr-3"></span>}
             {register ? "Register" : "Login"}
           </button>
         </div>
