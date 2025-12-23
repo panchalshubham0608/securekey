@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useAppContext } from "../context/AppContext";
 import { useAlert } from "../hooks/useAlert";
-import "../styles/KeysList.css";
 import { deleteVaultItem, listVaultItems } from "../utils/vault/vaultService";
 import Alert from "./Alert";
 import KeysList from "./KeysList";

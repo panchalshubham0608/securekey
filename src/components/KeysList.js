@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "../styles/KeysList.css";
 import debounce from "../utils/debounce";
 import Alert from "./Alert";
 import KeyItem from "./KeyItem";
+import "./KeysList.css";
 
 export default function KeysList(props) {
   const { keys, readOnly, onDeleteKey } = props;
@@ -103,7 +103,7 @@ export default function KeysList(props) {
             />
           ))
         ) : (
-          <p className="text-center merriweather-light">No keys found</p>
+          <p className="text-center merriweather-light">No passwords found</p>
         )}
       </div>
     </div>
