@@ -6,6 +6,7 @@ import AddPassKey from "./components/AddPassKey";
 import AuthForm from "./components/AuthForm";
 import Dashboard from "./components/Dashboard";
 import Home from "./components/Home";
+import VaultItemChangeHistory from "./components/VaultItemChangeHistory";
 import { AppContext } from "./context/AppContext";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import PublicRoute from "./routes/PublicRoute";
@@ -93,6 +94,7 @@ function App() {
               <Route path="/" element={<Dashboard />} />
               <Route path="/add" element={<AddPassKey />} />
               <Route path="/edit/:itemId" element={<AddPassKey />} />
+              <Route path="/history/:itemId" element={<VaultItemChangeHistory />} />
             </Route>
 
           </Routes>

@@ -8,22 +8,24 @@
   padding: 12px 20px;
   border-radius: 8px;
   font-size: 14px;
-  color: white;
   z-index: 9999;
 
   animation: fadeInUp 0.3s ease-out;
 }
 
 .alert-success {
-  background: #4caf50;
+  background: #d1e7dd;
+  color: #0a3622;
 }
 
 .alert-error {
-  background: #f44336;
+  background: #f8d7da;
+  color: #58151c;
 }
 
 .alert-info {
-  background: #2196f3;
+  background: #cff4fc;
+  color: #055160;
 }
 
 @keyframes fadeInUp {

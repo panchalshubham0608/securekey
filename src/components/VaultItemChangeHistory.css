@@ -1,0 +1,11 @@
+.history-container {
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  background-color: white;
+  z-index: 1000;
+  width: 400px;
+  padding: 20px;
+  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
+  overflow-y: scroll;
+}

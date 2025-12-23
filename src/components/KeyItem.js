@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAppContext } from "../context/AppContext";
 import { str2color } from "../utils/str2color";
 import { getPasswordByAccountAndUsername } from "../utils/vault/vaultService";
@@ -7,6 +8,7 @@ import CircularLoader from "./CircularLoader";
 
 export default function KeyItem(props) {
   const { user, mek } = useAppContext();
+  const navigate = useNavigate();
   const {
     keyItem,
     selected,
@@ -14,9 +16,7 @@ export default function KeyItem(props) {
     handleHideKeyBody,
     showMenu,
     handleToggleMenu,
-    handleEditKey,
     handleDeleteKey,
-    handleShowHistory,
     index,
   } = props;
   const [timer, setTimer] = useState(30);
@@ -31,7 +31,7 @@ export default function KeyItem(props) {
     if (!selected) return;
     setError("");
     setLoading(true);
-    getPasswordByAccountAndUsername({ uid: user.uid, username: keyItem.username, account: keyItem.account, mek })
+    getPasswordByAccountAndUsername({ uid: user.uid, account: keyItem.account, username: keyItem.username, mek })
       .then((password) => {
         // set password and hide it after 30 seconds
         setPassword(password);
@@ -135,7 +135,7 @@ export default function KeyItem(props) {
                         e.preventDefault();
                         e.stopPropagation();
                         // handle show history
-                        handleShowHistory(keyItem);
+                        return navigate(`/history/${keyItem.id}`, { replace: true });
                       }}
                     >
                       History
@@ -150,7 +150,7 @@ export default function KeyItem(props) {
                         e.preventDefault();
                         e.stopPropagation();
                         // show the edit key dialog
-                        handleEditKey(keyItem);
+                        return navigate(`/edit/${keyItem.id}`, { replace: true });
                       }}
                     >
                       Edit

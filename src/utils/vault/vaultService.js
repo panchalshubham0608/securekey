@@ -232,7 +232,12 @@ export const getVaultItemHistory = async ({ uid, itemId, mek }) => {
       })
     );
 
-    return decryptedHistory.reverse();
+    return {
+      id: itemSnap.id,
+      account: data.account,
+      username: data.username,
+      history: decryptedHistory.reverse(),
+    }
   } catch (error) {
     console.error("Error fetching vault history", error);
     throw error;
