@@ -10,6 +10,7 @@ export default function KeyItem(props) {
   const { user, mek } = useAppContext();
   const navigate = useNavigate();
   const {
+    readOnly,
     keyItem,
     selected,
     handleShowKeyBody,
@@ -100,7 +101,7 @@ export default function KeyItem(props) {
           className="key-container mb-3 merriweather-light"
           data-testid="key-item"
           style={{ borderTop: `5px solid ${str2color(keyItem.account)}` }}
-          onClick={() => handleShowKeyBody(index)}
+          onClick={() => !readOnly && handleShowKeyBody(index)}
         >
           <div className="mb-3 d-flex align-items-start justify-content-between">
             <div className="d-flex align-items-center">
@@ -117,7 +118,7 @@ export default function KeyItem(props) {
                 </p>
               </div>
             </div>
-            <div className="key-action">
+            {!readOnly && <div className="key-action">
               <button
                 className="btn merriweather-light"
                 onClick={(e) => handleToggleMenu(e, index)}
@@ -173,7 +174,7 @@ export default function KeyItem(props) {
                   }
                 </ul>
               )}
-            </div>
+            </div>}
           </div>
           {selected && (
             <div className="key-body">

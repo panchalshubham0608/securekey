@@ -5,6 +5,7 @@ import "./App.css";
 import AuthForm from "./components/AuthForm";
 import Dashboard from "./components/Dashboard";
 import Home from "./components/Home";
+import MigrateVault from "./components/MigrateVault";
 import VaultItemChangeHistory from "./components/VaultItemChangeHistory";
 import VaultItemForm from "./components/VaultItemForm";
 import { AppContext } from "./context/AppContext";
@@ -96,6 +97,7 @@ function App() {
               <Route path="/add" element={<VaultItemForm />} />
               <Route path="/edit/:itemId" element={<VaultItemForm />} />
               <Route path="/history/:itemId" element={<VaultItemChangeHistory />} />
+              <Route path="/migrate" element={<MigrateVault />} />
             </Route>
 
           </Routes>
