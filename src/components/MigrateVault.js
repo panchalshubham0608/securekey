@@ -6,6 +6,7 @@ import { migrate } from "../utils/migration";
 import CircularLoader from "./CircularLoader";
 import KeyItem from "./KeyItem";
 import "./MigrateVault.css";
+import MigrationProgress from "./MigrationProgress";
 
 export default function MigrateVault() {
   const { user, mek } = useAppContext();
@@ -18,6 +19,9 @@ export default function MigrateVault() {
   const [password, setPassword] = useState("");
   const [requestPassword, setRequestPassword] = useState(false);
   const [formError, setFormError] = useState("");
+  const [migrationInProgress, setMigrationInProgress] = useState(false);
+  const [migrationPercent, setMigrationPercent] = useState(0);
+
 
   const fetchLegacyPasswords = async () => {
     setLoading(true);
@@ -45,13 +49,15 @@ export default function MigrateVault() {
     }
 
     setRequestPassword(false);
-    setLoading(true);
     setFormError("");
     setError("");
     setSuccess("");
+    setMigrationInProgress(true);
     try {
       for (let i = 0; i < items.length; i++) {
         await migrate({ uid: user.uid, itemId: items[i].id, password, mek });
+        const percentage = Math.min(100, Math.floor((i + 1) / items.length));
+        setMigrationPercent(percentage);
       }
       setSuccess("Migration completed successfully!");
       await fetchLegacyPasswords();
@@ -59,7 +65,7 @@ export default function MigrateVault() {
       console.log(error);
       setError(error.message || "Failed to migrate passwords");
     } finally {
-      setLoading(false);
+      setMigrationInProgress(false);
     }
   };
 
@@ -144,6 +150,7 @@ export default function MigrateVault() {
             </form>
           </div>
         </div>}
+      {migrationInProgress && <MigrationProgress percentage={migrationPercent} />}
     </div>
   );
 }

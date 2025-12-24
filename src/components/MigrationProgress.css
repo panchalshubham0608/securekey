@@ -1,0 +1,59 @@
+.migration-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont;
+  text-align: center;
+}
+
+.progress-ring {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  margin-bottom: 16px;
+}
+
+svg {
+  transform: rotate(-90deg);
+}
+
+circle {
+  fill: none;
+  stroke-width: 10;
+}
+
+circle.bg {
+  stroke: #e5e7eb;
+}
+
+circle.progress {
+  stroke: #4f46e5;
+  /* elegant indigo */
+  stroke-linecap: round;
+  stroke-dasharray: 326.7;
+  stroke-dashoffset: calc(326.7 - (326.7 * var(--progress)) / 100);
+  transition: stroke-dashoffset 0.4s ease;
+}
+
+.progress-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
+}
+
+h3 {
+  margin: 8px 0 4px;
+  font-size: 18px;
+}
+
+p {
+  margin: 0;
+  font-size: 14px;
+  color: #6b7280;
+}
