@@ -1,29 +1,112 @@
-import { useState } from "react";
-import { Navigate, Route, BrowserRouter as Router, Routes } from "react-router-dom";
+import { onAuthStateChanged } from "firebase/auth";
+import { useEffect, useState } from "react";
+import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import "./App.css";
-import AddPassKey from "./components/AddPassKey";
 import AuthForm from "./components/AuthForm";
+import Dashboard from "./components/Dashboard";
 import Home from "./components/Home";
-import KeysList from "./components/KeysList";
-import UserContext from "./context/UserContext";
+import MigrateVault from "./components/MigrateVault";
+import VaultItemChangeHistory from "./components/VaultItemChangeHistory";
+import VaultItemForm from "./components/VaultItemForm";
+import { AppContext } from "./context/AppContext";
+import ProtectedRoute from "./routes/ProtectedRoute";
+import PublicRoute from "./routes/PublicRoute";
+import { clearStorage, readMEKFromDevice } from "./utils/auth/mek";
+import { auth } from "./utils/firebase/firebase";
 
 function App() {
-  const [editItem, setEditItem] = useState(null);
   const [user, setUser] = useState(null);
-  const contextValue = { user, setUser };
+  const [authLoading, setAuthLoading] = useState(true);
+  const [mek, setMek] = useState(null);
+  const [vaultUnlocked, setVaultUnlocked] = useState(false);
+  const [showUpgradeWarning, setShowUpgradeWarning] = useState(true);
+
+  // Listen to auth state
+  useEffect(() => {
+    setAuthLoading(true);
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      setUser(firebaseUser);
+      setAuthLoading(false);
+
+      if (firebaseUser) {
+        // Try auto-unlock vault
+        const deviceMek = await readMEKFromDevice();
+        if (deviceMek) {
+          setMek(deviceMek);
+          setVaultUnlocked(true);
+        }
+      } else {
+        // Logout cleanup
+        setMek(null);
+        setVaultUnlocked(false);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  // Called after password or biometric unlock
+  const unlockVault = ({ mek }) => {
+    if (!mek) return;
+    setMek(mek);
+    setVaultUnlocked(true);
+  };
+
+  // Explicit lock
+  const lockVault = () => {
+    setMek(null);
+    setVaultUnlocked(false);
+    clearStorage();
+  };
+
+  // Post logout, vault will be locked
+  const logout = async () => {
+    await auth.signOut();
+    setUser(null);
+    lockVault();
+  };
+
+  // Dismiss the upgrade warning
+  const dismissUpgradeWarning = () => setShowUpgradeWarning(false);
+
+  const contextValue = {
+    user,
+    authLoading,
+    isAuthenticated: !!user,
+
+    mek,
+    vaultUnlocked,
+
+    unlockVault,
+    lockVault,
+    logout
+  };
 
   return (
     <div className="App">
-      <UserContext.Provider value={contextValue}>
+      <AppContext.Provider value={contextValue}>
         <Router basename="/securekey">
           <Routes>
-            {<Route path="/login" element={user ? <Navigate to="/" /> : <AuthForm register={false} />} />}
-            {<Route path="/register" element={user ? <Navigate to="/" /> : <AuthForm register={true} />} />}
-            {<Route path="/" element={user ? <KeysList setEditItem={setEditItem} /> : <Home />} />}
-            {<Route path="/add-key" element={user ? <AddPassKey editItem={editItem} setEditItem={setEditItem} /> : <Navigate to="/login" />} />}
+
+            {/* Public routes */}
+            <Route element={<PublicRoute />}>
+              <Route path="/login" element={<AuthForm register={false} />} />
+              <Route path="/register" element={<AuthForm register={true} />} />
+              <Route path="/welcome" element={<Home />} />
+            </Route>
+
+            {/* Private routes */}
+            <Route element={<ProtectedRoute />}>
+              <Route path="/" element={<Dashboard showUpgradeWarning={showUpgradeWarning} dismissUpgradeWarning={dismissUpgradeWarning} />} />
+              <Route path="/add" element={<VaultItemForm />} />
+              <Route path="/edit/:itemId" element={<VaultItemForm />} />
+              <Route path="/history/:itemId" element={<VaultItemChangeHistory />} />
+              <Route path="/migrate" element={<MigrateVault />} />
+            </Route>
+
           </Routes>
         </Router>
-      </UserContext.Provider>
+      </AppContext.Provider>
     </div>
   );
 }

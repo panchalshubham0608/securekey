@@ -17,41 +17,34 @@ import { formatFirestoreTimestamp } from "./dateutil";
 import { firestoreDb } from "./firebase";
 
 // Firestore collection details
-const keysCollectionName = process.env.REACT_APP_FIRESTORE_KEYS_COLLECTION_NAME;
+export const keysCollectionName = process.env.REACT_APP_FIRESTORE_KEYS_COLLECTION_NAME;
 const keysCollection = collection(firestoreDb, keysCollectionName);
 
 // Function to get passkeys for a user
-export const getPassKeys = ({ userContext }) => {
+export const getPassKeys = ({ username }) => {
   return new Promise((resolve, reject) => {
-    validateUserContext(userContext)
-      .then((userContext) => {
-        let owner = userContext.user.username;
-        const q = query(keysCollection, where("owner", "==", owner));
-        getDocs(q)
-          .then((querySnapshot) => {
-            // map the documents to an array of objects
-            const matchingKeys = querySnapshot.docs.map((doc) => ({
-              id: doc.id,
-              ...doc.data(),
-            }));
-            // delete "password" field from each object
-            matchingKeys.forEach((key) => {
-              delete key.password;
-              if (key["history"]) {
-                delete key["history"];
-              }
-            });
-            // return matchingKeys;
-            resolve(matchingKeys);
-          })
-          .catch((error) => {
-            console.error("Error getting documents from Firestore: ", error);
-            reject({ message: "Error getting documents from Firestore" });
-          });
+    let owner = username;
+    const q = query(keysCollection, where("owner", "==", owner));
+    getDocs(q)
+      .then((querySnapshot) => {
+        // map the documents to an array of objects
+        const matchingKeys = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        // delete "password" field from each object
+        matchingKeys.forEach((key) => {
+          delete key.password;
+          if (key["history"]) {
+            delete key["history"];
+          }
+        });
+        // return matchingKeys;
+        resolve(matchingKeys);
       })
       .catch((error) => {
-        console.error("Error validating user context: ", error);
-        reject({ message: "Error validating user context" });
+        console.error("Error getting documents from Firestore: ", error);
+        reject({ message: "Error getting documents from Firestore" });
       });
   });
 };

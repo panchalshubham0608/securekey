@@ -1,248 +1,111 @@
-import React, { useCallback, useContext, useEffect, useState } from "react";
-import { Navigate } from "react-router-dom";
-import UserContext from "../context/UserContext";
-import "../styles/KeysList.css";
+import { useCallback, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import debounce from "../utils/debounce";
-import { deletePassKey, getPassKeys } from "../utils/firestoredb";
-import History from "./History";
+import Alert from "./Alert";
 import KeyItem from "./KeyItem";
-import Loader from "./Loader";
-import Navbar from "./Navbar";
+import "./KeysList.css";
 
 export default function KeysList(props) {
-  const userContext = useContext(UserContext);
-  const [keys, setKeys] = useState([]);
-  const [filteredKeys, setFilteredKeys] = useState([]);
+  const { keys, readOnly, onDeleteKey } = props;
 
+  const navigate = useNavigate();
   const [searchText, setSearchText] = useState("");
+  const [filteredKeys, setFilteredKeys] = useState([...keys]);
+
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [openMenuIndex, setOpenMenuIndex] = useState(-1);
-  const [historyKeyItem, setShowHistoryKeyItem] = useState(null);
 
-  const [success, setSuccess] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  const [navigate, setNavigate] = useState(null);
-
-  // register a click event listener to close the menu
+  /** ---------- Debounced search ---------- **/
   useEffect(() => {
-    document.addEventListener("click", (event) => {
-      // if the click is inside the key container, do nothing
-      if (event.target.closest(".key-container")) {
-        return;
-      }
-      setSelectedIndex(-1);
-      setOpenMenuIndex(-1);
-    });
-  }, []);
-
-  // function to fetch passkeys
-  const fetchPassKeys = useCallback(() => {
-    setError("");
-    setLoading(true);
-    getPassKeys({ userContext })
-      .then((keys) => {
-        // sort keys
-        keys.sort(
-          (a, b) =>
-            a.account.localeCompare(b.account) ||
-            a.username.localeCompare(b.username)
-        );
-        setKeys(keys);
-        setFilteredKeys(keys);
-      })
-      .catch((error) => {
-        console.error("Error fetching keys", error);
-        if (error.message) {
-          setError(error.message);
-        } else {
-          setError("Error fetching keys");
-        }
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  }, []);
-
-  // fetch passkeys when the component mounts
-  useEffect(fetchPassKeys, [fetchPassKeys]);
-
-  // debounced search
-  // eslint-disable-next-line
-  const debouncedSearch = useCallback(
-    debounce((searchText) => {
-      setFilteredKeys(
-        keys.filter(
-          (key) =>
-            key.account.toLowerCase().includes(searchText.toLowerCase()) ||
-            key.username.toLowerCase().includes(searchText.toLowerCase())
-        )
+    const debounced = debounce((text) => {
+      const filtered = keys.filter(
+        (key) =>
+          key.account.toLowerCase().includes(text.toLowerCase()) ||
+          key.username.toLowerCase().includes(text.toLowerCase())
       );
-    }, 500),
-    [keys]
-  );
+      setFilteredKeys(filtered);
+    }, 500);
 
+    debounced(searchText);
+  }, [searchText, keys]);
+
+  /** ---------- EFFECT: Close menu on outside click ---------- **/
   useEffect(() => {
-    // do a debounced search
-    debouncedSearch(searchText);
-  }, [searchText, debouncedSearch]);
-
-  // function to show the key body
-  const handleShowKeyBody = useCallback(
-    (index) => {
-      if (selectedIndex !== index) {
-        setSelectedIndex(index);
+    const handleClickOutside = (event) => {
+      if (!event.target.closest(".key-container")) {
+        setSelectedIndex(-1);
+        setOpenMenuIndex(-1);
       }
-    },
-    [selectedIndex]
-  );
+    };
 
-  // function to hide the key body
-  const handleHideKeyBody = useCallback(() => {
-    setSelectedIndex(-1);
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
   }, []);
 
-  // function to toggle the menu
   const handleToggleMenu = useCallback((e, index) => {
-    // don't show the key body when the menu is clicked
     e.preventDefault();
     e.stopPropagation();
-    // toggle the menu
-    setOpenMenuIndex(index);
+    setOpenMenuIndex((prev) => (prev === index ? -1 : index));
   }, []);
-
-  // function to edit a passkey
-  const handleEditKey = useCallback(
-    (key) => {
-      props.setEditItem(key);
-      setNavigate(<Navigate to={"/add-key"} />);
-    },
-    [props]
-  );
-
-  // function to delete a passkey
-  const handleDeleteKey = useCallback(
-    (key) => {
-      setError("");
-      setSuccess("");
-      setLoading(true);
-      deletePassKey({
-        userContext,
-        account: key.account,
-        username: key.username,
-      })
-        .then(() => {
-          setSuccess("Passkey deleted successfully");
-          fetchPassKeys();
-        })
-        .catch((error) => {
-          console.error("Error deleting passkey", error);
-          if (error.message) {
-            setError(error.message);
-          } else {
-            setError("Error deleting passkey");
-          }
-        })
-        .finally(() => {
-          setLoading(false);
-        });
-    },
-    [fetchPassKeys]
-  );
-
-  const handleShowHistory = useCallback((key) => {
-    setShowHistoryKeyItem(key);
-  }, []);
-
-  // if navigate is set, return the Navigate component
-  if (navigate) {
-    return navigate;
-  }
 
   return (
-    <div>
+    <div className="keys-list-page">
+      <Alert alert={alert} />
       <div className="keys-list-container">
-        <Navbar />
-        {error && (
-          <div className="alert alert-danger" data-testid="keys-list-error">
-            {error}
-          </div>
-        )}
-        {success && (
-          <div className="alert alert-success" data-testid="keys-list-success">
-            {success}
-          </div>
-        )}
-        <form method="post" action="#" className="mb-3">
-          <div className="d-flex align-items-center justify-content-between search-input-container">
-            <i className="fa-solid fa-magnifying-glass"></i>
+        {/* Search */}
+        <form className="mb-3">
+          <div className="search-input-container d-flex align-items-center">
+            <i className="fa-solid fa-magnifying-glass" />
             <input
               type="text"
               className="form-control merriweather-light"
               placeholder="Search"
-              data-testid="search-input"
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
-              name="searchText"
             />
-            <button
-              type="button"
-              className="btn"
-              style={{
-                visibility: searchText ? "visible" : "hidden",
-              }}
-              onClick={() => setSearchText("")}
-            >
-              <i className="fa-solid fa-times"></i>
-            </button>
-          </div>
-        </form>
-        {loading ? (
-          <Loader />
-        ) : (
-          <div>
-            <div className="d-flex align-items-center justify-content-between mb-3">
-              <p
-                className="m-0 merriweather-light"
-                data-testid="keys-list-count"
-              >
-                <strong>Accounts ({filteredKeys.length})</strong>
-              </p>
+            {searchText && (
               <button
-                className="btn text-primary merriweather-light"
-                onClick={() => setNavigate(<Navigate to={"/add-key"} />)}
+                type="button"
+                className="btn"
+                onClick={() => setSearchText("")}
               >
-                <i className="fa-solid fa-plus"></i> Add
+                <i className="fa-solid fa-times" />
               </button>
-            </div>
-            {filteredKeys.map((key, index) => (
-              <KeyItem
-                key={`${key.account}_${key.username}`}
-                keyItem={key}
-                selected={selectedIndex === index}
-                handleShowKeyBody={handleShowKeyBody}
-                handleHideKeyBody={handleHideKeyBody}
-                showMenu={openMenuIndex === index}
-                handleToggleMenu={handleToggleMenu}
-                handleEditKey={handleEditKey}
-                handleDeleteKey={handleDeleteKey}
-                handleShowHistory={handleShowHistory}
-                index={index}
-              />
-            ))}
-            {filteredKeys.length === 0 && (
-              <p
-                className="text-center merriweather-light"
-                data-testid="keys-list-no-keys"
-              >
-                No keys found
-              </p>
             )}
           </div>
+        </form>
+
+        {/* Header */}
+        <div className="d-flex align-items-center justify-content-between mb-3">
+          <p className="m-0">Accounts ({filteredKeys.length})</p>
+          {!readOnly && <button
+            className="btn text-primary"
+            onClick={() => navigate("/add", { replace: true })}
+          >
+            <i className="fa-solid fa-plus" /> Add
+          </button>}
+        </div>
+
+        {/* Keys List */}
+        {filteredKeys.length > 0 ? (
+          filteredKeys.map((key, index) => (
+            <KeyItem
+              readOnly={readOnly}
+              key={key.id || `${key.account}_${key.username}`}
+              keyItem={key}
+              selected={selectedIndex === index}
+              handleShowKeyBody={() => setSelectedIndex(index)}
+              handleHideKeyBody={() => setSelectedIndex(-1)}
+              showMenu={openMenuIndex === index}
+              handleToggleMenu={handleToggleMenu}
+              handleDeleteKey={onDeleteKey}
+              index={index}
+            />
+          ))
+        ) : (
+          <p className="text-center merriweather-light">No passwords found</p>
         )}
       </div>
-      {historyKeyItem && <History keyItem={historyKeyItem} setShowHistoryKeyItem={setShowHistoryKeyItem} />}
     </div>
   );
 }

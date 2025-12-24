@@ -1,140 +1,76 @@
-import React, { useCallback, useState, useContext } from "react";
-import "../styles/AuthForm.css";
-import { Link } from "react-router-dom";
-import { Navigate } from "react-router-dom";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import Logo from "../assets/images/logo.svg";
-import UserContext from "../context/UserContext";
-import { createUserForContext } from "../utils/contextutil";
-import { signIn, signUp } from "../utils/firebase";
+import { useAppContext } from "../context/AppContext";
+import "../styles/AuthForm.css";
+import { secureSignIn } from "../utils/auth/secureSignIn";
+import { secureSignUp } from "../utils/auth/secureSignUp";
 
 export default function AuthForm(props) {
-  const userContext = useContext(UserContext);
-  const [credentials, setCredentials] = useState({
-    email: "",
-    password: "",
-    confirmPassword: ""
-  });
-  const [credentialsError, setCredentialsError] = useState({
-    email: null,
-    password: null,
-    confirmPassword: null
-  });
+  const { unlockVault } = useAppContext();
+  const navigate = useNavigate();
 
-  const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [navigate, setNavigate] = useState(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [rememberDevice, setRememberDevice] = useState(!!localStorage.getItem("encryptedMEK"));
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const validateFields = useCallback(() => {
-    let valid = true;
-    if (!credentials.email) {
-      setCredentialsError(credentialsError => {
-        return {
-          ...credentialsError,
-          email: "Email is required"
-        }
-      });
-      valid = false;
+  const validateFields = () => {
+    if (!email) {
+      setError("Email is required");
+      return false;
     }
-    if (!credentials.password) {
-      setCredentialsError(credentialsError => {
-        return {
-          ...credentialsError,
-          password: "Password is required"
-        }
-      });
-      valid = false;
+    if (!password) {
+      setError("Password is required");
+      return false;
     }
-    if (props.register && !credentials.confirmPassword) {
-      setCredentialsError(credentialsError => {
-        return {
-          ...credentialsError,
-          confirmPassword: "Confirm password is required"
-        }
-      });
-      valid = false;
+    if (props.register && !confirmPassword) {
+      setError("Confirm password is required");
+      return false;
     }
-    if (props.register && credentials.password !== credentials.confirmPassword) {
-      setCredentialsError(credentialsError => {
-        return {
-          ...credentialsError,
-          confirmPassword: "Passwords do not match"
-        }
-      });
-      valid = false;
+    if (props.register && password !== confirmPassword) {
+      setError("Passwords do not match");
+      return false;
     }
-    return valid;
-  }, [credentials.email, credentials.password, credentials.confirmPassword, props.register]);
 
-  const handleChange = (e) => {
-    setCredentialsError(credentialsError => {
-      return {
-        ...credentialsError,
-        [e.target.id]: ""
-      }
-    })
-    setCredentials(credentials => {
-      return {
-        ...credentials,
-        [e.target.id]: e.target.value
-      };
-    });
-  }
+    return true;
+  };
 
-  const onFocus = (e) => {
-    setCredentialsError({
-      ...credentialsError,
-      [e.target.id]: ""
-    });
-  }
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     // prevent form submission
     e.preventDefault();
     e.stopPropagation();
-    // if loading, return
-    if (loading) {
-      return;
-    }
-    // validate fields
-    if (validateFields()) {
-      setLoading(true);
-      setError("");
-      let method = props.register ? signUp : signIn;
-      method({
-        email: credentials.email,
-        password: credentials.password
-      }).then(() => {
-        let userForContext = createUserForContext({
-          username: credentials.email,
-          password: credentials.password
-        });
-        userContext.setUser(userForContext);
-        setNavigate(<Navigate to="/" />);
-      }).catch((error) => {
-        console.log(error);
-        if (error.message) {
-          if (error.message.includes("auth/email-already-in-use")) {
-            setError("Email is already in use");
-          } else if (error.message.includes("auth/invalid-credential")) {
-            setError("Invalid email or password");
-          } else if (error.message.includes("auth/weak-password")) {
-            setError("Password is too weak");
-          } else {
-            setError(error.message);
-          }
-        } else {
-          setError("An error occurred. Please try again later");
-        }
-      }).finally(() => {
-        setLoading(false);
-      });
-    }
-  }
+    if (!validateFields()) return;
 
-  // if user is already logged in, navigate to home
-  if (navigate) {
-    return navigate;
+    setError("");
+    setLoading(true);
+    try {
+      const { mek } = props.register
+        ? await secureSignUp({ email, password, rememberDevice })
+        : await secureSignIn({ email, password, rememberDevice });
+      unlockVault({ mek });
+      navigate("/", { replace: true });
+    } catch (error) {
+      console.log(error);
+      if (error.message) {
+        if (error.message.includes("auth/email-already-in-use")) {
+          setError("Email is already in use");
+        } else if (error.message.includes("auth/invalid-credential")) {
+          setError("Invalid email or password");
+        } else if (error.message.includes("auth/weak-password")) {
+          setError("Password is too weak");
+        } else {
+          setError(error.message);
+        }
+      } else {
+        setError("An error occurred. Please try again later");
+      }
+    } finally {
+      setLoading(false);
+    }
   }
 
   let register = props.register;
@@ -150,16 +86,13 @@ export default function AuthForm(props) {
         <div className="mb-3 w-100">
           <label htmlFor="email" className="form-label">Email address</label>
           <input type="email" className="form-control" id="email"
-            value={credentials.email} onChange={handleChange}
-            onFocus={onFocus} />
-          <div className="form-text text-danger">{credentialsError.email}</div>
+            value={email} onChange={e => setEmail(e.target.value)} />
         </div>
         <div className="mb-3 w-100">
           <label htmlFor="password" className="form-label">Password</label>
           <div className="input-group">
             <input type={showPassword ? "text" : "password"} className="form-control" id="password"
-              value={credentials.password} onChange={handleChange}
-              onFocus={onFocus} />
+              value={password} onChange={e => setPassword(e.target.value)} />
             {
               // non-interactive elements with click handlers must have at least one keyboard event listener
               //eslint-disable-next-line
@@ -167,14 +100,11 @@ export default function AuthForm(props) {
                 onClick={() => setShowPassword(showPassword => !showPassword)}
               >{showPassword ? <i className="fa-solid fa-eye-slash"></i> : <i className="fa-solid fa-eye"></i>}</span>}
           </div>
-          <div className="form-text text-danger">{credentialsError.password}</div>
         </div>
         {register && <div className="mb-3 w-100">
           <label htmlFor="confirmPassword" className="form-label">Confirm Password</label>
           <input type={showPassword ? "text" : "password"} className="form-control" id="confirmPassword"
-            value={credentials.confirmPassword} onChange={handleChange}
-            onFocus={onFocus} />
-          <div className="form-text text-danger">{credentialsError.confirmPassword}</div>
+            value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} />
         </div>}
         <div className="mb-3 w-100">
           <button type="submit" className="btn btn-primary w-100 d-flex align-items-center justify-content-center"
@@ -182,6 +112,11 @@ export default function AuthForm(props) {
             {loading && <span className="spinner-border spinner-border mr-3"></span>}
             {register ? "Register" : "Login"}
           </button>
+        </div>
+        <div className="mb-3 form-check">
+          <input type="checkbox" className="form-check-input" id="rememberDevice"
+            value={rememberDevice} checked={rememberDevice} onChange={e => setRememberDevice(e.target.checked)} />
+          <label htmlFor="rememberDevice" className="form-check-label">Remember this device</label>
         </div>
         {register && <p>Already have an account? <Link to="/login">Login</Link></p>}
         {!register && <p>Don&apos;t have an account? <Link to="/register">Signup</Link></p>}

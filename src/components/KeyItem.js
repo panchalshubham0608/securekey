@@ -1,22 +1,23 @@
-import React, { useContext, useEffect, useState } from "react";
-import UserContext from "../context/UserContext";
-import { getPassKeyValue } from "../utils/firestoredb";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAppContext } from "../context/AppContext";
 import { str2color } from "../utils/str2color";
+import { getPasswordByAccountAndUsername } from "../utils/vault/vaultService";
 import AccountIcon from "./AccountIcon";
-import Loader from "./Loader";
+import CircularLoader from "./CircularLoader";
 
 export default function KeyItem(props) {
-  const userContext = useContext(UserContext);
+  const { user, mek } = useAppContext();
+  const navigate = useNavigate();
   const {
+    readOnly,
     keyItem,
     selected,
     handleShowKeyBody,
     handleHideKeyBody,
     showMenu,
     handleToggleMenu,
-    handleEditKey,
     handleDeleteKey,
-    handleShowHistory,
     index,
   } = props;
   const [timer, setTimer] = useState(30);
@@ -31,11 +32,7 @@ export default function KeyItem(props) {
     if (!selected) return;
     setError("");
     setLoading(true);
-    getPassKeyValue({
-      userContext,
-      account: keyItem.account,
-      username: keyItem.username,
-    })
+    getPasswordByAccountAndUsername({ uid: user.uid, account: keyItem.account, username: keyItem.username, mek })
       .then((password) => {
         // set password and hide it after 30 seconds
         setPassword(password);
@@ -104,7 +101,7 @@ export default function KeyItem(props) {
           className="key-container mb-3 merriweather-light"
           data-testid="key-item"
           style={{ borderTop: `5px solid ${str2color(keyItem.account)}` }}
-          onClick={() => handleShowKeyBody(index)}
+          onClick={() => !readOnly && handleShowKeyBody(index)}
         >
           <div className="mb-3 d-flex align-items-start justify-content-between">
             <div className="d-flex align-items-center">
@@ -121,7 +118,7 @@ export default function KeyItem(props) {
                 </p>
               </div>
             </div>
-            <div className="key-action">
+            {!readOnly && <div className="key-action">
               <button
                 className="btn merriweather-light"
                 onClick={(e) => handleToggleMenu(e, index)}
@@ -139,7 +136,7 @@ export default function KeyItem(props) {
                         e.preventDefault();
                         e.stopPropagation();
                         // handle show history
-                        handleShowHistory(keyItem);
+                        return navigate(`/history/${keyItem.id}`, { replace: true });
                       }}
                     >
                       History
@@ -154,7 +151,7 @@ export default function KeyItem(props) {
                         e.preventDefault();
                         e.stopPropagation();
                         // show the edit key dialog
-                        handleEditKey(keyItem);
+                        return navigate(`/edit/${keyItem.id}`, { replace: true });
                       }}
                     >
                       Edit
@@ -177,12 +174,12 @@ export default function KeyItem(props) {
                   }
                 </ul>
               )}
-            </div>
+            </div>}
           </div>
           {selected && (
             <div className="key-body">
               {loading ? (
-                <Loader borderColor={str2color(keyItem.account)} />
+                <CircularLoader borderColor={str2color(keyItem.account)} />
               ) : (
                 <div>
                   {error ? (

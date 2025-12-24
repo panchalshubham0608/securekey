@@ -1,0 +1,41 @@
+.custom-alert {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  width: 300px;
+  transform: translateX(-50%);
+
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  z-index: 9999;
+
+  animation: fadeInUp 0.3s ease-out;
+}
+
+.alert-success {
+  background: #d1e7dd;
+  color: #0a3622;
+}
+
+.alert-error {
+  background: #f8d7da;
+  color: #58151c;
+}
+
+.alert-info {
+  background: #cff4fc;
+  color: #055160;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
