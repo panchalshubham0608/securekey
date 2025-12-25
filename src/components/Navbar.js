@@ -3,12 +3,14 @@ import { useNavigate } from "react-router-dom";
 import Logo from "../assets/images/logo.svg";
 import { useAppContext } from "../context/AppContext";
 import "./Navbar.css";
+import QuickUnlockSetup from "./QuickUnlockSetup";
 
 export default function Navbar() {
   const navigate = useNavigate();
   const { logout } = useAppContext();
 
   const [open, setOpen] = useState(false);
+  const [showQuickUnlockSetup, setShowQuickUnlockSetup] = useState(false);
   const rootRef = useRef(null);
 
   useEffect(() => {
@@ -34,11 +36,18 @@ export default function Navbar() {
 
   const menuItems = [
     {
+      key: "quickUnlock",
+      label: "Quick Unlock",
+      icon: <i className="fa-solid fa-fingerprint"></i>,
+      onClick: () => setShowQuickUnlockSetup(true),
+    },
+    {
       key: "migrate",
       label: "Migrate",
       icon: <i className="fa-solid fa-rocket"></i>,
       onClick: () => navigate("/migrate"),
     },
+
     {
       key: "logout",
       label: "Logout",
@@ -86,6 +95,8 @@ export default function Navbar() {
           <h4 className="m-0 text-primary sedgwick-ave-display-regular">SecureKey</h4>
         </div>
       </div>
+
+      {showQuickUnlockSetup && <QuickUnlockSetup onClose={() => setShowQuickUnlockSetup(false)} />}
     </div>
 
   );
