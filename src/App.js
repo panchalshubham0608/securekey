@@ -6,6 +6,7 @@ import AuthForm from "./components/AuthForm";
 import Dashboard from "./components/Dashboard";
 import Home from "./components/Home";
 import MigrateVault from "./components/MigrateVault";
+import QuickUnlockVerification from "./components/QuickUnlockVerification";
 import VaultItemChangeHistory from "./components/VaultItemChangeHistory";
 import VaultItemForm from "./components/VaultItemForm";
 import { AppContext } from "./context/AppContext";
@@ -88,6 +89,7 @@ function App() {
   return (
     <div className="App">
       <AppContext.Provider value={contextValue}>
+        <QuickUnlockVerification />
         <Router basename="/securekey">
           <Routes>
 

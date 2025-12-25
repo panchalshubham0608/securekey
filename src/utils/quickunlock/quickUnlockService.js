@@ -259,6 +259,7 @@ export async function enableQuickUnlock({ mek }) {
   await idbSet("wrappedDeviceKey", wrappedDeviceKey);
 
   const encryptedMEK = await encryptMEK({ mek, deviceKey });
+  if (!encryptedMEK) throw new Error("Failed to encrypt MEK");
   localStorage.setItem(ENCRYPTED_MEK_KEY, JSON.stringify(encryptedMEK));
 }
 

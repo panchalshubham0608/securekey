@@ -12,8 +12,8 @@ export default function AuthForm(props) {
 
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [email, setEmail] = useState("user1@gmail.com");
-  const [password, setPassword] = useState("user1234");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
