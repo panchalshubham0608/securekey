@@ -50,7 +50,7 @@ export default function QuickUnlockVerification() {
     } catch (err) {
       console.error(err);
       setError(
-        err?.message || "Failed to disable quick unlock"
+        err?.message || "Failed to authenticate with quick unlock"
       );
     } finally {
       setLoading(false);

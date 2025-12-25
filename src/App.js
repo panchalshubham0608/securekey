@@ -13,7 +13,6 @@ import { AppContext } from "./context/AppContext";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import PublicRoute from "./routes/PublicRoute";
 import { auth } from "./utils/firebase/firebase";
-import { quickUnlock } from "./utils/quickunlock/quickUnlockService";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -25,22 +24,14 @@ function App() {
   // Listen to auth state
   useEffect(() => {
     // Clear existing storage items
-    localStorage.clear("encryptedMEK");
-    localStorage.clear("deviceKey");
+    localStorage.removeItem("encryptedMEK");
+    localStorage.removeItem("deviceKey");
 
     setAuthLoading(true);
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       setUser(firebaseUser);
       setAuthLoading(false);
-
-      if (firebaseUser) {
-        // Try auto-unlock vault
-        const deviceMek = await quickUnlock();
-        if (deviceMek) {
-          setMek(deviceMek);
-          setVaultUnlocked(true);
-        }
-      } else {
+      if (!firebaseUser) {
         // Logout cleanup
         setMek(null);
         setVaultUnlocked(false);
