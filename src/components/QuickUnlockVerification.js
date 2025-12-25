@@ -47,6 +47,7 @@ export default function QuickUnlockVerification() {
         return;
       }
       unlockVault({ mek });
+      setCancelled(true);
     } catch (err) {
       console.error(err);
       setError(

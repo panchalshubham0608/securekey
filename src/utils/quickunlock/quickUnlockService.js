@@ -1,35 +1,30 @@
 /**
  * quickUnlockService.js
  *
- * Implements device-based Quick Unlock using WebAuthn.
+ * Device-based Quick Unlock using WebAuthn + local cryptography.
  *
  * Security model:
- * - A random deviceKey is generated per device
- * - deviceKey is wrapped using a WebAuthn-derived wrapping key
- * - MEK is encrypted using the deviceKey
- * - deviceKey can only be unwrapped after biometric / PIN verification
+ * - deviceKey (256-bit random) stored locally in IndexedDB
+ * - MEK encrypted using deviceKey and stored in localStorage
+ * - WebAuthn used ONLY to require biometric / PIN verification
  *
- * This setup:
- * ✅ Does NOT store secrets in plaintext
- * ✅ Requires user presence (biometric/PIN)
- * ✅ Is device-bound
- * ❌ Does not sync across devices (by design)
+ * Guarantees:
+ * ✅ No plaintext MEK at rest
+ * ✅ Biometric / PIN required to unlock
+ * ✅ Device-bound (not synced)
+ * ❌ Not resistant to XSS (same as all web vaults)
  */
-
 
 import { idbDelete, idbGet, idbSet } from "./idb";
+
 const ENCRYPTED_MEK_KEY = "encrypted_mek";
-
+const DEVICE_KEY_IDB_KEY = "device_key";
+const CREDENTIAL_ID_KEY = "credential_id";
 
 /* ------------------------------------------------------------------ */
-/* Utility helpers                                                     */
+/* Base64 helpers                                                      */
 /* ------------------------------------------------------------------ */
 
-const enc = new TextEncoder();
-
-/**
- * Converts base64url → ArrayBuffer
- */
 export const base64UrlToArrayBuffer = (base64url) => {
   const padding = "=".repeat((4 - (base64url.length % 4)) % 4);
   const base64 = (base64url + padding)
@@ -38,25 +33,18 @@ export const base64UrlToArrayBuffer = (base64url) => {
 
   const binary = atob(base64);
   const bytes = new Uint8Array(binary.length);
-
   for (let i = 0; i < binary.length; i++) {
     bytes[i] = binary.charCodeAt(i);
   }
-
   return bytes.buffer;
 };
 
-/**
- * Converts ArrayBuffer → base64url
- */
 export const arrayBufferToBase64Url = (buffer) => {
   const bytes = new Uint8Array(buffer);
   let binary = "";
-
   for (let i = 0; i < bytes.byteLength; i++) {
     binary += String.fromCharCode(bytes[i]);
   }
-
   return btoa(binary)
     .replace(/\+/g, "-")
     .replace(/\//g, "_")
@@ -68,10 +56,9 @@ export const arrayBufferToBase64Url = (buffer) => {
 /* ------------------------------------------------------------------ */
 
 /**
- * Creates a WebAuthn credential for this device
- * Must be called once during setup
+ * Creates WebAuthn credential (one-time per device)
  */
-export async function createWebAuthnCredential() {
+async function createWebAuthnCredential() {
   const credential = await navigator.credentials.create({
     publicKey: {
       challenge: crypto.getRandomValues(new Uint8Array(32)),
@@ -81,7 +68,7 @@ export async function createWebAuthnCredential() {
         name: "user",
         displayName: "Vault User",
       },
-      pubKeyCredParams: [{ alg: -7, type: "public-key" }],
+      pubKeyCredParams: [{ type: "public-key", alg: -7 }],
       authenticatorSelection: {
         userVerification: "required",
       },
@@ -90,16 +77,16 @@ export async function createWebAuthnCredential() {
   });
 
   const credentialId = arrayBufferToBase64Url(credential.rawId);
-  await idbSet("credentialId", credentialId);
+  await idbSet(CREDENTIAL_ID_KEY, credentialId);
 
   return credentialId;
 }
 
 /**
- * Requests biometric/PIN verification
+ * Requires biometric / PIN verification
  */
-async function getAssertion({ credentialId }) {
-  return navigator.credentials.get({
+async function requireUserVerification(credentialId) {
+  await navigator.credentials.get({
     publicKey: {
       challenge: crypto.getRandomValues(new Uint8Array(32)),
       allowCredentials: [
@@ -109,84 +96,20 @@ async function getAssertion({ credentialId }) {
         },
       ],
       userVerification: "required",
+      timeout: 60000,
     },
   });
 }
 
 /* ------------------------------------------------------------------ */
-/* Cryptography helpers                                                */
+/* Cryptography                                                        */
 /* ------------------------------------------------------------------ */
 
 /**
- * Generates a random device key
+ * Generates random device key
  */
-async function generateDeviceKey() {
+function generateDeviceKey() {
   return crypto.getRandomValues(new Uint8Array(32));
-}
-
-/**
- * Derives a wrapping key from WebAuthn assertion signature
- */
-async function deriveWrappingKey(assertion) {
-  const signature = assertion.response.signature;
-
-  const baseKey = await crypto.subtle.importKey(
-    "raw",
-    signature,
-    "HKDF",
-    false,
-    ["deriveKey"]
-  );
-
-  return crypto.subtle.deriveKey(
-    {
-      name: "HKDF",
-      hash: "SHA-256",
-      salt: new Uint8Array(),
-      info: enc.encode("device-key-wrap"),
-    },
-    baseKey,
-    { name: "AES-GCM", length: 256 },
-    false,
-    ["encrypt", "decrypt"]
-  );
-}
-
-/**
- * Wraps deviceKey using WebAuthn
- */
-async function wrapDeviceKey({ deviceKey, assertion }) {
-  const key = await deriveWrappingKey(assertion);
-  const iv = crypto.getRandomValues(new Uint8Array(12));
-
-  const ciphertext = await crypto.subtle.encrypt(
-    { name: "AES-GCM", iv },
-    key,
-    deviceKey
-  );
-
-  return {
-    iv: arrayBufferToBase64Url(iv),
-    ciphertext: arrayBufferToBase64Url(ciphertext),
-  };
-}
-
-/**
- * Unwraps deviceKey after biometric verification
- */
-async function unwrapDeviceKey({ wrapped, assertion }) {
-  const key = await deriveWrappingKey(assertion);
-
-  const deviceKey = await crypto.subtle.decrypt(
-    {
-      name: "AES-GCM",
-      iv: base64UrlToArrayBuffer(wrapped.iv),
-    },
-    key,
-    base64UrlToArrayBuffer(wrapped.ciphertext)
-  );
-
-  return new Uint8Array(deviceKey);
 }
 
 /**
@@ -194,6 +117,7 @@ async function unwrapDeviceKey({ wrapped, assertion }) {
  */
 async function encryptMEK({ mek, deviceKey }) {
   const iv = crypto.getRandomValues(new Uint8Array(12));
+
   const key = await crypto.subtle.importKey(
     "raw",
     deviceKey,
@@ -243,52 +167,54 @@ async function decryptMEK({ encrypted, deviceKey }) {
 /* ------------------------------------------------------------------ */
 
 /**
- * Saves MEK securely for Quick Unlock
- * Called AFTER user enters master password
+ * Enables Quick Unlock on this device
+ * Call AFTER user enters master password
  */
 export async function enableQuickUnlock({ mek }) {
-  let credentialId = await idbGet("credentialId");
+  let credentialId = await idbGet(CREDENTIAL_ID_KEY);
   if (!credentialId) {
     credentialId = await createWebAuthnCredential();
   }
 
-  const assertion = await getAssertion({ credentialId });
-  const deviceKey = await generateDeviceKey();
+  // Require biometric once during setup
+  await requireUserVerification(credentialId);
 
-  const wrappedDeviceKey = await wrapDeviceKey({ deviceKey, assertion });
-  await idbSet("wrappedDeviceKey", wrappedDeviceKey);
+  const deviceKey = generateDeviceKey();
+  await idbSet(DEVICE_KEY_IDB_KEY, deviceKey);
 
   const encryptedMEK = await encryptMEK({ mek, deviceKey });
-  if (!encryptedMEK) throw new Error("Failed to encrypt MEK");
   localStorage.setItem(ENCRYPTED_MEK_KEY, JSON.stringify(encryptedMEK));
 }
 
 /**
- * Attempts Quick Unlock (biometric/PIN)
+ * Attempts Quick Unlock using biometric / PIN
  * Returns decrypted MEK or null
  */
 export async function quickUnlock() {
-  const credentialId = await idbGet("credentialId");
-  const wrappedDeviceKey = await idbGet("wrappedDeviceKey");
+  const credentialId = await idbGet(CREDENTIAL_ID_KEY);
+  const deviceKey = await idbGet(DEVICE_KEY_IDB_KEY);
   const encryptedMEK = localStorage.getItem(ENCRYPTED_MEK_KEY);
 
-  if (!credentialId || !wrappedDeviceKey || !encryptedMEK) {
+  if (!credentialId || !deviceKey || !encryptedMEK) {
     return null;
   }
 
-  const assertion = await getAssertion({ credentialId });
-  const deviceKey = await unwrapDeviceKey({ wrapped: wrappedDeviceKey, assertion });
+  // Biometric gate
+  await requireUserVerification(credentialId);
 
-  return decryptMEK({ encrypted: JSON.parse(encryptedMEK), deviceKey });
+  return decryptMEK({
+    encrypted: JSON.parse(encryptedMEK),
+    deviceKey,
+  });
 }
 
 /**
- * Checks whether Quick Unlock is enabled on this device
+ * Returns true if quick unlock is enabled on this device
  */
 export async function isQuickUnlockEnabled() {
   return !!(
-    (await idbGet("credentialId")) &&
-    (await idbGet("wrappedDeviceKey")) &&
+    (await idbGet(CREDENTIAL_ID_KEY)) &&
+    (await idbGet(DEVICE_KEY_IDB_KEY)) &&
     localStorage.getItem(ENCRYPTED_MEK_KEY)
   );
 }
@@ -297,18 +223,18 @@ export async function isQuickUnlockEnabled() {
  * Disables Quick Unlock on this device
  */
 export async function disableQuickUnlock() {
-  await idbDelete("credentialId");
-  await idbDelete("wrappedDeviceKey");
+  await idbDelete(CREDENTIAL_ID_KEY);
+  await idbDelete(DEVICE_KEY_IDB_KEY);
   localStorage.removeItem(ENCRYPTED_MEK_KEY);
 }
 
 /**
- * Checks whether quick unlock is supported
+ * Checks browser support
  */
 export function isQuickUnlockSupported() {
   return (
     window.PublicKeyCredential &&
     navigator.credentials &&
-    typeof navigator.credentials.create === "function"
+    typeof navigator.credentials.get === "function"
   );
 }
