@@ -58,15 +58,16 @@ export const arrayBufferToBase64Url = (buffer) => {
 /**
  * Creates WebAuthn credential (one-time per device)
  */
-async function createWebAuthnCredential() {
+async function createWebAuthnCredential({ user }) {
+  if (!user.email) throw new Error("Could not verify user authentication");
   const credential = await navigator.credentials.create({
     publicKey: {
       challenge: crypto.getRandomValues(new Uint8Array(32)),
       rp: { name: "SecureKey Vault" },
       user: {
         id: crypto.getRandomValues(new Uint8Array(16)),
-        name: "user",
-        displayName: "Vault User",
+        name: user.email,
+        displayName: user.displayName || user.email,
       },
       pubKeyCredParams: [{ type: "public-key", alg: -7 }],
       authenticatorSelection: {
@@ -170,10 +171,10 @@ async function decryptMEK({ encrypted, deviceKey }) {
  * Enables Quick Unlock on this device
  * Call AFTER user enters master password
  */
-export async function enableQuickUnlock({ mek }) {
+export async function enableQuickUnlock({ user, mek }) {
   let credentialId = await idbGet(CREDENTIAL_ID_KEY);
   if (!credentialId) {
-    credentialId = await createWebAuthnCredential();
+    credentialId = await createWebAuthnCredential({ user });
   }
 
   // Require biometric once during setup

@@ -9,7 +9,7 @@ import {
 import Modal from "./Modal";
 
 export default function QuickUnlockSetup({ onClose }) {
-  const { vaultUnlocked, mek } = useAppContext();
+  const { vaultUnlocked, mek, user } = useAppContext();
 
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState("");
@@ -51,7 +51,7 @@ export default function QuickUnlockSetup({ onClose }) {
     setLoading(true);
 
     try {
-      await enableQuickUnlock({ mek });
+      await enableQuickUnlock({ user, mek });
       setSuccess("Quick unlock was successfully enabled.");
     } catch (err) {
       console.error(err);
