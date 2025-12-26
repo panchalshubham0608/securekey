@@ -12,7 +12,6 @@ export default function AuthForm(props) {
 
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberDevice, setRememberDevice] = useState(!!localStorage.getItem("encryptedMEK"));
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -49,8 +48,8 @@ export default function AuthForm(props) {
     setLoading(true);
     try {
       const { mek } = props.register
-        ? await secureSignUp({ email, password, rememberDevice })
-        : await secureSignIn({ email, password, rememberDevice });
+        ? await secureSignUp({ email, password })
+        : await secureSignIn({ email, password });
       unlockVault({ mek });
       navigate("/", { replace: true });
     } catch (error) {
@@ -112,11 +111,6 @@ export default function AuthForm(props) {
             {loading && <span className="spinner-border spinner-border mr-3"></span>}
             {register ? "Register" : "Login"}
           </button>
-        </div>
-        <div className="mb-3 form-check">
-          <input type="checkbox" className="form-check-input" id="rememberDevice"
-            value={rememberDevice} checked={rememberDevice} onChange={e => setRememberDevice(e.target.checked)} />
-          <label htmlFor="rememberDevice" className="form-check-label">Remember this device</label>
         </div>
         {register && <p>Already have an account? <Link to="/login">Login</Link></p>}
         {!register && <p>Don&apos;t have an account? <Link to="/register">Signup</Link></p>}

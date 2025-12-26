@@ -2,19 +2,49 @@
 [![CI Pipeline](https://github.com/panchalshubham0608/securekey/actions/workflows/react_test.yml/badge.svg?branch=main)](https://github.com/panchalshubham0608/securekey/actions/workflows/react_test.yml)
 [![Deploy React App to GitHub Pages](https://github.com/panchalshubham0608/securekey/actions/workflows/deploy.yml/badge.svg)](https://github.com/panchalshubham0608/securekey/actions/workflows/deploy.yml)
 
-[SecureKey](https://panchalshubham0608.github.io/securekey) is a web application that allows you to securely store your secrets. 
+[SecureKey](https://panchalshubham0608.github.io/securekey) is a **secure, client-side encrypted password manager** that allows you to safely store and manage your secrets directly in your browser.
 
-## Features
-- Securely store your secrets
-- AES encryption
-- Password protected
-- Easy to use
+## ✨ Key Features
+- 🔐 **Client-side encryption** — your secrets are encrypted before they leave your device
+- 🧠 **Master Encryption Key (MEK) architecture**
+- 🔑 **Password-based login**
+- ⚡ **Quick Unlock using biometric / PIN (WebAuthn)**
+   * Fingerprint, Face ID, or device PIN
+   * Device-bound and secure
+- 🔄 **Seamless migration** from legacy encryption to MEK-based encryption
+- 🕓 **Password history tracking**
+- ☁️ **Secure cloud sync** using Firebase Firestore
+- 🎨 **Clean and intuitive UI**
 
-## Why Secure Key?
-Secure Key is a simple and secure way to store your secrets. It uses AES encryption to store your secrets. You can store your secrets in a secure way and access them whenever you want with ease.
+## 🔒 Security Model (High Level)
+- Secrets are encrypted locally using a Master Encryption Key (MEK)
+- **MEK is never stored in plaintext**
+- For Quick Unlock:
+   - MEK is encrypted with a **device-specific key**
+   - Device key is stored securely in IndexedDB
+   - Biometric / PIN verification is required to unlock
+- Encryption uses **AES-GCM (256-bit)**
+- 🔐 Your data remains unreadable to anyone without your credentials — including the server.
 
-## !! Important Note !!
-Please make sure to remember your password. If you forget your password, you will not be able to access your secrets.
+## 🔄 Migration Support
+- SecureKey has upgraded its encryption design.
+- If you don’t see your existing passwords after login:
+   - Use Migration from the hamburger menu
+   - Existing passwords will be securely re-encrypted using the new MEK system
+   - Migration happens locally and securely
+
+## ⚠️ Important Notes
+- **Do not forget your master password**
+- If you lose:
+   - Your password and
+   - Access to your device (Quick Unlock)
+- 👉 Your data **cannot be recovered**.  
+(This is by design for maximum security.)
+
+## 🧪 Browser Support
+- Modern Chromium-based browsers (Chrome, Edge, Brave)
+- WebAuthn required for biometric / PIN unlock
+- HTTPS is required for cryptographic APIs
 
 ## Development Flow
 1. **Clone the Repository**:
@@ -30,6 +60,8 @@ Please make sure to remember your password. If you forget your password, you wil
      ```env
      REACT_APP_FIREBASE_CONFIG=your_firebase_config
      REACT_APP_FIRESTORE_KEYS_COLLECTION_NAME=your_firestore_keys_collection_name
+     REACT_APP_FIRESTORE_USERS_COLLECTION_NAME=your_firestore_USERS_collection_name
+     REACT_APP_FIRESTORE_VAULTS_COLLECTION_NAME=your_firestore_VAULTS_collection_name
      ```
 
 3. **Install Packages**:
@@ -62,11 +94,10 @@ Please make sure to remember your password. If you forget your password, you wil
 9. **Observe Production**:
     - Observe production for any issues with your deployment, if you see something is broken then create a roll-back of your changes.
 
-## Additional Notes
-
-- **Coding Style**: Follow the project's coding style and conventions.
-- **Testing**: Ensure that all tests pass before submitting your pull request.
-
+## 🧾 Additional Notes
+- Coding Style: Follow existing patterns and conventions
+- Security-sensitive code: Add comments and rationale
+- Testing: Ensure all tests pass before submitting PRs
 
 ## Help
 If you have any questions or need help, please contact me at [shubhampanchal9773@gmail.com](mailto:shubhampanchal9773@gmail.com)

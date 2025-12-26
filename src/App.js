@@ -6,12 +6,12 @@ import AuthForm from "./components/AuthForm";
 import Dashboard from "./components/Dashboard";
 import Home from "./components/Home";
 import MigrateVault from "./components/MigrateVault";
+import QuickUnlockVerification from "./components/QuickUnlockVerification";
 import VaultItemChangeHistory from "./components/VaultItemChangeHistory";
 import VaultItemForm from "./components/VaultItemForm";
 import { AppContext } from "./context/AppContext";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import PublicRoute from "./routes/PublicRoute";
-import { clearStorage, readMEKFromDevice } from "./utils/auth/mek";
 import { auth } from "./utils/firebase/firebase";
 
 function App() {
@@ -23,19 +23,15 @@ function App() {
 
   // Listen to auth state
   useEffect(() => {
+    // Clear existing storage items
+    localStorage.removeItem("encryptedMEK");
+    localStorage.removeItem("deviceKey");
+
     setAuthLoading(true);
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       setUser(firebaseUser);
       setAuthLoading(false);
-
-      if (firebaseUser) {
-        // Try auto-unlock vault
-        const deviceMek = await readMEKFromDevice();
-        if (deviceMek) {
-          setMek(deviceMek);
-          setVaultUnlocked(true);
-        }
-      } else {
+      if (!firebaseUser) {
         // Logout cleanup
         setMek(null);
         setVaultUnlocked(false);
@@ -56,7 +52,6 @@ function App() {
   const lockVault = () => {
     setMek(null);
     setVaultUnlocked(false);
-    clearStorage();
   };
 
   // Post logout, vault will be locked
@@ -85,6 +80,7 @@ function App() {
   return (
     <div className="App">
       <AppContext.Provider value={contextValue}>
+        <QuickUnlockVerification />
         <Router basename="/securekey">
           <Routes>
 
