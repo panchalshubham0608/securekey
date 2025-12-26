@@ -1,7 +1,7 @@
 {
   "files": {
     "main.css": "/securekey/static/css/main.f8aa0c0c.css",
-    "main.js": "/securekey/static/js/main.02036ec1.js",
+    "main.js": "/securekey/static/js/main.cbf05217.js",
     "static/js/453.1226a37f.chunk.js": "/securekey/static/js/453.1226a37f.chunk.js",
     "static/media/IncomeTax.svg": "/securekey/static/media/IncomeTax.be301d7bde059bf074ffc76c688914bd.svg",
     "static/media/AWS.svg": "/securekey/static/media/AWS.b17afa36b724800d9783c40834034ef0.svg",
@@ -21,11 +21,11 @@
     "static/media/NPM.svg": "/securekey/static/media/NPM.4b8e3d4a216d8c578bb45c9b827ff83f.svg",
     "static/media/SBI.svg": "/securekey/static/media/SBI.aa98839b45cdfddb5157e28f630d0174.svg",
     "main.f8aa0c0c.css.map": "/securekey/static/css/main.f8aa0c0c.css.map",
-    "main.02036ec1.js.map": "/securekey/static/js/main.02036ec1.js.map",
+    "main.cbf05217.js.map": "/securekey/static/js/main.cbf05217.js.map",
     "453.1226a37f.chunk.js.map": "/securekey/static/js/453.1226a37f.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.f8aa0c0c.css",
-    "static/js/main.02036ec1.js"
+    "static/js/main.cbf05217.js"
   ]
 }
