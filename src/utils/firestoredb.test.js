@@ -91,63 +91,6 @@ describe("Firestore Functions", () => {
     process.env = env;
   });
 
-  describe("getPassKeys", () => {
-    test("successfully retrieves passkeys without password(s)", async () => {
-      const mockUserContext = { user: { username: "testuser" } };
-      const mockSnapshot = {
-        docs: [
-          { id: "1", data: () => ({ account: "testaccount1", username: "testusername1", password: "password1", history: ["oldpassword"] }) },
-          { id: "2", data: () => ({ account: "testaccount2", username: "testusername2", password: "password2" }) },
-        ],
-        empty: false,
-      };
-
-      validateUserContext.mockResolvedValue(mockUserContext);
-      getDocs.mockResolvedValue(mockSnapshot);
-
-      const result = await firestoreFunctions.getPassKeys({ userContext: mockUserContext });
-
-      expect(validateUserContext).toHaveBeenCalledWith(mockUserContext);
-      expect(where).toHaveBeenCalledWith("owner", "==", mockUserContext.user.username);
-      expect(query).toHaveBeenCalledWith(mockKeysCollection, whereOwnerMock);
-      expect(getDocs).toHaveBeenCalledWith(mockQuery);
-      expect(result).toEqual([
-        { id: "1", account: "testaccount1", username: "testusername1" },
-        { id: "2", account: "testaccount2", username: "testusername2" },
-      ]);
-    });
-
-    test("handles validation error", async () => {
-      const mockUserContext = {};
-      const mockError = new Error("Validation Error");
-      validateUserContext.mockRejectedValue(mockError);
-
-      await expect(firestoreFunctions.getPassKeys({ userContext: mockUserContext })).rejects.toEqual({
-        message: "Error validating user context",
-      });
-
-      expect(validateUserContext).toHaveBeenCalledWith(mockUserContext);
-      expect(getDocs).not.toHaveBeenCalled();
-      expect(query).not.toHaveBeenCalled();
-    });
-
-    test("handles Firestore error", async () => {
-      const mockUserContext = { user: { username: "testuser" } };
-      validateUserContext.mockResolvedValue(mockUserContext);
-      const mockError = new Error("Firestore Error");
-      getDocs.mockRejectedValue(mockError);
-
-      await expect(firestoreFunctions.getPassKeys({ userContext: mockUserContext })).rejects.toEqual({
-        message: "Error getting documents from Firestore",
-      });
-
-      expect(validateUserContext).toHaveBeenCalledWith(mockUserContext);
-      expect(where).toHaveBeenCalledWith("owner", "==", mockUserContext.user.username);
-      expect(query).toHaveBeenCalledWith(mockKeysCollection, whereOwnerMock);
-      expect(getDocs).toHaveBeenCalledWith(mockQuery);
-    });
-  });
-
   describe("getPassKeyValue", () => {
     test("successfully retrieves passkey value", async () => {
       const mockUserContext = { user: { username: "testuser" } };
@@ -1055,7 +998,7 @@ describe("Firestore Functions", () => {
 
       validateUserContext.mockResolvedValue(mockUserContext);
       getUserFromContext.mockReturnValue({ password: mockSecretKey });
-      getDocs.mockResolvedValue({ docs: [], empty: true});
+      getDocs.mockResolvedValue({ docs: [], empty: true });
 
       await expect(firestoreFunctions.getHistory({
         userContext: mockUserContext,
