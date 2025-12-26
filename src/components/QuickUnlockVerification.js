@@ -68,7 +68,7 @@ export default function QuickUnlockVerification() {
       <div className="d-flex align-items-center justify-content-between flex-column merriweather-light">
         <img width={60} src={Logo} alt="logo" />
         <h4 className="m-0 text-primary sedgwick-ave-display-regular">SecureKey</h4>
-        <p className="fs-3 mt-3">Hi, {user.displayName || user.email}</p>
+        <p className="fs-3 mt-3 text-wrap text-break text-center">Hi, {user.displayName || user.email}</p>
         <p className="text-muted mt-1">Use Touch ID / Face ID to Login.</p>
         <button
           className="btn btn-lg"
