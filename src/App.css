@@ -9,7 +9,7 @@
   padding-top: 10px;
 }
 
-.footer i{
+.footer i {
   color: red;
 }
 
@@ -21,10 +21,21 @@
   .App {
     width: 100%;
   }
-  .auth-form-container, .keys-list-container {
+
+  .auth-form-container,
+  .keys-list-container {
     padding: 20px;
-  }    
+  }
+
   .history-container {
     width: 100% !important;
+  }
+
+  .migration-warning {
+    margin: auto 20px;
+  }
+
+  .hamburger-menu {
+    transform: translateX(-130px);
   }
 }
