@@ -60,11 +60,12 @@ export default function Dashboard(props) {
       <Alert alert={alert} />
       <Loader visible={loading} />
       <Navbar />
-      {showUpgradeWarning && <div className="alert alert-warning m-3 alert-dismissible fade show" role="alert">
-        <strong>We&apos;ve upgraded SecureKey!</strong> If you don&apos;t see your existing passwords, please run a one-time migration from the ☰ menu (top-right).
-        <button type="button" className="btn-close" data-bs-dismiss="alert" aria-label="Close"
-          onClick={dismissUpgradeWarning}></button>
-      </div>}
+      {showUpgradeWarning &&
+        <div className="alert alert-warning alert-dismissible fade show migration-warning" role="alert">
+          <strong>We&apos;ve upgraded SecureKey!</strong> If you don&apos;t see your existing passwords, please run a one-time migration from the ☰ menu (top-right).
+          <button type="button" className="btn-close" data-bs-dismiss="alert" aria-label="Close"
+            onClick={dismissUpgradeWarning}></button>
+        </div>}
       <KeysList keys={keys} onDeleteKey={handleDeleteKey} />
     </div>
   );

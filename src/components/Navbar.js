@@ -58,41 +58,40 @@ export default function Navbar() {
 
   return (
     <div>
-      <div className="hamburger-root hamburger-left" ref={rootRef}>
-        <button
-          className="hamburger-toggle"
-          aria-haspopup="true"
-          aria-expanded={open}
-          onClick={() => setOpen((s) => !s)}
-        >
-          <i className="fa-solid fa-bars"></i>
-        </button>
-
-        {open && (
-          <div className="hamburger-menu" role="menu">
-            {menuItems.map((item) => (
-              <button
-                key={item.key}
-                className={`hamburger-item ${item.destructive ? "destructive" : ""}`}
-                role="menuitem"
-                onClick={() => {
-                  setOpen(false);
-                  item.onClick();
-                }}
-              >
-                {item.icon && <span className="hamburger-icon">{item.icon}</span>}
-                {item.ticked && <span className="hamburger-tick">✔</span>}
-                <span className="hamburger-text">{item.label}</span>
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-
       <div className="custom-navbar mb-3 d-flex align-items-center justify-content-between" data-testid="navbar">
         <div className="d-flex align-items-center">
           <img src={Logo} alt="logo" />
           <h4 className="m-0 text-primary sedgwick-ave-display-regular">SecureKey</h4>
+        </div>
+        <div className="hamburger-root hamburger-left" ref={rootRef}>
+          <button
+            className="hamburger-toggle"
+            aria-haspopup="true"
+            aria-expanded={open}
+            onClick={() => setOpen((s) => !s)}
+          >
+            <i className="fa-solid fa-bars"></i>
+          </button>
+
+          {open && (
+            <div className="hamburger-menu" role="menu">
+              {menuItems.map((item) => (
+                <button
+                  key={item.key}
+                  className={`hamburger-item ${item.destructive ? "destructive" : ""}`}
+                  role="menuitem"
+                  onClick={() => {
+                    setOpen(false);
+                    item.onClick();
+                  }}
+                >
+                  {item.icon && <span className="hamburger-icon">{item.icon}</span>}
+                  {item.ticked && <span className="hamburger-tick">✔</span>}
+                  <span className="hamburger-text">{item.label}</span>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 

@@ -12,10 +12,6 @@
 
 /* container sits top-right (the parent should be position: relative or body) */
 .hamburger-root {
-    position: absolute;
-    /* place relative to nearest positioned parent */
-    right: 16px;
-    top: 16px;
     z-index: 800;
     font-family: inherit;
 }
@@ -43,9 +39,8 @@
 
 /* the menu popover */
 .hamburger-menu {
-    position: absolute;
-    /* below the button */
-    right: 0;
+    position: fixed;
+    transform: translateX(-140px);
     width: 200px;
     background: #fff;
     border-radius: 10px;
@@ -114,5 +109,6 @@
 
     .hamburger-menu {
         width: 180px;
+        transform: translateX(-130px);
     }
 }
