@@ -48,12 +48,18 @@ export default function KeysList(props) {
     setOpenMenuIndex((prev) => (prev === index ? -1 : index));
   }, []);
 
+  // Don't act on form submission for search input
+  const onSearchFormSubmit = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+
   return (
     <div className="keys-list-page">
       <Alert alert={alert} />
       <div className="keys-list-container">
         {/* Search */}
-        <form className="mb-3">
+        <form className="mb-3" action="#" method="post" onSubmit={onSearchFormSubmit}>
           <div className="search-input-container d-flex align-items-center">
             <i className="fa-solid fa-magnifying-glass" />
             <input
