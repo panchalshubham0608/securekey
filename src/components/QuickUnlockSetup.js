@@ -33,13 +33,12 @@ export default function QuickUnlockSetup({ onClose }) {
     };
   }, []);
 
-
   if (!vaultUnlocked) return null;
 
   if (!isQuickUnlockSupported()) {
     return (
       <Modal header="Quick Unlock" onClose={onClose}>
-        <p className="quick-unlock-info">
+        <p className="quick-unlock-info m-0" style={{ color: "var(--sk-text-muted)" }}>
           Quick unlock is not supported on this device.
         </p>
       </Modal>
@@ -53,11 +52,9 @@ export default function QuickUnlockSetup({ onClose }) {
     try {
       await enableQuickUnlock({ user, mek });
       setSuccess("Quick unlock was successfully enabled.");
+      setHasQuickUnlock(true);
     } catch (err) {
-      console.error(err);
-      setError(
-        err?.message || "Failed to enable quick unlock"
-      );
+      setError(err?.message || "Failed to enable quick unlock");
     } finally {
       setLoading(false);
     }
@@ -70,46 +67,45 @@ export default function QuickUnlockSetup({ onClose }) {
     try {
       await disableQuickUnlock();
       setSuccess("Quick unlock was successfully disabled.");
+      setHasQuickUnlock(false);
     } catch (err) {
-      console.error(err);
-      setError(
-        err?.message || "Failed to disable quick unlock"
-      );
+      setError(err?.message || "Failed to disable quick unlock");
     } finally {
       setLoading(false);
     }
-  }
+  };
 
   let options = {};
   if (!hasQuickUnlock) {
     options = {
-      message: "Use your device fingerprint, face ID, or PIN to unlock your vault without entering your password every time.",
-      btnClass: "btn-success",
+      message:
+        "Use your device fingerprint, Face ID, or PIN to unlock your vault without entering your password every time.",
+      btnClass: "sk-btn-primary",
       btnHandler: handleEnable,
       btnText: "Enable Quick Unlock",
-    }
+    };
   } else {
     options = {
-      message: "Quick unlock is already enabled on this device. Do you wish to disable quick-unlock?",
+      message:
+        "Quick unlock is already enabled on this device. Do you wish to disable quick-unlock?",
       btnClass: "btn-danger",
       btnHandler: handleDisable,
       btnText: "Disable Quick Unlock",
-    }
+    };
   }
 
   return (
     <Modal header="Quick Unlock" onClose={onClose}>
       <div>
-        {success && (
-          <p className="alert alert-success">{success}</p>
-        )}
+        {success && <p className="migrate-success-banner mb-3">{success}</p>}
 
-        {error && (
-          <p className="alert alert-danger">{error}</p>
-        )}
-        <p className="text-muted">{options.message}</p>
+        {error && <p className="auth-error-banner mb-3">{error}</p>}
+        <p style={{ color: "var(--sk-text-secondary)", fontSize: "0.88rem", lineHeight: 1.5 }}>
+          {options.message}
+        </p>
         <button
-          className={`btn ${options.btnClass} w-100 mt-3`}
+          type="button"
+          className={`btn ${options.btnClass} w-100 mt-2`}
           onClick={options.btnHandler}
           disabled={loading}
         >
@@ -119,3 +115,4 @@ export default function QuickUnlockSetup({ onClose }) {
     </Modal>
   );
 }
+

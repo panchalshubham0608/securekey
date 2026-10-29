@@ -15,6 +15,7 @@ export default function VaultItemChangeHistory() {
   const [keyWithHistory, setKeyWithHistory] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [copiedIndex, setCopiedIndex] = useState(-1);
 
   const fetchHistory = useCallback(async () => {
     if (!itemId || !user || !mek) return;
@@ -30,7 +31,6 @@ export default function VaultItemChangeHistory() {
       });
       setKeyWithHistory(result);
     } catch (err) {
-      console.error("Error fetching history", err);
       setError(err?.message || "Failed to load history");
     } finally {
       setLoading(false);
@@ -41,6 +41,16 @@ export default function VaultItemChangeHistory() {
     fetchHistory();
   }, [fetchHistory]);
 
+  const handleCopyHistoricalPassword = (pwd, index) => {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(pwd);
+    }
+    setCopiedIndex(index);
+    setTimeout(() => {
+      setCopiedIndex(-1);
+    }, 1200);
+  };
+
   if (loading) {
     return <Loader visible />;
   }
@@ -48,8 +58,12 @@ export default function VaultItemChangeHistory() {
   if (error) {
     return (
       <div className="history-container merriweather-light">
-        <div className="alert alert-danger">{error}</div>
-        <button className="btn btn-link" onClick={() => navigate("/", { replace: true })}>
+        <div className="auth-error-banner">{error}</div>
+        <button
+          type="button"
+          className="btn sk-btn-ghost"
+          onClick={() => navigate("/", { replace: true })}
+        >
           Go back
         </button>
       </div>
@@ -64,50 +78,78 @@ export default function VaultItemChangeHistory() {
 
   return (
     <div className="history-container merriweather-light">
-      <div className="d-flex align-items-center">
+      <div className="history-header d-flex align-items-center gap-3">
         <button
-          className="btn fs-3"
+          type="button"
+          className="sk-icon-btn"
           onClick={() => navigate("/", { replace: true })}
           aria-label="Close history"
         >
           <i className="fa-solid fa-arrow-left" />
         </button>
-        <h4 className="m-0">History</h4>
-      </div>
-
-      <hr />
-
-      <div className="mb-3 mt-3 d-flex justify-content-center">
-        <div className="d-flex align-items-center">
-          <AccountIcon account={account} />
-          <div>
-            <p className="key-account m-0">{account}</p>
-            <p className="key-username m-0">{username}</p>
-          </div>
+        <div>
+          <h4 className="m-0 history-title">Password History</h4>
+          <p className="m-0 history-subtitle">Audit log of previous credentials</p>
         </div>
       </div>
 
-      <hr />
+      <div className="history-account-card mt-3 mb-3">
+        <div className="account-logo-wrapper">
+          <AccountIcon account={account} />
+        </div>
+        <div className="key-text-group">
+          <p className="key-account m-0">{account}</p>
+          <p className="key-username m-0">{username}</p>
+        </div>
+      </div>
 
       <div className="mt-3">
         {history.length > 0 ? (
-          <div className="list">
+          <div className="history-timeline">
             {history.map((entry, index) => (
               <div
                 key={`${entry.changedAt}-${index}`}
-                className="list-item border p-3 mt-3"
+                className="history-item-card"
               >
-                <h5 className="text-break">{entry.password}</h5>
-                <p className="text-muted m-0">
+                <div className="d-flex align-items-center justify-content-between gap-2">
+                  <h5 className="m-0 font-mono text-break history-password">
+                    {entry.password}
+                  </h5>
+                  <button
+                    type="button"
+                    className="key-copy-btn"
+                    onClick={() => handleCopyHistoricalPassword(entry.password, index)}
+                  >
+                    <i
+                      className={
+                        copiedIndex === index
+                          ? "fa-solid fa-check"
+                          : "fa-regular fa-copy"
+                      }
+                    />
+                    <span>{copiedIndex === index ? "Copied" : "Copy"}</span>
+                  </button>
+                </div>
+                <p className="history-timestamp m-0 mt-2">
+                  <i className="fa-regular fa-calendar me-1" />
                   {formatFirestoreTimestamp(entry.updatedAt)}
                 </p>
               </div>
             ))}
           </div>
         ) : (
-          <p className="text-muted text-center">Nothing here yet!</p>
+          <div className="keys-empty-state">
+            <div className="keys-empty-icon">
+              <i className="fa-solid fa-clock-rotate-left" />
+            </div>
+            <p className="m-0 keys-empty-title">Nothing here yet!</p>
+            <p className="m-0 keys-empty-subtitle">
+              Previous passwords will appear here when you rotate this credential.
+            </p>
+          </div>
         )}
       </div>
     </div>
   );
 }
+

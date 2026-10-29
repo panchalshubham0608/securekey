@@ -18,11 +18,15 @@ import { firestoreDb } from "./firebase";
 
 // Firestore collection details
 export const keysCollectionName = process.env.REACT_APP_FIRESTORE_KEYS_COLLECTION_NAME;
-const keysCollection = collection(firestoreDb, keysCollectionName);
+const keysCollection = firestoreDb ? collection(firestoreDb, keysCollectionName) : null;
 
 // Function to get passkeys for a user
 export const getPassKeys = ({ username }) => {
   return new Promise((resolve, reject) => {
+    if (!keysCollection) {
+      resolve([]);
+      return;
+    }
     let owner = username;
     const q = query(keysCollection, where("owner", "==", owner));
     getDocs(q)

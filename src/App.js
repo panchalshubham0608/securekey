@@ -20,12 +20,30 @@ function App() {
   const [mek, setMek] = useState(null);
   const [vaultUnlocked, setVaultUnlocked] = useState(false);
   const [showUpgradeWarning, setShowUpgradeWarning] = useState(true);
+  const [theme, setTheme] = useState(() => {
+    const savedTheme = localStorage.getItem("sk-theme");
+    return savedTheme === "light" || savedTheme === "dark" ? savedTheme : "dark";
+  });
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem("sk-theme", theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === "dark" ? "light" : "dark"));
+  };
 
   // Listen to auth state
   useEffect(() => {
     // Clear existing storage items
     localStorage.removeItem("encryptedMEK");
     localStorage.removeItem("deviceKey");
+
+    if (!auth) {
+      setAuthLoading(false);
+      return undefined;
+    }
 
     setAuthLoading(true);
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
@@ -42,9 +60,12 @@ function App() {
   }, []);
 
   // Called after password or biometric unlock
-  const unlockVault = ({ mek }) => {
-    if (!mek) return;
-    setMek(mek);
+  const unlockVault = ({ mek: nextMek, user: nextUser }) => {
+    if (!nextMek) return;
+    if (nextUser) {
+      setUser(nextUser);
+    }
+    setMek(nextMek);
     setVaultUnlocked(true);
   };
 
@@ -56,7 +77,9 @@ function App() {
 
   // Post logout, vault will be locked
   const logout = async () => {
-    await auth.signOut();
+    if (auth) {
+      await auth.signOut();
+    }
     setUser(null);
     lockVault();
   };
@@ -71,6 +94,9 @@ function App() {
 
     mek,
     vaultUnlocked,
+
+    theme,
+    toggleTheme,
 
     unlockVault,
     lockVault,
@@ -102,9 +128,20 @@ function App() {
 
           </Routes>
         </Router>
+        <button
+          type="button"
+          className="sk-theme-fab"
+          onClick={toggleTheme}
+          aria-label="Toggle color theme"
+          title={theme === "dark" ? "Switch to light theme" : "Switch to dark theme"}
+        >
+          <i className="fa-solid fa-circle-half-stroke" />
+          <span>{theme === "dark" ? "Light" : "Dark"} Theme</span>
+        </button>
       </AppContext.Provider>
     </div>
   );
 }
 
 export default App;
+

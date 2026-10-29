@@ -1,31 +1,38 @@
 .custom-alert {
   position: fixed;
-  bottom: 20px;
+  bottom: 24px;
   left: 50%;
-  width: 300px;
+  width: 340px;
+  max-width: calc(100vw - 32px);
   transform: translateX(-50%);
-
-  padding: 12px 20px;
-  border-radius: 8px;
-  font-size: 14px;
+  padding: 12px 18px;
+  border-radius: 12px;
+  font-size: 0.86rem;
+  font-weight: 600;
   z-index: 9999;
-
-  animation: fadeInUp 0.3s ease-out;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: var(--sk-shadow-popover);
+  text-align: center;
+  animation: fadeInUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .alert-success {
-  background: #d1e7dd;
-  color: #0a3622;
+  background: rgba(16, 185, 129, 0.92);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .alert-error {
-  background: #f8d7da;
-  color: #58151c;
+  background: rgba(244, 63, 94, 0.92);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .alert-info {
-  background: #cff4fc;
-  color: #055160;
+  background: rgba(99, 102, 241, 0.92);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 @keyframes fadeInUp {

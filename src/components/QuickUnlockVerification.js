@@ -33,7 +33,6 @@ export default function QuickUnlockVerification() {
     };
   }, []);
 
-
   /**
    * Trigger WebAuthn authentication (login)
    */
@@ -49,10 +48,7 @@ export default function QuickUnlockVerification() {
       unlockVault({ mek });
       setCancelled(true);
     } catch (err) {
-      console.error(err);
-      setError(
-        err?.message || "Failed to authenticate with quick unlock"
-      );
+      setError(err?.message || "Failed to authenticate with quick unlock");
     } finally {
       setLoading(false);
     }
@@ -63,25 +59,39 @@ export default function QuickUnlockVerification() {
   if (!hasQuickUnlock) return null;
 
   return (
-    <Modal onClose={() => setCancelled(true)} >
-      {error && <p className="alert alert-danger">{error}</p>}
-      <div className="d-flex align-items-center justify-content-between flex-column merriweather-light">
-        <img width={60} src={Logo} alt="logo" />
-        <h4 className="m-0 text-primary sedgwick-ave-display-regular">SecureKey</h4>
-        <p className="fs-3 mt-3 text-wrap text-break text-center">Hi, {user.displayName || user.email}</p>
-        <p className="text-muted mt-1">Use Touch ID / Face ID to Login.</p>
+    <Modal header="Biometric Unlock" onClose={() => setCancelled(true)}>
+      {error && <p className="auth-error-banner mb-3">{error}</p>}
+      <div className="d-flex align-items-center justify-content-between flex-column merriweather-light text-center py-2">
+        <div className="auth-logo-badge mb-2">
+          <img width={36} src={Logo} alt="logo" />
+        </div>
+        <h4 className="m-0 sedgwick-ave-display-regular auth-brand-title">
+          SecureKey
+        </h4>
+        <p className="fs-6 fw-semibold mt-3 mb-1 text-wrap text-break">
+          Hi, {user.displayName || user.email}
+        </p>
+        <p style={{ color: "var(--sk-text-muted)", fontSize: "0.84rem" }} className="mb-3">
+          Use Touch ID, Face ID, or Device PIN to unlock your vault.
+        </p>
         <button
-          className="btn btn-lg"
+          type="button"
+          className="btn sk-btn-primary d-flex align-items-center justify-content-center"
+          style={{ width: "68px", height: "68px", borderRadius: "20px" }}
+          aria-label="Authenticate with biometrics"
           onClick={handleAuthenticate}
           disabled={loading || !window.PublicKeyCredential}
         >
-          <i className="fa-solid fa-fingerprint fs-1"></i>
+          <i className="fa-solid fa-fingerprint fs-2" />
         </button>
 
         {!window.PublicKeyCredential && (
-          <p className="text-danger">WebAuthn not supported in this browser.</p>
+          <p className="text-danger mt-2 mb-0" style={{ fontSize: "0.8rem" }}>
+            WebAuthn not supported in this browser.
+          </p>
         )}
       </div>
     </Modal>
   );
 }
+

@@ -4,8 +4,8 @@
   align-items: center;
   justify-content: center;
   height: 100%;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont;
   text-align: center;
+  padding: 8px 4px;
 }
 
 .progress-ring {
@@ -15,22 +15,21 @@
   margin-bottom: 16px;
 }
 
-svg {
+.migration-container svg {
   transform: rotate(-90deg);
 }
 
-circle {
+.migration-container circle {
   fill: none;
   stroke-width: 10;
 }
 
-circle.bg {
-  stroke: #e5e7eb;
+.migration-container circle.bg {
+  stroke: var(--sk-border-strong);
 }
 
-circle.progress {
-  stroke: #4f46e5;
-  /* elegant indigo */
+.migration-container circle.progress {
+  stroke: var(--sk-accent);
   stroke-linecap: round;
   stroke-dasharray: 326.7;
   stroke-dashoffset: calc(326.7 - (326.7 * var(--progress)) / 100);
@@ -42,18 +41,21 @@ circle.progress {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-size: 18px;
-  font-weight: 600;
-  color: #111827;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--sk-text-primary);
 }
 
-h3 {
-  margin: 8px 0 4px;
-  font-size: 18px;
+.migration-container h3 {
+  margin: 8px 0 6px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--sk-text-primary);
 }
 
-p {
+.migration-container p {
   margin: 0;
-  font-size: 14px;
-  color: #6b7280;
+  font-size: 0.85rem;
+  color: var(--sk-text-muted);
+  line-height: 1.5;
 }
