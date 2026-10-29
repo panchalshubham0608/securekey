@@ -4,11 +4,15 @@ import * as firebaseAuth from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 // Your web app's Firebase configuration
-const firebaseConfig = JSON.parse(process.env.REACT_APP_FIREBASE_CONFIG);
+const rawFirebaseConfig = process.env.REACT_APP_FIREBASE_CONFIG;
+const firebaseConfig =
+  rawFirebaseConfig && rawFirebaseConfig !== "undefined"
+    ? JSON.parse(rawFirebaseConfig)
+    : null;
 
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const auth = firebaseAuth.getAuth(app);
+const app = firebaseConfig ? initializeApp(firebaseConfig) : null;
+const auth = app ? firebaseAuth.getAuth(app) : null;
 
 // Function to sign up with email and password
 export const signUp = ({ email, password }) => {
@@ -45,4 +49,4 @@ export const signOut = () => firebaseAuth.signOut(auth);
 export const getCurrentUser = () => firebaseAuth.getAuth(auth).currentUser;
 
 // Export firestore database
-export const firestoreDb = getFirestore(app);
+export const firestoreDb = app ? getFirestore(app) : null;

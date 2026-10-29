@@ -1,7 +1,6 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import debounce from "../utils/debounce";
-import Alert from "./Alert";
 import KeyItem from "./KeyItem";
 import "./KeysList.css";
 
@@ -13,7 +12,7 @@ export default function KeysList(props) {
   const [filteredKeys, setFilteredKeys] = useState([...keys]);
 
   const [selectedIndex, setSelectedIndex] = useState(-1);
-  const [openMenuIndex, setOpenMenuIndex] = useState(-1);
+  const [openTrayIndex, setOpenTrayIndex] = useState(-1);
 
   /** ---------- Debounced search ---------- **/
   useEffect(() => {
@@ -29,50 +28,54 @@ export default function KeysList(props) {
     debounced(searchText);
   }, [searchText, keys]);
 
-  /** ---------- EFFECT: Close menu on outside click ---------- **/
+  /** ---------- EFFECT: Close expanded card or tray immediately on outside press ---------- **/
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (!event.target.closest(".key-container")) {
-        setSelectedIndex(-1);
-        setOpenMenuIndex(-1);
+    const handlePointerDownOutside = (event) => {
+      if (event.target.closest(".delete-confirm")) {
+        return;
       }
+      const wrapper = event.target.closest(".key-swipe-wrapper");
+      if (!wrapper) {
+        setSelectedIndex(-1);
+        setOpenTrayIndex(-1);
+        return;
+      }
+      const clickedIndex = Number(wrapper.getAttribute("data-key-index"));
+      setSelectedIndex((prev) => (prev !== -1 && prev !== clickedIndex ? -1 : prev));
+      setOpenTrayIndex((prev) => (prev !== -1 && prev !== clickedIndex ? -1 : prev));
     };
 
-    document.addEventListener("click", handleClickOutside);
-    return () => document.removeEventListener("click", handleClickOutside);
-  }, []);
-
-  const handleToggleMenu = useCallback((e, index) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setOpenMenuIndex((prev) => (prev === index ? -1 : index));
+    document.addEventListener("pointerdown", handlePointerDownOutside, true);
+    return () =>
+      document.removeEventListener("pointerdown", handlePointerDownOutside, true);
   }, []);
 
   // Don't act on form submission for search input
   const onSearchFormSubmit = (e) => {
     e.preventDefault();
     e.stopPropagation();
-  }
+  };
 
   return (
     <div className="keys-list-page">
-      <Alert alert={alert} />
       <div className="keys-list-container">
         {/* Search */}
         <form className="mb-3" action="#" method="post" onSubmit={onSearchFormSubmit}>
           <div className="search-input-container d-flex align-items-center">
-            <i className="fa-solid fa-magnifying-glass" />
+            <i className="fa-solid fa-magnifying-glass search-icon" />
             <input
               type="text"
               className="form-control merriweather-light"
-              placeholder="Search"
+              placeholder="Search accounts or usernames..."
+              aria-label="Search accounts or usernames"
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
             />
             {searchText && (
               <button
                 type="button"
-                className="btn"
+                className="search-clear-btn"
+                aria-label="Clear search"
                 onClick={() => setSearchText("")}
               >
                 <i className="fa-solid fa-times" />
@@ -82,36 +85,71 @@ export default function KeysList(props) {
         </form>
 
         {/* Header */}
-        <div className="d-flex align-items-center justify-content-between mb-3">
-          <p className="m-0">Accounts ({filteredKeys.length})</p>
-          {!readOnly && <button
-            className="btn text-primary"
-            onClick={() => navigate("/add", { replace: true })}
-          >
-            <i className="fa-solid fa-plus" /> Add
-          </button>}
+        <div className="keys-list-header d-flex align-items-center justify-content-between mb-3">
+          <div className="d-flex align-items-center gap-2">
+            <p className="m-0 keys-count-label">
+              Accounts ({filteredKeys.length})
+            </p>
+          </div>
+          {!readOnly && (
+            <button
+              type="button"
+              className="btn sk-btn-primary keys-add-btn d-flex align-items-center gap-2"
+              onClick={() => navigate("/add", { replace: true })}
+            >
+              <i className="fa-solid fa-plus" />
+              <span>Add</span>
+            </button>
+          )}
         </div>
 
         {/* Keys List */}
         {filteredKeys.length > 0 ? (
-          filteredKeys.map((key, index) => (
-            <KeyItem
-              readOnly={readOnly}
-              key={key.id || `${key.account}_${key.username}`}
-              keyItem={key}
-              selected={selectedIndex === index}
-              handleShowKeyBody={() => setSelectedIndex(index)}
-              handleHideKeyBody={() => setSelectedIndex(-1)}
-              showMenu={openMenuIndex === index}
-              handleToggleMenu={handleToggleMenu}
-              handleDeleteKey={onDeleteKey}
-              index={index}
-            />
-          ))
+          <div className="keys-items-stack">
+            {filteredKeys.map((key, index) => (
+              <KeyItem
+                readOnly={readOnly}
+                key={key.id || `${key.account}_${key.username}`}
+                keyItem={key}
+                selected={selectedIndex === index}
+                trayOpen={openTrayIndex === index}
+                onSetTrayOpen={(isOpen) => {
+                  if (isOpen) {
+                    setSelectedIndex(-1);
+                    setOpenTrayIndex(index);
+                  } else if (openTrayIndex === index) {
+                    setOpenTrayIndex(-1);
+                  }
+                }}
+                handleShowKeyBody={() => {
+                  if (openTrayIndex === index) {
+                    setOpenTrayIndex(-1);
+                    return;
+                  }
+                  setOpenTrayIndex(-1);
+                  setSelectedIndex((prev) => (prev === index ? -1 : index));
+                }}
+                handleHideKeyBody={() => setSelectedIndex(-1)}
+                handleDeleteKey={onDeleteKey}
+                index={index}
+              />
+            ))}
+          </div>
         ) : (
-          <p className="text-center merriweather-light">No passwords found</p>
+          <div className="keys-empty-state merriweather-light">
+            <div className="keys-empty-icon">
+              <i className="fa-solid fa-vault" />
+            </div>
+            <p className="m-0 keys-empty-title">No passwords found</p>
+            <p className="m-0 keys-empty-subtitle">
+              {searchText
+                ? "Try searching with a different account or username."
+                : "Your encrypted vault is empty. Add your first credential above."}
+            </p>
+          </div>
         )}
       </div>
     </div>
   );
 }
+

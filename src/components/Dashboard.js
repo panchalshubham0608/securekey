@@ -27,7 +27,6 @@ export default function Dashboard(props) {
       );
       setKeys(vaultKeys);
     } catch (error) {
-      console.error("Error fetching keys", error);
       showAlert(error.message || "Error fetching keys", "error");
     } finally {
       setLoading(false);
@@ -46,7 +45,6 @@ export default function Dashboard(props) {
         showAlert("Entry deleted successfully", "success");
         fetchVaultItems();
       } catch (error) {
-        console.error("Error deleting passkey", error);
         showAlert(error.message || "Error deleting passkey", "error");
       } finally {
         setLoading(false);
@@ -60,12 +58,21 @@ export default function Dashboard(props) {
       <Alert alert={alert} />
       <Loader visible={loading} />
       <Navbar />
-      {showUpgradeWarning &&
-        <div className="alert alert-warning alert-dismissible fade show migration-warning" role="alert">
-          <strong>We&apos;ve upgraded SecureKey!</strong> If you don&apos;t see your existing passwords, please run a one-time migration from the ☰ menu (top-right).
-          <button type="button" className="btn-close" data-bs-dismiss="alert" aria-label="Close"
-            onClick={dismissUpgradeWarning}></button>
-        </div>}
+      {showUpgradeWarning && (
+        <div className="migration-warning" role="alert">
+          <div>
+            <strong>We&apos;ve upgraded SecureKey!</strong> If you don&apos;t see your existing passwords, please run a one-time migration from the ☰ menu (top-right).
+          </div>
+          <button
+            type="button"
+            className="migration-warning-close"
+            aria-label="Close"
+            onClick={dismissUpgradeWarning}
+          >
+            <i className="fa-solid fa-xmark" />
+          </button>
+        </div>
+      )}
       <KeysList keys={keys} onDeleteKey={handleDeleteKey} />
     </div>
   );

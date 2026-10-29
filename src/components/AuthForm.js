@@ -5,6 +5,7 @@ import { useAppContext } from "../context/AppContext";
 import "../styles/AuthForm.css";
 import { secureSignIn } from "../utils/auth/secureSignIn";
 import { secureSignUp } from "../utils/auth/secureSignUp";
+import { evaluatePasswordStrength } from "../utils/passwordutil";
 
 export default function AuthForm(props) {
   const { unlockVault } = useAppContext();
@@ -47,13 +48,12 @@ export default function AuthForm(props) {
     setError("");
     setLoading(true);
     try {
-      const { mek } = props.register
+      const { mek, user: signedInUser } = props.register
         ? await secureSignUp({ email, password })
         : await secureSignIn({ email, password });
-      unlockVault({ mek });
+      unlockVault({ mek, user: signedInUser });
       navigate("/", { replace: true });
     } catch (error) {
-      console.log(error);
       if (error.message) {
         if (error.message.includes("auth/email-already-in-use")) {
           setError("Email is already in use");
@@ -70,51 +70,144 @@ export default function AuthForm(props) {
     } finally {
       setLoading(false);
     }
-  }
+  };
 
-  let register = props.register;
+  const register = props.register;
+  const strength = evaluatePasswordStrength(password);
+
   return (
     <div className="auth-form-container">
-      {error && <div className="alert alert-danger w-100">{error}</div>}
-      <form method="post" action="#" className="auth-form merriweather-light"
-        onSubmit={handleSubmit}>
-        <div className="d-flex align-items-center mb-3">
-          <img className="mr-3" src={Logo} alt="logo" width="50" height="50" />
-          <h4 className="m-0 text-primary sedgwick-ave-display-regular">SecureKey</h4>
+      {error && (
+        <div className="auth-error-banner" role="alert">
+          <i className="fa-solid fa-circle-exclamation" />
+          <span>{error}</span>
         </div>
-        <div className="mb-3 w-100">
-          <label htmlFor="email" className="form-label">Email address</label>
-          <input type="email" className="form-control" id="email"
-            value={email} onChange={e => setEmail(e.target.value)} />
-        </div>
-        <div className="mb-3 w-100">
-          <label htmlFor="password" className="form-label">Password</label>
-          <div className="input-group">
-            <input type={showPassword ? "text" : "password"} className="form-control" id="password"
-              value={password} onChange={e => setPassword(e.target.value)} />
-            {
-              // non-interactive elements with click handlers must have at least one keyboard event listener
-              //eslint-disable-next-line
-              <span className="input-group-text"
-                onClick={() => setShowPassword(showPassword => !showPassword)}
-              >{showPassword ? <i className="fa-solid fa-eye-slash"></i> : <i className="fa-solid fa-eye"></i>}</span>}
+      )}
+
+      <form
+        method="post"
+        action="#"
+        className="auth-form merriweather-light"
+        onSubmit={handleSubmit}
+      >
+        <div className="auth-brand-header">
+          <div className="auth-logo-badge">
+            <img src={Logo} alt="logo" width="42" height="42" />
+          </div>
+          <div>
+            <h4 className="m-0 sedgwick-ave-display-regular auth-brand-title">
+              SecureKey
+            </h4>
+            <p className="auth-brand-subtitle m-0">
+              {register
+                ? "Create an account to secure your passwords"
+                : "Sign in to access your saved passwords"}
+            </p>
           </div>
         </div>
-        {register && <div className="mb-3 w-100">
-          <label htmlFor="confirmPassword" className="form-label">Confirm Password</label>
-          <input type={showPassword ? "text" : "password"} className="form-control" id="confirmPassword"
-            value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} />
-        </div>}
+
         <div className="mb-3 w-100">
-          <button type="submit" className="btn btn-primary w-100 d-flex align-items-center justify-content-center"
-            disabled={loading}>
-            {loading && <span className="spinner-border spinner-border mr-3"></span>}
-            {register ? "Register" : "Login"}
+          <label htmlFor="email" className="sk-input-label">
+            Email address
+          </label>
+          <div className="auth-input-wrapper">
+            <i className="fa-regular fa-envelope auth-input-icon" />
+            <input
+              type="email"
+              className="form-control sk-input auth-input-with-icon"
+              id="email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </div>
+        </div>
+
+        <div className="mb-3 w-100">
+          <label htmlFor="password" className="sk-input-label">
+            Master Password
+          </label>
+          <div className="auth-password-group">
+            <i className="fa-solid fa-lock auth-input-icon" />
+            <input
+              type={showPassword ? "text" : "password"}
+              className="form-control sk-input auth-input-with-both-icons"
+              id="password"
+              placeholder="Enter master password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <button
+              type="button"
+              className="auth-eye-btn"
+              aria-label={showPassword ? "Hide password" : "Show password"}
+              onClick={() => setShowPassword((prev) => !prev)}
+            >
+              {showPassword ? (
+                <i className="fa-solid fa-eye-slash" />
+              ) : (
+                <i className="fa-solid fa-eye" />
+              )}
+            </button>
+          </div>
+          {register && password && (
+            <div className="auth-strength-meter mt-2">
+              <div className="auth-strength-bar-track">
+                <div
+                  className={`auth-strength-bar-fill strength-${strength.level}`}
+                  style={{ width: `${strength.percent}%` }}
+                />
+              </div>
+              <span className={`auth-strength-label strength-text-${strength.level}`}>
+                {strength.label}
+              </span>
+            </div>
+          )}
+        </div>
+
+        {register && (
+          <div className="mb-3 w-100">
+            <label htmlFor="confirmPassword" className="sk-input-label">
+              Confirm Password
+            </label>
+            <div className="auth-input-wrapper">
+              <i className="fa-solid fa-shield-halved auth-input-icon" />
+              <input
+                type={showPassword ? "text" : "password"}
+                className="form-control sk-input auth-input-with-icon"
+                id="confirmPassword"
+                placeholder="Re-enter master password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+              />
+            </div>
+          </div>
+        )}
+
+        <div className="mt-2 mb-3 w-100">
+          <button
+            type="submit"
+            className="btn sk-btn-primary w-100 d-flex align-items-center justify-content-center gap-2"
+            disabled={loading}
+          >
+            {loading && <span className="spinner-border spinner-border-sm mr-3" />}
+            <span>{register ? "Register" : "Login"}</span>
+            {!loading && <i className="fa-solid fa-arrow-right" />}
           </button>
         </div>
-        {register && <p>Already have an account? <Link to="/login">Login</Link></p>}
-        {!register && <p>Don&apos;t have an account? <Link to="/register">Signup</Link></p>}
+
+        <div className="auth-switch-prompt">
+          {register ? (
+            <p className="m-0">
+              Already have an account? <Link to="/login">Login</Link>
+            </p>
+          ) : (
+            <p className="m-0">
+              Don&apos;t have an account? <Link to="/register">Signup</Link>
+            </p>
+          )}
+        </div>
       </form>
     </div>
-  )
+  );
 }

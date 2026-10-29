@@ -17,6 +17,51 @@ import { vaultsCollectionName } from "../firestore/collection";
 const vaultsCollectionReference = (uid) => collection(db, vaultsCollectionName, uid, "items");
 const vaultsDocReference = ({ uid, itemId }) => doc(db, vaultsCollectionName, uid, "items", itemId);
 
+// Local in-memory demo store used only when Firebase .env is not configured
+let localDemoItems = [
+  {
+    id: "demo-1",
+    account: "GitHub",
+    username: "shubham@dev.io",
+    plainPassword: "Gh#9xK!2mPq8$vL4",
+    createdAt: Date.now() - 10 * 24 * 60 * 60 * 1000,
+    updatedAt: Date.now() - 5 * 24 * 60 * 60 * 1000,
+    history: [
+      {
+        plainPassword: "Gh#OldPass2025!x9",
+        updatedAt: Date.now() - 60 * 24 * 60 * 60 * 1000
+      }
+    ]
+  },
+  {
+    id: "demo-2",
+    account: "AWS",
+    username: "admin@cloud-ops.dev",
+    plainPassword: "Aws!7zR@4n Wq9#kM2".replace(" ", ""),
+    createdAt: Date.now() - 25 * 24 * 60 * 60 * 1000,
+    updatedAt: Date.now() - 12 * 24 * 60 * 60 * 1000,
+    history: []
+  },
+  {
+    id: "demo-3",
+    account: "Google",
+    username: "shubham.panchal@gmail.com",
+    plainPassword: "Gg$5vB*8pLm3!xQ7",
+    createdAt: Date.now() - 220 * 24 * 60 * 60 * 1000,
+    updatedAt: Date.now() - 200 * 24 * 60 * 60 * 1000,
+    history: []
+  },
+  {
+    id: "demo-4",
+    account: "Docker",
+    username: "containers_prod",
+    plainPassword: "Dk^3mN&9cXz1@rT6",
+    createdAt: Date.now() - 14 * 24 * 60 * 60 * 1000,
+    updatedAt: Date.now() - 2 * 24 * 60 * 60 * 1000,
+    history: []
+  }
+];
+
 /**
  * Add a new vault item
  * Throws error if (account, username) already exists
@@ -31,6 +76,30 @@ export const addVaultItem = async ({
 }) => {
   if (!account || !username || !password) {
     throw new Error("Missing required fields");
+  }
+
+  if (!db) {
+    const exists = localDemoItems.some(
+      (item) => item.account === account && item.username === username
+    );
+    if (exists) {
+      throw new Error(
+        `An entry for "${account}" with username "${username}" already exists`
+      );
+    }
+    localDemoItems.push({
+      id: `demo-${Date.now()}`,
+      account,
+      username,
+      plainPassword: password,
+      history: history.map((h) => ({
+        plainPassword: h.password,
+        updatedAt: h.updatedAt || Date.now()
+      })),
+      createdAt: Date.now(),
+      updatedAt: Date.now()
+    });
+    return;
   }
 
   const itemsRef = vaultsCollectionReference(uid);
@@ -73,20 +142,29 @@ export const addVaultItem = async ({
   });
 };
 
-
 /**
  * Lists all vault items WITHOUT password field
  * Used for dashboard listing
  */
 export const listVaultItems = async ({ uid }) => {
+  if (!db) {
+    return localDemoItems.map((item) => ({
+      id: item.id,
+      account: item.account,
+      username: item.username,
+      createdAt: item.createdAt,
+      updatedAt: item.updatedAt
+    }));
+  }
+
   const ref = vaultsCollectionReference(uid);
   const snap = await getDocs(ref);
 
-  return snap.docs.map(doc => {
-    const data = doc.data();
+  return snap.docs.map((docSnap) => {
+    const data = docSnap.data();
 
     return {
-      id: doc.id,
+      id: docSnap.id,
       account: data.account,
       username: data.username,
       createdAt: data.createdAt,
@@ -105,6 +183,16 @@ export const getPasswordByAccountAndUsername = async ({
   username,
   mek
 }) => {
+  if (!db) {
+    const match = localDemoItems.find(
+      (item) => item.account === account && item.username === username
+    );
+    if (!match) {
+      throw new Error("No matching vault entry found");
+    }
+    return match.plainPassword;
+  }
+
   const ref = vaultsCollectionReference(uid);
   const q = query(
     ref,
@@ -138,6 +226,20 @@ export const getVaultItemById = async ({ uid, itemId }) => {
     throw new Error("Missing uid or itemId");
   }
 
+  if (!db) {
+    const match = localDemoItems.find((item) => item.id === itemId);
+    if (!match) {
+      throw new Error("Vault item not found");
+    }
+    return {
+      id: match.id,
+      account: match.account,
+      username: match.username,
+      createdAt: match.createdAt,
+      updatedAt: match.updatedAt
+    };
+  }
+
   const ref = vaultsDocReference({ uid, itemId });
   const snap = await getDoc(ref);
 
@@ -168,6 +270,27 @@ export const updateVaultItem = async ({
 }) => {
   if (!uid || !itemId || !mek || !newPassword) {
     throw new Error("Missing required parameters");
+  }
+
+  if (!db) {
+    const idx = localDemoItems.findIndex((item) => item.id === itemId);
+    if (idx === -1) {
+      throw new Error("Vault item not found");
+    }
+    const current = localDemoItems[idx];
+    localDemoItems[idx] = {
+      ...current,
+      plainPassword: newPassword,
+      history: [
+        ...(current.history || []),
+        {
+          plainPassword: current.plainPassword,
+          updatedAt: current.updatedAt
+        }
+      ],
+      updatedAt: Date.now()
+    };
+    return;
   }
 
   const ref = vaultsDocReference({ uid, itemId });
@@ -207,6 +330,11 @@ export const deleteVaultItem = async ({ uid, itemId }) => {
     throw new Error("Missing uid or itemId");
   }
 
+  if (!db) {
+    localDemoItems = localDemoItems.filter((item) => item.id !== itemId);
+    return;
+  }
+
   const ref = vaultsDocReference({ uid, itemId });
   await deleteDoc(ref);
 };
@@ -219,37 +347,49 @@ export const deleteVaultItem = async ({ uid, itemId }) => {
  * @returns {Promise<Array<{password: string, changedAt: number}>>}
  */
 export const getVaultItemHistory = async ({ uid, itemId, mek }) => {
-  try {
-    const itemRef = vaultsDocReference({ uid, itemId });
-    const itemSnap = await getDoc(itemRef);
-
-    if (!itemSnap.exists()) {
+  if (!db) {
+    const match = localDemoItems.find((item) => item.id === itemId);
+    if (!match) {
       throw new Error("Vault item not found");
     }
-
-    const data = itemSnap.data();
-    if (!data.history || !Array.isArray(data.history)) {
-      return [];
-    }
-
-    // Decrypt all password entries in history
-    const decryptedHistory = await Promise.all(
-      data.history.map(async (entry) => {
-        return {
-          password: await decryptWithMEK({ encrypted: entry.password, mek }),
-          updatedAt: entry.updatedAt
-        };
-      })
-    );
-
+    const historyEntries = (match.history || []).map((entry) => ({
+      password: entry.plainPassword,
+      updatedAt: entry.updatedAt
+    }));
     return {
-      id: itemSnap.id,
-      account: data.account,
-      username: data.username,
-      history: decryptedHistory.reverse(),
-    }
-  } catch (error) {
-    console.error("Error fetching vault history", error);
-    throw error;
+      id: match.id,
+      account: match.account,
+      username: match.username,
+      history: historyEntries.reverse()
+    };
   }
+
+  const itemRef = vaultsDocReference({ uid, itemId });
+  const itemSnap = await getDoc(itemRef);
+
+  if (!itemSnap.exists()) {
+    throw new Error("Vault item not found");
+  }
+
+  const data = itemSnap.data();
+  if (!data.history || !Array.isArray(data.history)) {
+    return [];
+  }
+
+  // Decrypt all password entries in history
+  const decryptedHistory = await Promise.all(
+    data.history.map(async (entry) => {
+      return {
+        password: await decryptWithMEK({ encrypted: entry.password, mek }),
+        updatedAt: entry.updatedAt
+      };
+    })
+  );
+
+  return {
+    id: itemSnap.id,
+    account: data.account,
+    username: data.username,
+    history: decryptedHistory.reverse(),
+  };
 };

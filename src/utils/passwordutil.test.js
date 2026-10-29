@@ -1,4 +1,4 @@
-import { generateStrongPassword } from "./passwordutil";
+import { evaluatePasswordStrength, generateStrongPassword } from "./passwordutil";
 
 describe("generateStrongPassword", () => {
   test("should generate a password with the specified length", () => {
@@ -15,5 +15,18 @@ describe("generateStrongPassword", () => {
     const password1 = generateStrongPassword(10);
     const password2 = generateStrongPassword(10);
     expect(password1).not.toBe(password2);
-  });    
+  });
+});
+
+describe("evaluatePasswordStrength", () => {
+  test("should return empty state for empty password", () => {
+    const res = evaluatePasswordStrength("");
+    expect(res.level).toBe("empty");
+    expect(res.percent).toBe(0);
+  });
+
+  test("should evaluate weak and strong passwords accurately", () => {
+    expect(evaluatePasswordStrength("abc").level).toBe("weak");
+    expect(evaluatePasswordStrength("Abcdef123456!@#").level).toBe("strong");
+  });
 });
