@@ -334,7 +334,7 @@
   justify-content: space-between;
   gap: 10px;
   padding: 9px 10px 9px 14px;
-  background: var(--sk-surface-elevated);
+  background: var(--sk-surface-input);
   border: 1px solid var(--sk-border-strong);
   border-radius: 12px;
   transition: border-color 0.22s ease, box-shadow 0.22s ease;

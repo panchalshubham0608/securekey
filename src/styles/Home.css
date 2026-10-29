@@ -4,7 +4,8 @@
   align-items: center;
   justify-content: center;
   flex: 1;
-  min-height: calc(100vh - 48px);
+  min-height: 100vh;
+  min-height: 100dvh;
   padding: 24px 20px;
 }
 

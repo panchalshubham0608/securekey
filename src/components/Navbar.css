@@ -1,6 +1,8 @@
 .custom-navbar {
   padding: 14px 18px;
-  background: var(--sk-surface-elevated);
+  background: transparent;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--sk-border);
   position: sticky;
   top: 0;

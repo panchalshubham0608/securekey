@@ -1,19 +1,13 @@
 .App {
   width: 100%;
   max-width: 440px;
-  min-height: calc(100vh - 48px);
-  margin: 24px auto;
-  background: var(--sk-surface);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--sk-border);
-  border-radius: var(--sk-radius-xl);
-  box-shadow: var(--sk-shadow-shell);
+  min-height: 100vh;
+  min-height: 100dvh;
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
   position: relative;
-  overflow: hidden;
-  transition: background-color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+  overflow-x: hidden;
 }
 
 .migration-warning {
@@ -54,11 +48,6 @@
 @media (max-width: 480px) {
   .App {
     max-width: 100%;
-    min-height: 100vh;
-    margin: 0;
-    border-radius: 0;
-    border: none;
-    box-shadow: none;
   }
 
   .migration-warning {
