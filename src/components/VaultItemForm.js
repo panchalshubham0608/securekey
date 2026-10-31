@@ -15,7 +15,7 @@ import Loader from "./Loader";
 import "./VaultItemForm.css";
 
 const ALL_ACCOUNTS = Object.keys(AccountIconsList);
-const PASSWORD_LENGTHS = [12, 16, 24];
+const PASSWORD_LENGTHS = [8, 10, 12, 16, 24];
 
 export default function VaultItemForm() {
   const { itemId } = useParams();
@@ -25,6 +25,7 @@ export default function VaultItemForm() {
   const { alert, showAlert } = useAlert();
 
   const [account, setAccount] = useState("");
+  const [customAccount, setCustomAccount] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(true);
@@ -66,11 +67,14 @@ export default function VaultItemForm() {
     );
   }, [accountSearch]);
 
+  const effectiveAccount =
+    account === "Other" ? customAccount.trim() || "Other" : account;
+
   /* ------------------ Handlers ------------------ */
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!account || !username || !password) {
+    if (!effectiveAccount || !username || !password) {
       showAlert("All fields are required", "error");
       return;
     }
@@ -88,7 +92,7 @@ export default function VaultItemForm() {
         await addVaultItem({
           uid: user.uid,
           mek,
-          account,
+          account: effectiveAccount,
           username,
           password
         });
@@ -120,7 +124,10 @@ export default function VaultItemForm() {
   return (
     <div className="modal-overlay">
       <Alert alert={alert} />
-      <Loader visible={loading} />
+      <Loader
+        visible={loading}
+        message={editing ? "Updating your password..." : "Saving your password..."}
+      />
       <div className="modal-content vault-form-modal">
         {/* Header */}
         <div className="d-flex align-items-center justify-content-between add-vaultItem-navbar">
@@ -139,14 +146,14 @@ export default function VaultItemForm() {
               </h4>
               <p className="m-0 vault-form-subtitle">
                 {editing
-                  ? "Rotate your encrypted credential password"
-                  : "Store a new AES-256 encrypted credential"}
+                  ? "Update your saved account password"
+                  : "Save a new login credential"}
               </p>
             </div>
           </div>
-          {account && (
+          {effectiveAccount && (
             <div className="vault-form-selected-icon">
-              <AccountIcon account={account} />
+              <AccountIcon account={effectiveAccount} username={username} />
             </div>
           )}
         </div>
@@ -166,20 +173,18 @@ export default function VaultItemForm() {
                   className="form-control sk-input vault-input-padded"
                   value={editing ? account : accountSearch || account}
                   disabled={editing}
-                  placeholder="Search account (e.g. GitHub, Google, AWS)"
+                  placeholder="Search or enter provider (e.g. GitHub, Netflix)"
                   onFocus={() => !editing && setShowDropdown(true)}
                   onChange={(e) => {
-                    setAccountSearch(e.target.value);
-                    setAccount("");
+                    const val = e.target.value;
+                    setAccountSearch(val);
+                    setAccount(val);
                   }}
                 />
               </div>
 
               {!editing && showDropdown && (
                 <div className="dropdown-menu show dropdown-scrollable w-100 mt-1">
-                  {filteredAccounts.length === 0 && (
-                    <div className="dropdown-item text-muted">No results</div>
-                  )}
                   {filteredAccounts.map((acc) => (
                     <button
                       type="button"
@@ -188,14 +193,48 @@ export default function VaultItemForm() {
                       onClick={() => handleSelectAccount(acc)}
                     >
                       <div className="dropdown-account-icon">
-                        <AccountIcon account={acc} />
+                        <AccountIcon account={acc} username={username} />
                       </div>
                       <span>{acc}</span>
                     </button>
                   ))}
+                  {accountSearch.trim() &&
+                    !ALL_ACCOUNTS.some(
+                      (a) => a.toLowerCase() === accountSearch.trim().toLowerCase()
+                    ) && (
+                    <button
+                      type="button"
+                      className="dropdown-item d-flex align-items-center gap-2"
+                      onClick={() => handleSelectAccount(accountSearch.trim())}
+                    >
+                      <div className="dropdown-account-icon">
+                        <AccountIcon account={accountSearch.trim()} username={username} />
+                      </div>
+                      <span>Use &ldquo;{accountSearch.trim()}&rdquo;</span>
+                    </button>
+                  )}
                 </div>
               )}
             </div>
+
+            {!editing && account === "Other" && (
+              <div className="mb-3">
+                <label className="sk-input-label" htmlFor="customAccountInput">
+                  Provider Name (Optional)
+                </label>
+                <div className="vault-input-wrap">
+                  <i className="fa-solid fa-tag vault-input-icon" />
+                  <input
+                    id="customAccountInput"
+                    type="text"
+                    className="form-control sk-input vault-input-padded"
+                    placeholder="e.g. Netflix, Spotify, Slack"
+                    value={customAccount}
+                    onChange={(e) => setCustomAccount(e.target.value)}
+                  />
+                </div>
+              </div>
+            )}
 
             {/* Username */}
             <div className="mb-3">

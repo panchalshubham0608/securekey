@@ -7,10 +7,9 @@ import KeysList from "./KeysList";
 import Loader from "./Loader";
 import Navbar from "./Navbar";
 
-export default function Dashboard(props) {
+export default function Dashboard() {
   const { user } = useAppContext();
   const { alert, showAlert } = useAlert();
-  const { showUpgradeWarning, dismissUpgradeWarning } = props;
 
   const [keys, setKeys] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -56,23 +55,8 @@ export default function Dashboard(props) {
   return (
     <div>
       <Alert alert={alert} />
-      <Loader visible={loading} />
+      <Loader visible={loading} message="Syncing your passwords..." />
       <Navbar />
-      {showUpgradeWarning && (
-        <div className="migration-warning" role="alert">
-          <div>
-            <strong>We&apos;ve upgraded SecureKey!</strong> If you don&apos;t see your existing passwords, please run a one-time migration from the ☰ menu (top-right).
-          </div>
-          <button
-            type="button"
-            className="migration-warning-close"
-            aria-label="Close"
-            onClick={dismissUpgradeWarning}
-          >
-            <i className="fa-solid fa-xmark" />
-          </button>
-        </div>
-      )}
       <KeysList keys={keys} onDeleteKey={handleDeleteKey} />
     </div>
   );

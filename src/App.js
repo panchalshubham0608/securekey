@@ -19,7 +19,6 @@ function App() {
   const [authLoading, setAuthLoading] = useState(true);
   const [mek, setMek] = useState(null);
   const [vaultUnlocked, setVaultUnlocked] = useState(false);
-  const [showUpgradeWarning, setShowUpgradeWarning] = useState(true);
   const [theme, setTheme] = useState(() => {
     const savedTheme = localStorage.getItem("sk-theme");
     return savedTheme === "light" || savedTheme === "dark" ? savedTheme : "dark";
@@ -84,9 +83,6 @@ function App() {
     lockVault();
   };
 
-  // Dismiss the upgrade warning
-  const dismissUpgradeWarning = () => setShowUpgradeWarning(false);
-
   const contextValue = {
     user,
     authLoading,
@@ -119,7 +115,7 @@ function App() {
 
             {/* Private routes */}
             <Route element={<ProtectedRoute />}>
-              <Route path="/" element={<Dashboard showUpgradeWarning={showUpgradeWarning} dismissUpgradeWarning={dismissUpgradeWarning} />} />
+              <Route path="/" element={<Dashboard />} />
               <Route path="/add" element={<VaultItemForm />} />
               <Route path="/edit/:itemId" element={<VaultItemForm />} />
               <Route path="/history/:itemId" element={<VaultItemChangeHistory />} />

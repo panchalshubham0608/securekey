@@ -1,18 +1,21 @@
+import "./Loader.css";
+
 const CircularLoader = (props) => {
-  let { borderColor } = props;
-  if (!borderColor) borderColor = "#0d6efd";
+  const { borderColor = "#6366f1" } = props;
   return (
-    <div className="d-flex justify-content-center mt-3" data-testid="loader">
-      <div
-        className="spinner-border"
-        style={{
-          borderColor: borderColor,
-          borderRightColor: "transparent",
-        }}
-        role="status"
-      ></div>
+    <div
+      className="sk-inline-loader"
+      data-testid="loader"
+      style={{ "--inline-loader-accent": borderColor }}
+      role="status"
+    >
+      <div className="sk-inline-loader-icon">
+        <div className="sk-inline-loader-ring" />
+        <i className="fa-solid fa-key" />
+      </div>
+      <span className="sk-inline-loader-label font-mono">Decrypting key...</span>
     </div>
   );
-}
+};
 
 export default CircularLoader;

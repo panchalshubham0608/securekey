@@ -118,8 +118,8 @@ export default function KeyItem(props) {
     if (Math.abs(deltaX) > 10) {
       didSwipeRef.current = true;
     }
-    const baseOffset = trayOpen ? -192 : 0;
-    const nextOffset = Math.max(-204, Math.min(0, baseOffset + deltaX));
+    const baseOffset = trayOpen ? -176 : 0;
+    const nextOffset = Math.max(-188, Math.min(0, baseOffset + deltaX));
     setDragOffsetX(nextOffset - baseOffset);
   };
 
@@ -139,8 +139,8 @@ export default function KeyItem(props) {
 
   const accentColor = str2color(keyItem.account);
   const isCopied = copyIconClassName.includes("check");
-  const baseTranslate = trayOpen ? -192 : 0;
-  const currentTranslate = Math.max(-204, Math.min(0, baseTranslate + dragOffsetX));
+  const baseTranslate = trayOpen ? -176 : 0;
+  const currentTranslate = Math.max(-188, Math.min(0, baseTranslate + dragOffsetX));
 
   return (
     <div>
@@ -160,8 +160,10 @@ export default function KeyItem(props) {
                 navigate(`/history/${keyItem.id}`, { replace: true });
               }}
             >
-              <i className="fa-solid fa-clock-rotate-left" />
-              <span>History</span>
+              <span className="key-tray-orb">
+                <i className="fa-solid fa-clock-rotate-left" />
+              </span>
+              <span className="key-tray-label">History</span>
             </button>
             <button
               type="button"
@@ -173,8 +175,10 @@ export default function KeyItem(props) {
                 navigate(`/edit/${keyItem.id}`, { replace: true });
               }}
             >
-              <i className="fa-solid fa-pen-to-square" />
-              <span>Edit</span>
+              <span className="key-tray-orb">
+                <i className="fa-solid fa-pen-to-square" />
+              </span>
+              <span className="key-tray-label">Edit</span>
             </button>
             <button
               type="button"
@@ -186,8 +190,10 @@ export default function KeyItem(props) {
                 setShowDeleteConfirm(true);
               }}
             >
-              <i className="fa-solid fa-trash-can" />
-              <span>Delete</span>
+              <span className="key-tray-orb">
+                <i className="fa-solid fa-trash-can" />
+              </span>
+              <span className="key-tray-label">Delete</span>
             </button>
           </div>
         )}
@@ -221,7 +227,7 @@ export default function KeyItem(props) {
             <div className="d-flex align-items-center justify-content-between">
               <div className="d-flex align-items-center gap-3 key-main-info">
                 <div className="account-logo-wrapper">
-                  <AccountIcon account={keyItem.account} />
+                  <AccountIcon account={keyItem.account} username={keyItem.username} />
                 </div>
                 <div className="key-text-group">
                   <div className="d-flex align-items-center flex-wrap gap-2">

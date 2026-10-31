@@ -52,7 +52,7 @@ export default function VaultItemChangeHistory() {
   };
 
   if (loading) {
-    return <Loader visible />;
+    return <Loader visible message="Loading password history..." />;
   }
 
   if (error) {
@@ -95,7 +95,7 @@ export default function VaultItemChangeHistory() {
 
       <div className="history-account-card mt-3 mb-3">
         <div className="account-logo-wrapper">
-          <AccountIcon account={account} />
+          <AccountIcon account={account} username={username} />
         </div>
         <div className="key-text-group">
           <p className="key-account m-0">{account}</p>
