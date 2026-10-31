@@ -12,8 +12,12 @@ export default function ProtectedRoute() {
   // Wait until auth state is known
   if (authLoading) return <Loader visible />
 
-  if (!isAuthenticated || !vaultUnlocked) {
+  if (!isAuthenticated) {
     return <Navigate to="/welcome" replace />;
+  }
+
+  if (!vaultUnlocked) {
+    return <Navigate to="/login" replace />;
   }
 
   return <Outlet />;
