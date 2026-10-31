@@ -6,13 +6,16 @@ import AuthForm from "./components/AuthForm";
 import Dashboard from "./components/Dashboard";
 import Home from "./components/Home";
 import MigrateVault from "./components/MigrateVault";
-import QuickUnlockVerification from "./components/QuickUnlockVerification";
 import VaultItemChangeHistory from "./components/VaultItemChangeHistory";
 import VaultItemForm from "./components/VaultItemForm";
 import { AppContext } from "./context/AppContext";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import PublicRoute from "./routes/PublicRoute";
 import { auth } from "./utils/firebase/firebase";
+import {
+  disableQuickUnlock,
+  getQuickUnlockUser
+} from "./utils/quickunlock/quickUnlockService";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -40,6 +43,10 @@ function App() {
     localStorage.removeItem("deviceKey");
 
     if (!auth) {
+      const savedUser = getQuickUnlockUser();
+      if (savedUser) {
+        setUser(savedUser);
+      }
       setAuthLoading(false);
       return undefined;
     }
@@ -68,14 +75,15 @@ function App() {
     setVaultUnlocked(true);
   };
 
-  // Explicit lock
+  // Explicit lock (wipes MEK in memory while preserving Firebase user for Quick Unlock)
   const lockVault = () => {
     setMek(null);
     setVaultUnlocked(false);
   };
 
-  // Post logout, vault will be locked
+  // Post logout, wipe persisted Quick Unlock MEK & device keys and sign out
   const logout = async () => {
+    await disableQuickUnlock();
     if (auth) {
       await auth.signOut();
     }
@@ -102,7 +110,6 @@ function App() {
   return (
     <div className="App">
       <AppContext.Provider value={contextValue}>
-        <QuickUnlockVerification />
         <Router basename="/securekey">
           <Routes>
 

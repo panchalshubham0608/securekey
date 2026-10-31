@@ -12,7 +12,7 @@ const EXPIRING_SOON_WINDOW_MS = 30 * DAY_MS; // 30 days before expiration (150-1
 
 export default function Navbar({ keys = [] }) {
   const navigate = useNavigate();
-  const { user, logout } = useAppContext();
+  const { user, lockVault, logout } = useAppContext();
 
   const [open, setOpen] = useState(false);
   const [showInsights, setShowInsights] = useState(false);
@@ -82,6 +82,11 @@ export default function Navbar({ keys = [] }) {
     };
   }, [keys]);
 
+  const handleLockVault = () => {
+    lockVault();
+    navigate("/login", { replace: true });
+  };
+
   const handleSignOut = async () => {
     await logout();
     navigate("/welcome", { replace: true });
@@ -101,6 +106,13 @@ export default function Navbar({ keys = [] }) {
       description: "Upgrade legacy passwords",
       icon: <i className="fa-solid fa-rocket" />,
       onClick: () => navigate("/migrate"),
+    },
+    {
+      key: "lockVault",
+      label: "Lock Vault",
+      description: "Lock session & require unlock",
+      icon: <i className="fa-solid fa-lock" />,
+      onClick: handleLockVault,
     },
   ];
 
