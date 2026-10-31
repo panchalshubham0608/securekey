@@ -1,6 +1,6 @@
 import "./Loader.css";
 
-const CircularLoader = (props) => {
+const InlineLoader = (props) => {
   const { borderColor = "#6366f1" } = props;
   return (
     <div
@@ -18,4 +18,4 @@ const CircularLoader = (props) => {
   );
 };
 
-export default CircularLoader;
+export default InlineLoader;

@@ -4,9 +4,9 @@ import { useAppContext } from "../context/AppContext";
 import { str2color } from "../utils/str2color";
 import { getPasswordByAccountAndUsername } from "../utils/vault/vaultService";
 import AccountIcon from "./AccountIcon";
-import CircularLoader from "./CircularLoader";
+import InlineLoader from "./InlineLoader";
 
-export default function KeyItem(props) {
+export default function VaultItem(props) {
   const { user, mek } = useAppContext();
   const navigate = useNavigate();
   const {
@@ -270,7 +270,7 @@ export default function KeyItem(props) {
                 onClick={(e) => e.stopPropagation()}
               >
                 {loading ? (
-                  <CircularLoader borderColor={accentColor} />
+                  <InlineLoader borderColor={accentColor} />
                 ) : (
                   <div>
                     {error ? (

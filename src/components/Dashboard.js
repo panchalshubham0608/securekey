@@ -3,9 +3,9 @@ import { useAppContext } from "../context/AppContext";
 import { useAlert } from "../hooks/useAlert";
 import { deleteVaultItem, listVaultItems } from "../utils/vault/vaultService";
 import Alert from "./Alert";
-import KeysList from "./KeysList";
 import Loader from "./Loader";
 import Navbar from "./Navbar";
+import VaultItemList from "./VaultItemList";
 
 export default function Dashboard() {
   const { user } = useAppContext();
@@ -57,7 +57,7 @@ export default function Dashboard() {
       <Alert alert={alert} />
       <Loader visible={loading} message="Syncing your passwords..." />
       <Navbar keys={keys} />
-      <KeysList keys={keys} onDeleteKey={handleDeleteKey} />
+      <VaultItemList keys={keys} onDeleteKey={handleDeleteKey} />
     </div>
   );
 }
