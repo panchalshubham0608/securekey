@@ -46,7 +46,7 @@ function generateProviderSvgDataUri(account, username) {
   const hue1 = getHueFromText(seed);
   const hue2 = (hue1 + 38) % 360;
 
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48px" height="48px">
     <defs>
       <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
         <stop offset="0%" stop-color="hsl(${hue1}, 78%, 52%)" />
@@ -57,8 +57,8 @@ function generateProviderSvgDataUri(account, username) {
         <stop offset="100%" stop-color="rgba(255,255,255,0)" />
       </radialGradient>
     </defs>
-    <rect width="64" height="64" rx="16" fill="url(#bg)" />
-    <rect width="64" height="64" rx="16" fill="url(#shine)" />
+    <rect x="6" y="6" width="36" height="36" rx="8" fill="url(#bg)" />
+    <rect x="6" y="6" width="36" height="36" rx="8" fill="url(#shine)" />
     <text
       x="50%"
       y="52%"
@@ -67,8 +67,8 @@ function generateProviderSvgDataUri(account, username) {
       fill="#ffffff"
       font-family="Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif"
       font-weight="800"
-      font-size="${initials.length > 1 ? 24 : 28}"
-      letter-spacing="-0.5"
+      font-size="${initials.length > 1 ? 15 : 18}"
+      letter-spacing="-0.4"
     >${initials}</text>
   </svg>`;
 
