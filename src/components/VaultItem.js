@@ -22,6 +22,7 @@ export default function VaultItem(props) {
   } = props;
   const [timer, setTimer] = useState(30);
   const [password, setPassword] = useState("");
+  const [revealed, setRevealed] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [copyIconClassName, setCopyIconClassName] =
@@ -32,6 +33,7 @@ export default function VaultItem(props) {
   const didSwipeRef = useRef(false);
 
   useEffect(() => {
+    setRevealed(false);
     if (!selected) return;
     let intervalId = null;
     setError("");
@@ -287,11 +289,43 @@ export default function VaultItem(props) {
                           </span>
                         </div>
 
-                        <div className="key-secret-box is-revealed mt-2">
-                          <p className="m-0 passkey passkey-revealed font-mono">
-                            {password}
+                        <div
+                          className={`key-secret-box ${
+                            revealed ? "is-revealed" : ""
+                          } mt-2`}
+                        >
+                          <p
+                            className={`m-0 passkey ${
+                              revealed ? "passkey-revealed" : "passkey-masked"
+                            } font-mono`}
+                          >
+                            {revealed ? password : "************"}
                           </p>
                           <div className="key-secret-actions">
+                            <button
+                              type="button"
+                              className={`key-reveal-btn ${
+                                revealed ? "is-active" : ""
+                              }`}
+                              aria-label={
+                                revealed ? "Hide password" : "Reveal password"
+                              }
+                              title={
+                                revealed ? "Hide password" : "Reveal password"
+                              }
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setRevealed((prev) => !prev);
+                              }}
+                            >
+                              <span className="key-reveal-icon-wrap">
+                                <i
+                                  className={`fa-solid ${
+                                    revealed ? "fa-eye-slash" : "fa-eye"
+                                  }`}
+                                />
+                              </span>
+                            </button>
                             <button
                               type="button"
                               className={`key-copy-btn merriweather-light ${
