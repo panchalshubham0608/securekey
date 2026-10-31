@@ -38,8 +38,8 @@ let localDemoItems = [
     account: "AWS",
     username: "admin@cloud-ops.dev",
     plainPassword: "Aws!7zR@4n Wq9#kM2".replace(" ", ""),
-    createdAt: Date.now() - 25 * 24 * 60 * 60 * 1000,
-    updatedAt: Date.now() - 12 * 24 * 60 * 60 * 1000,
+    createdAt: Date.now() - 180 * 24 * 60 * 60 * 1000,
+    updatedAt: Date.now() - 166 * 24 * 60 * 60 * 1000,
     history: []
   },
   {

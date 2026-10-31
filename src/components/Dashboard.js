@@ -56,7 +56,7 @@ export default function Dashboard() {
     <div>
       <Alert alert={alert} />
       <Loader visible={loading} message="Syncing your passwords..." />
-      <Navbar />
+      <Navbar keys={keys} />
       <KeysList keys={keys} onDeleteKey={handleDeleteKey} />
     </div>
   );
