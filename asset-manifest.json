@@ -1,7 +1,7 @@
 {
   "files": {
-    "main.css": "/securekey/static/css/main.f7f4778e.css",
-    "main.js": "/securekey/static/js/main.a65ed064.js",
+    "main.css": "/securekey/static/css/main.37e86771.css",
+    "main.js": "/securekey/static/js/main.1f67ebcd.js",
     "static/js/453.1226a37f.chunk.js": "/securekey/static/js/453.1226a37f.chunk.js",
     "static/media/AWS.svg": "/securekey/static/media/AWS.d24924ce5f0a50ae0739c680821e4f0c.svg",
     "static/media/Instagram.svg": "/securekey/static/media/Instagram.bbfb8661737f42d9b1238115c966ad53.svg",
@@ -34,12 +34,12 @@
     "static/media/Facebook.svg": "/securekey/static/media/Facebook.18e6b48a2152f586e535a08289cc1a8c.svg",
     "static/media/Netflix.svg": "/securekey/static/media/Netflix.f7ab1b78b2e9ce9c4dc05188982ed7e7.svg",
     "static/media/YouTube.svg": "/securekey/static/media/YouTube.086bdd00cec95f12a94f45381966b147.svg",
-    "main.f7f4778e.css.map": "/securekey/static/css/main.f7f4778e.css.map",
-    "main.a65ed064.js.map": "/securekey/static/js/main.a65ed064.js.map",
+    "main.37e86771.css.map": "/securekey/static/css/main.37e86771.css.map",
+    "main.1f67ebcd.js.map": "/securekey/static/js/main.1f67ebcd.js.map",
     "453.1226a37f.chunk.js.map": "/securekey/static/js/453.1226a37f.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.f7f4778e.css",
-    "static/js/main.a65ed064.js"
+    "static/css/main.37e86771.css",
+    "static/js/main.1f67ebcd.js"
   ]
 }
