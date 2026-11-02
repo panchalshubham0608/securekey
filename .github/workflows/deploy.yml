@@ -19,7 +19,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
 
       - name: Install dependencies
         run: npm ci
@@ -33,12 +33,9 @@ jobs:
         run: npm run build
 
       - name: Deploy to GitHub Pages
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-          npx gh-pages -d build -u "github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>" -r https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
 
 
