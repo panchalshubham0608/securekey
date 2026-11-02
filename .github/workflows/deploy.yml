@@ -25,11 +25,6 @@ jobs:
         run: npm ci
 
       - name: Build the app
-        env:
-          REACT_APP_FIREBASE_CONFIG: ${{ secrets.REACT_APP_FIREBASE_CONFIG }}
-          REACT_APP_FIRESTORE_KEYS_COLLECTION_NAME: ${{ secrets.REACT_APP_FIRESTORE_KEYS_COLLECTION_NAME }}
-          REACT_APP_FIRESTORE_USERS_COLLECTION_NAME: ${{ secrets.REACT_APP_FIRESTORE_USERS_COLLECTION_NAME }}
-          REACT_APP_FIRESTORE_VAULTS_COLLECTION_NAME: ${{ secrets.REACT_APP_FIRESTORE_VAULTS_COLLECTION_NAME }}
         run: npm run build
 
       - name: Deploy to GitHub Pages
