@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import debounce from "../utils/debounce";
-import KeyItem from "./KeyItem";
-import "./KeysList.css";
+import VaultItem from "./VaultItem";
+import "./VaultItemList.css";
 
-export default function KeysList(props) {
+export default function VaultItemList(props) {
   const { keys, readOnly, onDeleteKey } = props;
 
   const navigate = useNavigate();
@@ -107,7 +107,7 @@ export default function KeysList(props) {
         {filteredKeys.length > 0 ? (
           <div className="keys-items-stack">
             {filteredKeys.map((key, index) => (
-              <KeyItem
+              <VaultItem
                 readOnly={readOnly}
                 key={key.id || `${key.account}_${key.username}`}
                 keyItem={key}

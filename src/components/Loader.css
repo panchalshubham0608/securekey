@@ -1,33 +1,217 @@
 .loader-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(7, 10, 18, 0.55);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  inset: 0;
+  background: rgba(7, 10, 18, 0.62);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 9999;
+  animation: skFadeIn 0.18s ease-out;
 }
 
-.loader-spinner {
-  width: 52px;
-  height: 52px;
-  border: 4px solid var(--sk-border-strong);
-  border-top: 4px solid var(--sk-accent);
+.sk-loader-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 26px 32px;
+  border-radius: 22px;
+  background: var(--sk-surface-solid);
+  border: 1px solid var(--sk-border-strong);
+  box-shadow: var(--sk-shadow-popover);
+  min-width: 230px;
+  text-align: center;
+}
+
+.sk-loader-visual {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sk-loader-glow {
+  position: absolute;
+  width: 68px;
+  height: 68px;
   border-radius: 50%;
-  animation: spin 0.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  background: var(--sk-accent-gradient);
+  filter: blur(18px);
+  opacity: 0.35;
+  animation: skLoaderPulse 1.8s ease-in-out infinite;
 }
 
-@keyframes spin {
+.sk-loader-orbit {
+  position: absolute;
+  border-radius: 50%;
+}
+
+.sk-loader-orbit-outer {
+  width: 70px;
+  height: 70px;
+  border: 2.5px solid transparent;
+  border-top-color: var(--sk-accent);
+  border-right-color: #8b5cf6;
+  animation: skOrbitSpin 1.15s cubic-bezier(0.5, 0.15, 0.5, 0.85) infinite;
+}
+
+.sk-loader-orbit-inner {
+  width: 54px;
+  height: 54px;
+  border: 2px dashed rgba(6, 182, 212, 0.55);
+  animation: skOrbitSpinReverse 2.2s linear infinite;
+}
+
+.sk-loader-core {
+  position: relative;
+  z-index: 2;
+  width: 40px;
+  height: 40px;
+  border-radius: 13px;
+  background: var(--sk-surface-elevated);
+  border: 1px solid var(--sk-border-strong);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.sk-loader-logo {
+  animation: skLogoFloat 1.6s ease-in-out infinite;
+}
+
+.sk-loader-text-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.sk-loader-title {
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--sk-text-primary);
+  letter-spacing: -0.01em;
+}
+
+.sk-loader-cipher {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.sk-loader-cipher span {
+  width: 14px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--sk-accent-gradient);
+  opacity: 0.3;
+  animation: skCipherWave 1.1s ease-in-out infinite;
+}
+
+.sk-loader-cipher span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.sk-loader-cipher span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.sk-loader-cipher span:nth-child(4) {
+  animation-delay: 0.45s;
+}
+
+/* Inline Key Reveal Loader */
+.sk-inline-loader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: var(--sk-surface-input);
+  border: 1px solid var(--sk-border);
+}
+
+.sk-inline-loader-icon {
+  position: relative;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--inline-loader-accent, var(--sk-accent));
+  font-size: 0.75rem;
+}
+
+.sk-inline-loader-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid var(--sk-border);
+  border-top-color: var(--inline-loader-accent, var(--sk-accent));
+  animation: skOrbitSpin 0.85s linear infinite;
+}
+
+.sk-inline-loader-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--sk-text-secondary);
+  letter-spacing: 0.02em;
+}
+
+@keyframes skOrbitSpin {
   0% {
     transform: rotate(0deg);
   }
-
   100% {
     transform: rotate(360deg);
+  }
+}
+
+@keyframes skOrbitSpinReverse {
+  0% {
+    transform: rotate(360deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes skLoaderPulse {
+  0%,
+  100% {
+    transform: scale(0.92);
+    opacity: 0.28;
+  }
+  50% {
+    transform: scale(1.08);
+    opacity: 0.48;
+  }
+}
+
+@keyframes skLogoFloat {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.08);
+  }
+}
+
+@keyframes skCipherWave {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: scaleY(0.85);
+  }
+  50% {
+    opacity: 1;
+    transform: scaleY(1.25);
   }
 }

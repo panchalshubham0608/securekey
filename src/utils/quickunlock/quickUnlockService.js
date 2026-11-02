@@ -20,6 +20,7 @@ import { idbDelete, idbGet, idbSet } from "./idb";
 const ENCRYPTED_MEK_KEY = "encrypted_mek";
 const DEVICE_KEY_IDB_KEY = "device_key";
 const CREDENTIAL_ID_KEY = "credential_id";
+const QUICK_UNLOCK_USER_KEY = "quick_unlock_user";
 
 /* ------------------------------------------------------------------ */
 /* Base64 helpers                                                      */
@@ -185,6 +186,28 @@ export async function enableQuickUnlock({ user, mek }) {
 
   const encryptedMEK = await encryptMEK({ mek, deviceKey });
   localStorage.setItem(ENCRYPTED_MEK_KEY, JSON.stringify(encryptedMEK));
+  if (user) {
+    localStorage.setItem(
+      QUICK_UNLOCK_USER_KEY,
+      JSON.stringify({
+        uid: user.uid,
+        email: user.email,
+        displayName: user.displayName || ""
+      })
+    );
+  }
+}
+
+/**
+ * Returns the saved Quick Unlock user profile if available
+ */
+export function getQuickUnlockUser() {
+  try {
+    const raw = localStorage.getItem(QUICK_UNLOCK_USER_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch (err) {
+    return null;
+  }
 }
 
 /**
@@ -227,6 +250,7 @@ export async function disableQuickUnlock() {
   await idbDelete(CREDENTIAL_ID_KEY);
   await idbDelete(DEVICE_KEY_IDB_KEY);
   localStorage.removeItem(ENCRYPTED_MEK_KEY);
+  localStorage.removeItem(QUICK_UNLOCK_USER_KEY);
 }
 
 /**
@@ -238,4 +262,38 @@ export function isQuickUnlockSupported() {
     navigator.credentials &&
     typeof navigator.credentials.get === "function"
   );
+}
+
+/**
+ * Formats raw WebAuthn / DOMException errors into user-friendly messages
+ */
+export function formatQuickUnlockError(err) {
+  const name = err?.name || "";
+  const message = err?.message || "";
+
+  if (
+    name === "NotAllowedError" ||
+    message.includes("timed out or was not allowed") ||
+    message.includes("The operation either timed out")
+  ) {
+    return "Biometric verification was cancelled or timed out. Tap the fingerprint icon to try again.";
+  }
+
+  if (name === "SecurityError") {
+    return "Biometric unlock requires a secure (HTTPS or localhost) connection.";
+  }
+
+  if (name === "NotSupportedError") {
+    return "Biometric authentication is not supported on this device or browser.";
+  }
+
+  if (name === "InvalidStateError") {
+    return "No matching passkey or biometric credential was found on this device.";
+  }
+
+  if (name === "AbortError") {
+    return "Biometric verification was interrupted. Please try again.";
+  }
+
+  return message || "Could not verify biometrics. Please try again.";
 }

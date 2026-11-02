@@ -1,66 +1,76 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Logo from "../assets/images/logo.svg";
 import { useAppContext } from "../context/AppContext";
-import { isQuickUnlockEnabled, quickUnlock } from "../utils/quickunlock/quickUnlockService";
+import {
+  formatQuickUnlockError,
+  getQuickUnlockUser,
+  quickUnlock
+} from "../utils/quickunlock/quickUnlockService";
 import Modal from "./Modal";
 
 /**
  * QuickUnlockVerification Component
  * Allows users to authenticate using WebAuthn (fingerprint / PIN) to unlock vault.
  */
-export default function QuickUnlockVerification() {
-  const { user, unlockVault } = useAppContext();
-  const [cancelled, setCancelled] = useState(false);
-  const [hasQuickUnlock, setHasQuickUnlock] = useState(false);
+export default function QuickUnlockVerification({ onClose }) {
+  const {
+    user,
+    vaultUnlocked,
+    unlockVault
+  } = useAppContext();
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const autoTriggeredRef = useRef(false);
 
-  useEffect(() => {
-    let isMounted = true;
+  const activeUser = user || getQuickUnlockUser();
 
-    const checkQuickUnlock = async () => {
-      const enabled = await isQuickUnlockEnabled();
-      if (isMounted) {
-        setHasQuickUnlock(enabled);
-      }
-    };
-
-    checkQuickUnlock();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+  const handleClose = useCallback(() => {
+    if (onClose) {
+      onClose();
+    }
+  }, [onClose]);
 
   /**
    * Trigger WebAuthn authentication (login)
    */
-  const handleAuthenticate = async () => {
+  const handleAuthenticate = useCallback(async () => {
+    if (!window.PublicKeyCredential) return;
     setLoading(true);
     setError("");
     try {
       const mek = await quickUnlock();
       if (!mek) {
-        setError("Failed to authenticate with quick unlock");
+        setError("Quick unlock is not configured on this device.");
         return;
       }
-      unlockVault({ mek });
-      setCancelled(true);
+      unlockVault({ mek, user: activeUser });
+      handleClose();
     } catch (err) {
-      setError(err?.message || "Failed to authenticate with quick unlock");
+      setError(formatQuickUnlockError(err));
     } finally {
       setLoading(false);
     }
-  };
+  }, [activeUser, handleClose, unlockVault]);
 
-  if (!user) return null;
-  if (cancelled) return null;
-  if (!hasQuickUnlock) return null;
+  useEffect(() => {
+    if (!vaultUnlocked && activeUser && !autoTriggeredRef.current) {
+      autoTriggeredRef.current = true;
+      handleAuthenticate();
+    }
+  }, [vaultUnlocked, activeUser, handleAuthenticate]);
+
+  if (vaultUnlocked) return null;
+  if (!activeUser) return null;
 
   return (
-    <Modal header="Biometric Unlock" onClose={() => setCancelled(true)}>
-      {error && <p className="auth-error-banner mb-3">{error}</p>}
+    <Modal header="Biometric Unlock" onClose={handleClose}>
+      {error && (
+        <div className="auth-error-banner mb-3" role="alert">
+          <i className="fa-solid fa-circle-exclamation" />
+          <span>{error}</span>
+        </div>
+      )}
       <div className="d-flex align-items-center justify-content-between flex-column merriweather-light text-center py-2">
         <div className="auth-logo-badge mb-2">
           <img width={36} src={Logo} alt="logo" />
@@ -69,10 +79,12 @@ export default function QuickUnlockVerification() {
           SecureKey
         </h4>
         <p className="fs-6 fw-semibold mt-3 mb-1 text-wrap text-break">
-          Hi, {user.displayName || user.email}
+          Hi, {activeUser.displayName || activeUser.email}
         </p>
         <p style={{ color: "var(--sk-text-muted)", fontSize: "0.84rem" }} className="mb-3">
-          Use Touch ID, Face ID, or Device PIN to unlock your vault.
+          {loading
+            ? "Verifying with Touch ID, Face ID, or Device PIN..."
+            : "Tap the fingerprint sensor below to unlock your vault."}
         </p>
         <button
           type="button"

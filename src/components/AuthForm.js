@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Logo from "../assets/images/logo.svg";
 import { useAppContext } from "../context/AppContext";
@@ -6,9 +6,14 @@ import "../styles/AuthForm.css";
 import { secureSignIn } from "../utils/auth/secureSignIn";
 import { secureSignUp } from "../utils/auth/secureSignUp";
 import { evaluatePasswordStrength } from "../utils/passwordutil";
+import {
+  getQuickUnlockUser,
+  isQuickUnlockEnabled
+} from "../utils/quickunlock/quickUnlockService";
+import QuickUnlockVerification from "./QuickUnlockVerification";
 
 export default function AuthForm(props) {
-  const { unlockVault } = useAppContext();
+  const { user, unlockVault } = useAppContext();
   const navigate = useNavigate();
 
   const [error, setError] = useState("");
@@ -17,6 +22,24 @@ export default function AuthForm(props) {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [canQuickUnlock, setCanQuickUnlock] = useState(false);
+  const [showQuickUnlockModal, setShowQuickUnlockModal] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    isQuickUnlockEnabled().then((enabled) => {
+      if (isMounted) {
+        const activeUser = user || getQuickUnlockUser();
+        setCanQuickUnlock(enabled && !!activeUser);
+        if (enabled && activeUser?.email && !props.register) {
+          setEmail((prev) => prev || activeUser.email);
+        }
+      }
+    });
+    return () => {
+      isMounted = false;
+    };
+  }, [user, props.register]);
 
   const validateFields = () => {
     if (!email) {
@@ -77,6 +100,11 @@ export default function AuthForm(props) {
 
   return (
     <div className="auth-form-container">
+      {!register && showQuickUnlockModal && (
+        <QuickUnlockVerification
+          onClose={() => setShowQuickUnlockModal(false)}
+        />
+      )}
       {error && (
         <div className="auth-error-banner" role="alert">
           <i className="fa-solid fa-circle-exclamation" />
@@ -184,7 +212,7 @@ export default function AuthForm(props) {
           </div>
         )}
 
-        <div className="mt-2 mb-3 w-100">
+        <div className="mt-2 mb-3 w-100 d-flex flex-column gap-2">
           <button
             type="submit"
             className="btn sk-btn-primary w-100 d-flex align-items-center justify-content-center gap-2"
@@ -194,6 +222,17 @@ export default function AuthForm(props) {
             <span>{register ? "Register" : "Login"}</span>
             {!loading && <i className="fa-solid fa-arrow-right" />}
           </button>
+
+          {!register && canQuickUnlock && (
+            <button
+              type="button"
+              onClick={() => setShowQuickUnlockModal(true)}
+              className="btn sk-btn-ghost w-100 d-flex align-items-center justify-content-center gap-2"
+            >
+              <i className="fa-solid fa-fingerprint" />
+              <span>Unlock with Biometrics</span>
+            </button>
+          )}
         </div>
 
         <div className="auth-switch-prompt">

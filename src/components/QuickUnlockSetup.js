@@ -3,6 +3,7 @@ import { useAppContext } from "../context/AppContext";
 import {
   disableQuickUnlock,
   enableQuickUnlock,
+  formatQuickUnlockError,
   isQuickUnlockEnabled,
   isQuickUnlockSupported
 } from "../utils/quickunlock/quickUnlockService";
@@ -54,7 +55,7 @@ export default function QuickUnlockSetup({ onClose }) {
       setSuccess("Quick unlock was successfully enabled.");
       setHasQuickUnlock(true);
     } catch (err) {
-      setError(err?.message || "Failed to enable quick unlock");
+      setError(formatQuickUnlockError(err));
     } finally {
       setLoading(false);
     }
@@ -69,7 +70,7 @@ export default function QuickUnlockSetup({ onClose }) {
       setSuccess("Quick unlock was successfully disabled.");
       setHasQuickUnlock(false);
     } catch (err) {
-      setError(err?.message || "Failed to disable quick unlock");
+      setError(formatQuickUnlockError(err));
     } finally {
       setLoading(false);
     }

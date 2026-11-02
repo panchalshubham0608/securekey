@@ -52,29 +52,95 @@
 }
 
 .home-title {
-  font-size: 1.85rem;
+  font-size: 1.95rem;
   font-weight: 800;
-  margin: 0 0 18px;
+  margin: 0 0 8px;
   background: var(--sk-accent-gradient);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
-.about {
-  font-size: 0.88rem;
-  line-height: 1.65;
-  color: var(--sk-text-secondary);
-  text-align: center;
-  background: var(--sk-surface-elevated);
-  border: 1px solid var(--sk-border);
-  border-radius: var(--sk-radius-md);
-  padding: 16px 18px;
-  margin-bottom: 24px;
+.home-subtitle {
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: var(--sk-text-muted);
+  max-width: 320px;
+  margin: 0 0 26px;
 }
 
-.about strong {
+.home-features {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 28px;
+  text-align: left;
+}
+
+.home-feature-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 13px 15px;
+  background: var(--sk-surface-elevated);
+  border: 1px solid var(--sk-border);
+  border-radius: 14px;
+  box-shadow: var(--sk-shadow-card);
+  transition: transform 0.18s ease, border-color 0.18s ease;
+}
+
+.home-feature-row:hover {
+  transform: translateY(-1px);
+  border-color: var(--sk-border-strong);
+}
+
+.home-feature-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.home-feature-icon.tone-indigo {
+  background: var(--sk-accent-soft);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  color: var(--sk-accent-hover);
+}
+
+.home-feature-icon.tone-cyan {
+  background: rgba(14, 165, 233, 0.12);
+  border: 1px solid rgba(14, 165, 233, 0.25);
+  color: #0ea5e9;
+}
+
+.home-feature-icon.tone-emerald {
+  background: var(--sk-success-soft);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  color: var(--sk-success);
+}
+
+.home-feature-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.home-feature-title {
+  font-size: 0.88rem;
+  font-weight: 700;
   color: var(--sk-text-primary);
+}
+
+.home-feature-desc {
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: var(--sk-text-muted);
 }
 
 .home-actions {

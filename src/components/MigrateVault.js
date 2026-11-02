@@ -3,10 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { useAppContext } from "../context/AppContext";
 import { getPassKeys } from "../utils/firestoredb";
 import { migrate } from "../utils/migration";
-import CircularLoader from "./CircularLoader";
-import KeyItem from "./KeyItem";
+import InlineLoader from "./InlineLoader";
 import "./MigrateVault.css";
 import MigrationProgress from "./MigrationProgress";
+import VaultItem from "./VaultItem";
 
 export default function MigrateVault() {
   const { user, mek } = useAppContext();
@@ -140,7 +140,7 @@ export default function MigrateVault() {
           </div>
         )}
 
-        {loading && <CircularLoader />}
+        {loading && <InlineLoader />}
 
         {items.length > 0 && (
           <>
@@ -149,7 +149,7 @@ export default function MigrateVault() {
                 {items.length} item(s) need migration
               </p>
               {items.map((item) => (
-                <KeyItem key={item.id} keyItem={item} readOnly />
+                <VaultItem key={item.id} keyItem={item} readOnly />
               ))}
             </div>
 

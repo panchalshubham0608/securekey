@@ -4,9 +4,9 @@ import { useAppContext } from "../context/AppContext";
 import { str2color } from "../utils/str2color";
 import { getPasswordByAccountAndUsername } from "../utils/vault/vaultService";
 import AccountIcon from "./AccountIcon";
-import CircularLoader from "./CircularLoader";
+import InlineLoader from "./InlineLoader";
 
-export default function KeyItem(props) {
+export default function VaultItem(props) {
   const { user, mek } = useAppContext();
   const navigate = useNavigate();
   const {
@@ -22,6 +22,7 @@ export default function KeyItem(props) {
   } = props;
   const [timer, setTimer] = useState(30);
   const [password, setPassword] = useState("");
+  const [revealed, setRevealed] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [copyIconClassName, setCopyIconClassName] =
@@ -32,6 +33,7 @@ export default function KeyItem(props) {
   const didSwipeRef = useRef(false);
 
   useEffect(() => {
+    setRevealed(false);
     if (!selected) return;
     let intervalId = null;
     setError("");
@@ -118,8 +120,8 @@ export default function KeyItem(props) {
     if (Math.abs(deltaX) > 10) {
       didSwipeRef.current = true;
     }
-    const baseOffset = trayOpen ? -192 : 0;
-    const nextOffset = Math.max(-204, Math.min(0, baseOffset + deltaX));
+    const baseOffset = trayOpen ? -176 : 0;
+    const nextOffset = Math.max(-188, Math.min(0, baseOffset + deltaX));
     setDragOffsetX(nextOffset - baseOffset);
   };
 
@@ -139,8 +141,8 @@ export default function KeyItem(props) {
 
   const accentColor = str2color(keyItem.account);
   const isCopied = copyIconClassName.includes("check");
-  const baseTranslate = trayOpen ? -192 : 0;
-  const currentTranslate = Math.max(-204, Math.min(0, baseTranslate + dragOffsetX));
+  const baseTranslate = trayOpen ? -176 : 0;
+  const currentTranslate = Math.max(-188, Math.min(0, baseTranslate + dragOffsetX));
 
   return (
     <div>
@@ -160,8 +162,10 @@ export default function KeyItem(props) {
                 navigate(`/history/${keyItem.id}`, { replace: true });
               }}
             >
-              <i className="fa-solid fa-clock-rotate-left" />
-              <span>History</span>
+              <span className="key-tray-orb">
+                <i className="fa-solid fa-clock-rotate-left" />
+              </span>
+              <span className="key-tray-label">History</span>
             </button>
             <button
               type="button"
@@ -173,8 +177,10 @@ export default function KeyItem(props) {
                 navigate(`/edit/${keyItem.id}`, { replace: true });
               }}
             >
-              <i className="fa-solid fa-pen-to-square" />
-              <span>Edit</span>
+              <span className="key-tray-orb">
+                <i className="fa-solid fa-pen-to-square" />
+              </span>
+              <span className="key-tray-label">Edit</span>
             </button>
             <button
               type="button"
@@ -186,8 +192,10 @@ export default function KeyItem(props) {
                 setShowDeleteConfirm(true);
               }}
             >
-              <i className="fa-solid fa-trash-can" />
-              <span>Delete</span>
+              <span className="key-tray-orb">
+                <i className="fa-solid fa-trash-can" />
+              </span>
+              <span className="key-tray-label">Delete</span>
             </button>
           </div>
         )}
@@ -221,7 +229,7 @@ export default function KeyItem(props) {
             <div className="d-flex align-items-center justify-content-between">
               <div className="d-flex align-items-center gap-3 key-main-info">
                 <div className="account-logo-wrapper">
-                  <AccountIcon account={keyItem.account} />
+                  <AccountIcon account={keyItem.account} username={keyItem.username} />
                 </div>
                 <div className="key-text-group">
                   <div className="d-flex align-items-center flex-wrap gap-2">
@@ -264,7 +272,7 @@ export default function KeyItem(props) {
                 onClick={(e) => e.stopPropagation()}
               >
                 {loading ? (
-                  <CircularLoader borderColor={accentColor} />
+                  <InlineLoader borderColor={accentColor} />
                 ) : (
                   <div>
                     {error ? (
@@ -281,11 +289,43 @@ export default function KeyItem(props) {
                           </span>
                         </div>
 
-                        <div className="key-secret-box is-revealed mt-2">
-                          <p className="m-0 passkey passkey-revealed font-mono">
-                            {password}
+                        <div
+                          className={`key-secret-box ${
+                            revealed ? "is-revealed" : ""
+                          } mt-2`}
+                        >
+                          <p
+                            className={`m-0 passkey ${
+                              revealed ? "passkey-revealed" : "passkey-masked"
+                            } font-mono`}
+                          >
+                            {revealed ? password : "************"}
                           </p>
                           <div className="key-secret-actions">
+                            <button
+                              type="button"
+                              className={`key-reveal-btn ${
+                                revealed ? "is-active" : ""
+                              }`}
+                              aria-label={
+                                revealed ? "Hide password" : "Reveal password"
+                              }
+                              title={
+                                revealed ? "Hide password" : "Reveal password"
+                              }
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setRevealed((prev) => !prev);
+                              }}
+                            >
+                              <span className="key-reveal-icon-wrap">
+                                <i
+                                  className={`fa-solid ${
+                                    revealed ? "fa-eye-slash" : "fa-eye"
+                                  }`}
+                                />
+                              </span>
+                            </button>
                             <button
                               type="button"
                               className={`key-copy-btn merriweather-light ${
