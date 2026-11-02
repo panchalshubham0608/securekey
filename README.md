@@ -1,103 +1,109 @@
-# Secure Key
+# SecureKey
 [![CI Pipeline](https://github.com/panchalshubham0608/securekey/actions/workflows/react_test.yml/badge.svg?branch=main)](https://github.com/panchalshubham0608/securekey/actions/workflows/react_test.yml)
 [![Deploy React App to GitHub Pages](https://github.com/panchalshubham0608/securekey/actions/workflows/deploy.yml/badge.svg)](https://github.com/panchalshubham0608/securekey/actions/workflows/deploy.yml)
+[![Check Assets for SVGs](https://github.com/panchalshubham0608/securekey/actions/workflows/check-assets.yml/badge.svg)](https://github.com/panchalshubham0608/securekey/actions/workflows/check-assets.yml)
 
-[SecureKey](https://panchalshubham0608.github.io/securekey) is a **secure, client-side encrypted password manager** that allows you to safely store and manage your secrets directly in your browser.
+[**SecureKey**](https://panchalshubham0608.github.io/securekey) is a **zero-knowledge, client-side encrypted password manager** that lets you safely store, audit, and manage your credentials directly in your browser.
+
+---
 
 ## ✨ Key Features
-- 🔐 **Client-side encryption** — your secrets are encrypted before they leave your device
-- 🧠 **Master Encryption Key (MEK) architecture**
-- 🔑 **Password-based login**
-- ⚡ **Quick Unlock using biometric / PIN (WebAuthn)**
-   * Fingerprint, Face ID, or device PIN
-   * Device-bound and secure
-- 🔄 **Seamless migration** from legacy encryption to MEK-based encryption
-- 🕓 **Password history tracking**
-- ☁️ **Secure cloud sync** using Firebase Firestore
-- 🎨 **Clean and intuitive UI**
 
-## 🔒 Security Model (High Level)
-- Secrets are encrypted locally using a Master Encryption Key (MEK)
-- **MEK is never stored in plaintext**
-- For Quick Unlock:
-   - MEK is encrypted with a **device-specific key**
-   - Device key is stored securely in IndexedDB
-   - Biometric / PIN verification is required to unlock
-- Encryption uses **AES-GCM (256-bit)**
-- 🔐 Your data remains unreadable to anyone without your credentials — including the server.
+- 🔐 **Zero-Knowledge Client-Side Encryption** — Secrets are encrypted and decrypted locally in your browser using **AES-GCM (256-bit)** before ever touching the network.
+- 🧠 **Master Encryption Key (MEK) Architecture** — Your master password derives a wrapping key (PBKDF2-SHA256) to unwrap your vault's MEK in memory.
+- ⚡ **Biometric Quick Unlock (WebAuthn)**
+  - Unlock your vault with **Touch ID, Face ID, Windows Hello, or device PIN** directly from the sign-in screen.
+  - Device-bound and isolated per browser/device using IndexedDB + WebAuthn.
+- ⏱️ **Automatic Inactivity Lock & Ephemeral Reveal**
+  - **Inactivity Auto-Lock**: Automatically locks the vault after **5 minutes** of inactivity, with a centered warning modal and live countdown at **4 minutes**.
+  - **Masked by Default & 30s Auto-Collapse**: Expanding a vault item keeps the password masked (`************`) until explicitly revealed, and automatically collapses after **30 seconds**.
+- 🛡️ **Password Health Scorecard**
+  - Real-time vault health score (`%`) in the top navigation bar.
+  - Tracks credentials that **Need Rotation** (`> 180 days`), are **Expiring Soon** (`150–180 days`), or are **Up to Date**, with one-click **Rotate** / **Update** shortcuts.
+- 🕓 **Password Change History** — Full encrypted audit trail of previous passwords and rotation timestamps for every credential.
+- 🎨 **Modern Glassmorphic UI & Dark/Light Themes**
+  - Built-in **Dark** and **Light** themes with persistent preference.
+  - Automatic brand icon detection for **27+ popular providers** (AWS, GitHub, Google, Apple, Discord, Netflix, Slack, Spotify, X, etc.) plus dynamic monogrammed squircle badges for custom services.
+  - Touch-friendly slide-out action tray for quick access to **History**, **Edit**, and **Delete**.
+- 🔄 **Seamless Legacy Vault Migration** — Built-in migration wizard to re-encrypt legacy credentials into the MEK-based vault architecture.
 
-## 🔄 Migration Support
-- SecureKey has upgraded its encryption design.
-- If you don’t see your existing passwords after login:
-   - Use Migration from the hamburger menu
-   - Existing passwords will be securely re-encrypted using the new MEK system
-   - Migration happens locally and securely
+---
+
+## 🔒 Security Model
+
+- **Zero Plaintext Storage**: Your Master Password and plaintext MEK are never sent to the server or persisted in plaintext storage.
+- **Quick Unlock Storage**:
+  - When enabled, the MEK is encrypted using a non-extractable **AES-GCM `CryptoKey`** stored in **IndexedDB**, gated by a platform **WebAuthn** authenticator assertion.
+- **Lock Vault vs. Log Out**:
+  - **Lock Vault** *(manual or 5-minute inactivity timeout)*: Wipes the in-memory `mek` immediately while preserving your registered Quick Unlock device credentials so you can quickly re-authenticate with biometrics.
+  - **Log Out**: Performs a full cryptographic cleanup — wipes `encrypted_mek`, `device_key`, `credential_id`, and `quick_unlock_user` from IndexedDB and `localStorage`, clears the in-memory `mek`, and signs out of Firebase Auth.
+- 🔐 Even if the backend database is compromised, your vault remains unreadable without your credentials.
+
+---
+
+## 🔄 Legacy Vault Migration
+
+If you have credentials from an earlier version of SecureKey:
+1. Sign in to your account and open the **navigation drawer** (top-right menu).
+2. Select **Migrate Legacy Data**.
+3. Your existing credentials will be decrypted locally and re-encrypted under your new MEK.
+
+---
 
 ## ⚠️ Important Notes
-- **Do not forget your master password**
-- If you lose:
-   - Your password and
-   - Access to your device (Quick Unlock)
-- 👉 Your data **cannot be recovered**.  
-(This is by design for maximum security.)
+
+- **Do not forget your master password.**
+- Because SecureKey uses zero-knowledge client-side encryption, **there is no password reset or server-side recovery**. If you lose both your master password and access to an enrolled Quick Unlock device, your vault cannot be decrypted.
+
+---
 
 ## 🧪 Browser Support
-- Modern Chromium-based browsers (Chrome, Edge, Brave)
-- WebAuthn required for biometric / PIN unlock
-- HTTPS is required for cryptographic APIs
 
-## Development Flow
+- Modern browsers with **Web Crypto API** and **WebAuthn** support (Chrome, Edge, Brave, Safari, Firefox).
+- **HTTPS** (or `localhost` during development) is required for Web Crypto and WebAuthn APIs.
+
+---
+
+## 🛠️ Development Flow
+
 1. **Clone the Repository**:
-   - Clone the repository to your local machine:
-     ```sh
-     git clone https://github.com/panchalshubham0608/securekey.git
-     cd securekey
-     ```
+   ```sh
+   git clone https://github.com/panchalshubham0608/securekey.git
+   cd securekey
+   ```
 
 2. **Set Up Environment Variables**:
-   - Create a `.env` file in the root directory of the project if it doesn't already exist.
-   - Add the following environment variables to the `.env` file:
-     ```env
-     REACT_APP_FIREBASE_CONFIG=your_firebase_config
-     REACT_APP_FIRESTORE_KEYS_COLLECTION_NAME=your_firestore_keys_collection_name
-     REACT_APP_FIRESTORE_USERS_COLLECTION_NAME=your_firestore_USERS_collection_name
-     REACT_APP_FIRESTORE_VAULTS_COLLECTION_NAME=your_firestore_VAULTS_collection_name
-     ```
+   Create a `.env` file in the project root:
+   ```env
+   REACT_APP_FIREBASE_CONFIG=your_firebase_config_json
+   REACT_APP_FIRESTORE_KEYS_COLLECTION_NAME=your_firestore_keys_collection_name
+   REACT_APP_FIRESTORE_USERS_COLLECTION_NAME=your_firestore_users_collection_name
+   REACT_APP_FIRESTORE_VAULTS_COLLECTION_NAME=your_firestore_vaults_collection_name
+   ```
 
-3. **Install Packages**:
-   - Install the necessary packages using npm:
-     ```sh
-     npm install
-     ```
+3. **Install Dependencies**:
+   ```sh
+   npm install
+   ```
 
-4. **Run the Application**:
-   - Start the development server:
-     ```sh
-     npm start
-     ```
-   - The application will be available at `http://localhost:3000/securekey`.
+4. **Start the Development Server**:
+   ```sh
+   npm start
+   ```
+   The app will be available at `http://localhost:3000/securekey`.
 
-5. **Make Changes and Test Locally**:
-   - Make your changes and test them locally.  
-   **Tip:** Use a descriptive branch name for your feature or fix.
+5. **Lint & Run Unit Tests**:
+   ```sh
+   npm run lint
+   TZ=Asia/Kolkata npm test
+   ```
 
-6. **Create a Pull Request**:
-   - Once you have tested your changes, create a pull request from your branch to the `main` branch.
-   - Provide a detailed description of the changes and any relevant information.
+6. **Deployment**:
+   Merging into `main` automatically triggers the GitHub Actions workflow ([`.github/workflows/deploy.yml`](.github/workflows/deploy.yml)) to build and deploy to GitHub Pages.
 
-7. **Wait for Approval**:
-   - Wait for the pull request to be reviewed and approved by the maintainers.
+---
 
-8. **Production Deployment**:
-    - After your pull request is merged into the `main` branch, a production deployment will be triggered automatically.
+## 📬 Contact
 
-9. **Observe Production**:
-    - Observe production for any issues with your deployment, if you see something is broken then create a roll-back of your changes.
+Questions or feedback? Reach out at [shubhampanchal9773@gmail.com](mailto:shubhampanchal9773@gmail.com).
 
-## 🧾 Additional Notes
-- Coding Style: Follow existing patterns and conventions
-- Security-sensitive code: Add comments and rationale
-- Testing: Ensure all tests pass before submitting PRs
-
-## Help
-If you have any questions or need help, please contact me at [shubhampanchal9773@gmail.com](mailto:shubhampanchal9773@gmail.com)
