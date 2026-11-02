@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useAppContext } from "../context/AppContext";
 import { str2color } from "../utils/str2color";
 import { getPasswordByAccountAndUsername } from "../utils/vault/vaultService";
@@ -8,7 +7,6 @@ import InlineLoader from "./InlineLoader";
 
 export default function VaultItem(props) {
   const { user, mek } = useAppContext();
-  const navigate = useNavigate();
   const {
     readOnly,
     keyItem,
@@ -18,6 +16,8 @@ export default function VaultItem(props) {
     handleShowKeyBody,
     handleHideKeyBody,
     handleDeleteKey,
+    onEdit,
+    onViewHistory,
     index,
   } = props;
   const [timer, setTimer] = useState(30);
@@ -159,7 +159,7 @@ export default function VaultItem(props) {
               onClick={(e) => {
                 e.stopPropagation();
                 if (onSetTrayOpen) onSetTrayOpen(false);
-                navigate(`/history/${keyItem.id}`, { replace: true });
+                if (onViewHistory) onViewHistory(keyItem.id);
               }}
             >
               <span className="key-tray-orb">
@@ -174,7 +174,7 @@ export default function VaultItem(props) {
               onClick={(e) => {
                 e.stopPropagation();
                 if (onSetTrayOpen) onSetTrayOpen(false);
-                navigate(`/edit/${keyItem.id}`, { replace: true });
+                if (onEdit) onEdit(keyItem.id);
               }}
             >
               <span className="key-tray-orb">
