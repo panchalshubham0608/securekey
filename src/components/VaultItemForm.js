@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Navigate, useParams } from "react-router-dom";
 import { useAppContext } from "../context/AppContext";
 import { useAlert } from "../hooks/useAlert";
 import AccountIconsList from "../utils/AccountIconsList";
@@ -17,8 +16,7 @@ import "./VaultItemForm.css";
 const ALL_ACCOUNTS = Object.keys(AccountIconsList);
 const PASSWORD_LENGTHS = [8, 10, 12, 16, 24];
 
-export default function VaultItemForm() {
-  const { itemId } = useParams();
+export default function VaultItemForm({ itemId, onClose, onSaved }) {
   const editing = Boolean(itemId);
 
   const { user, mek } = useAppContext();
@@ -31,7 +29,6 @@ export default function VaultItemForm() {
   const [showPassword, setShowPassword] = useState(true);
   const [genLength, setGenLength] = useState(16);
   const [loading, setLoading] = useState(false);
-  const [navigate, setNavigate] = useState(null);
 
   const [accountSearch, setAccountSearch] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
@@ -51,14 +48,14 @@ export default function VaultItemForm() {
         setUsername(item.username);
       } catch (err) {
         showAlert(err.message || "Error fetching vault item", "error");
-        setNavigate(<Navigate to="/" replace />);
+        if (onClose) onClose();
       } finally {
         setLoading(false);
       }
     };
 
     fetchItem();
-  }, [editing, itemId, user.uid, showAlert]);
+  }, [editing, itemId, user.uid, showAlert, onClose]);
 
   /* ------------------ Derived filtered accounts ------------------ */
   const filteredAccounts = useMemo(() => {
@@ -97,7 +94,11 @@ export default function VaultItemForm() {
           password
         });
       }
-      setNavigate(<Navigate to="/" replace />);
+      if (onSaved) {
+        onSaved();
+      } else if (onClose) {
+        onClose();
+      }
     } catch (err) {
       showAlert(err.message || "Operation failed", "error");
     } finally {
@@ -117,8 +118,6 @@ export default function VaultItemForm() {
     setPassword(generated);
   };
 
-  if (navigate) return navigate;
-
   const strength = evaluatePasswordStrength(password);
 
   return (
@@ -136,7 +135,7 @@ export default function VaultItemForm() {
               type="button"
               className="sk-icon-btn"
               aria-label="Back to dashboard"
-              onClick={() => setNavigate(<Navigate to="/" />)}
+              onClick={onClose}
             >
               <i className="fa-solid fa-arrow-left" />
             </button>

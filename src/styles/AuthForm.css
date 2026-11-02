@@ -186,12 +186,18 @@
   border-top: 1px solid var(--sk-border);
 }
 
-.auth-switch-prompt a {
+.auth-switch-prompt a,
+.auth-switch-link {
+  background: none;
+  border: none;
+  padding: 0;
   color: var(--sk-accent-hover);
   font-weight: 600;
   text-decoration: none;
+  cursor: pointer;
 }
 
-.auth-switch-prompt a:hover {
+.auth-switch-prompt a:hover,
+.auth-switch-link:hover {
   text-decoration: underline;
 }

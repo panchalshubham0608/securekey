@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
 import { useAppContext } from "../context/AppContext";
 import { formatFirestoreTimestamp } from "../utils/dateutil";
 import { getVaultItemHistory } from "../utils/vault/vaultService";
@@ -7,10 +6,8 @@ import AccountIcon from "./AccountIcon";
 import Loader from "./Loader";
 import "./VaultItemChangeHistory.css";
 
-export default function VaultItemChangeHistory() {
+export default function VaultItemChangeHistory({ itemId, onClose }) {
   const { user, mek } = useAppContext();
-  const { itemId } = useParams();
-  const navigate = useNavigate();
 
   const [keyWithHistory, setKeyWithHistory] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -62,7 +59,7 @@ export default function VaultItemChangeHistory() {
         <button
           type="button"
           className="btn sk-btn-ghost"
-          onClick={() => navigate("/", { replace: true })}
+          onClick={onClose}
         >
           Go back
         </button>
@@ -82,7 +79,7 @@ export default function VaultItemChangeHistory() {
         <button
           type="button"
           className="sk-icon-btn"
-          onClick={() => navigate("/", { replace: true })}
+          onClick={onClose}
           aria-label="Close history"
         >
           <i className="fa-solid fa-arrow-left" />

@@ -1,13 +1,18 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import debounce from "../utils/debounce";
 import VaultItem from "./VaultItem";
 import "./VaultItemList.css";
 
 export default function VaultItemList(props) {
-  const { keys, readOnly, onDeleteKey } = props;
+  const {
+    keys,
+    readOnly,
+    onDeleteKey,
+    onAddKey,
+    onEditKey,
+    onViewHistory
+  } = props;
 
-  const navigate = useNavigate();
   const [searchText, setSearchText] = useState("");
   const [filteredKeys, setFilteredKeys] = useState([...keys]);
 
@@ -95,7 +100,7 @@ export default function VaultItemList(props) {
             <button
               type="button"
               className="btn sk-btn-primary keys-add-btn d-flex align-items-center gap-2"
-              onClick={() => navigate("/add", { replace: true })}
+              onClick={onAddKey}
             >
               <i className="fa-solid fa-plus" />
               <span>Add</span>
@@ -131,6 +136,8 @@ export default function VaultItemList(props) {
                 }}
                 handleHideKeyBody={() => setSelectedIndex(-1)}
                 handleDeleteKey={onDeleteKey}
+                onEdit={onEditKey}
+                onViewHistory={onViewHistory}
                 index={index}
               />
             ))}

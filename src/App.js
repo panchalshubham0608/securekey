@@ -1,16 +1,11 @@
 import { onAuthStateChanged } from "firebase/auth";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import "./App.css";
 import AuthForm from "./components/AuthForm";
 import Dashboard from "./components/Dashboard";
 import Home from "./components/Home";
-import MigrateVault from "./components/MigrateVault";
-import VaultItemChangeHistory from "./components/VaultItemChangeHistory";
-import VaultItemForm from "./components/VaultItemForm";
+import Loader from "./components/Loader";
 import { AppContext } from "./context/AppContext";
-import ProtectedRoute from "./routes/ProtectedRoute";
-import PublicRoute from "./routes/PublicRoute";
 import { auth } from "./utils/firebase/firebase";
 import {
   disableQuickUnlock,
@@ -27,6 +22,7 @@ function App() {
   const [authLoading, setAuthLoading] = useState(true);
   const [mek, setMek] = useState(null);
   const [vaultUnlocked, setVaultUnlocked] = useState(false);
+  const [showAuth, setShowAuth] = useState(false);
   const [inactivitySecondsLeft, setInactivitySecondsLeft] = useState(null);
   const lastActivityRef = useRef(Date.now());
 
@@ -90,6 +86,7 @@ function App() {
     setInactivitySecondsLeft(null);
     setMek(null);
     setVaultUnlocked(false);
+    setShowAuth(true);
   }, []);
 
   const resetInactivityTimer = useCallback(() => {
@@ -97,7 +94,7 @@ function App() {
     setInactivitySecondsLeft((prev) => (prev !== null ? null : prev));
   }, []);
 
-  // Auto-lock vault after 60s of inactivity (warning banner shown at 30s)
+  // Auto-lock vault after 5m of inactivity (warning banner shown at 4m)
   useEffect(() => {
     if (!vaultUnlocked) {
       setInactivitySecondsLeft(null);
@@ -147,7 +144,10 @@ function App() {
       await auth.signOut();
     }
     setUser(null);
-    lockVault();
+    setInactivitySecondsLeft(null);
+    setMek(null);
+    setVaultUnlocked(false);
+    setShowAuth(false);
   };
 
   const contextValue = {
@@ -211,27 +211,15 @@ function App() {
             </div>
           </div>
         )}
-        <Router basename="/securekey">
-          <Routes>
-
-            {/* Public routes */}
-            <Route element={<PublicRoute />}>
-              <Route path="/login" element={<AuthForm register={false} />} />
-              <Route path="/register" element={<AuthForm register={true} />} />
-              <Route path="/welcome" element={<Home />} />
-            </Route>
-
-            {/* Private routes */}
-            <Route element={<ProtectedRoute />}>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/add" element={<VaultItemForm />} />
-              <Route path="/edit/:itemId" element={<VaultItemForm />} />
-              <Route path="/history/:itemId" element={<VaultItemChangeHistory />} />
-              <Route path="/migrate" element={<MigrateVault />} />
-            </Route>
-
-          </Routes>
-        </Router>
+        {authLoading ? (
+          <Loader visible />
+        ) : user && vaultUnlocked ? (
+          <Dashboard />
+        ) : user || showAuth ? (
+          <AuthForm />
+        ) : (
+          <Home onGetStarted={() => setShowAuth(true)} />
+        )}
         <button
           type="button"
           className="sk-theme-fab"
@@ -248,4 +236,5 @@ function App() {
 }
 
 export default App;
+
 

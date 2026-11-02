@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useAppContext } from "../context/AppContext";
 import { getPassKeys } from "../utils/firestoredb";
 import { migrate } from "../utils/migration";
@@ -8,9 +7,8 @@ import "./MigrateVault.css";
 import MigrationProgress from "./MigrationProgress";
 import VaultItem from "./VaultItem";
 
-export default function MigrateVault() {
+export default function MigrateVault({ onClose, onMigrated }) {
   const { user, mek } = useAppContext();
-  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [items, setItems] = useState([]);
   const [error, setError] = useState("");
@@ -59,6 +57,7 @@ export default function MigrateVault() {
       }
       setSuccess("Migration completed successfully!");
       await fetchLegacyPasswords();
+      if (onMigrated) onMigrated();
     } catch (err) {
       setError(err.message || "Failed to migrate passwords");
     } finally {
@@ -74,7 +73,7 @@ export default function MigrateVault() {
             type="button"
             className="sk-icon-btn"
             aria-label="Back to dashboard"
-            onClick={() => navigate("/", { replace: true })}
+            onClick={onClose}
           >
             <i className="fa-solid fa-arrow-left" />
           </button>

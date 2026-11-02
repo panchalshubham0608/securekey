@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
 import Logo from "../assets/images/logo.svg";
 import { useAppContext } from "../context/AppContext";
 import "../styles/AuthForm.css";
@@ -14,8 +13,8 @@ import QuickUnlockVerification from "./QuickUnlockVerification";
 
 export default function AuthForm(props) {
   const { user, unlockVault } = useAppContext();
-  const navigate = useNavigate();
 
+  const [register, setRegister] = useState(Boolean(props.register));
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
@@ -31,7 +30,7 @@ export default function AuthForm(props) {
       if (isMounted) {
         const activeUser = user || getQuickUnlockUser();
         setCanQuickUnlock(enabled && !!activeUser);
-        if (enabled && activeUser?.email && !props.register) {
+        if (enabled && activeUser?.email && !register) {
           setEmail((prev) => prev || activeUser.email);
         }
       }
@@ -39,7 +38,7 @@ export default function AuthForm(props) {
     return () => {
       isMounted = false;
     };
-  }, [user, props.register]);
+  }, [user, register]);
 
   const validateFields = () => {
     if (!email) {
@@ -50,11 +49,11 @@ export default function AuthForm(props) {
       setError("Password is required");
       return false;
     }
-    if (props.register && !confirmPassword) {
+    if (register && !confirmPassword) {
       setError("Confirm password is required");
       return false;
     }
-    if (props.register && password !== confirmPassword) {
+    if (register && password !== confirmPassword) {
       setError("Passwords do not match");
       return false;
     }
@@ -71,11 +70,10 @@ export default function AuthForm(props) {
     setError("");
     setLoading(true);
     try {
-      const { mek, user: signedInUser } = props.register
+      const { mek, user: signedInUser } = register
         ? await secureSignUp({ email, password })
         : await secureSignIn({ email, password });
       unlockVault({ mek, user: signedInUser });
-      navigate("/", { replace: true });
     } catch (error) {
       if (error.message) {
         if (error.message.includes("auth/email-already-in-use")) {
@@ -95,7 +93,6 @@ export default function AuthForm(props) {
     }
   };
 
-  const register = props.register;
   const strength = evaluatePasswordStrength(password);
 
   return (
@@ -238,11 +235,32 @@ export default function AuthForm(props) {
         <div className="auth-switch-prompt">
           {register ? (
             <p className="m-0">
-              Already have an account? <Link to="/login">Login</Link>
+              Already have an account?{" "}
+              <button
+                type="button"
+                className="auth-switch-link"
+                onClick={() => {
+                  setError("");
+                  setConfirmPassword("");
+                  setRegister(false);
+                }}
+              >
+                Login
+              </button>
             </p>
           ) : (
             <p className="m-0">
-              Don&apos;t have an account? <Link to="/register">Signup</Link>
+              Don&apos;t have an account?{" "}
+              <button
+                type="button"
+                className="auth-switch-link"
+                onClick={() => {
+                  setError("");
+                  setRegister(true);
+                }}
+              >
+                Signup
+              </button>
             </p>
           )}
         </div>

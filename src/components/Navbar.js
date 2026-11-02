@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import Logo from "../assets/images/logo.svg";
 import { useAppContext } from "../context/AppContext";
 import AccountIcon from "./AccountIcon";
@@ -10,8 +9,7 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 const ROTATION_PERIOD_MS = 6 * 30 * DAY_MS; // 180 days (6 months)
 const EXPIRING_SOON_WINDOW_MS = 30 * DAY_MS; // 30 days before expiration (150-180 days)
 
-export default function Navbar({ keys = [] }) {
-  const navigate = useNavigate();
+export default function Navbar({ keys = [], onOpenMigrate, onEditItem }) {
   const { user, lockVault, logout } = useAppContext();
 
   const [open, setOpen] = useState(false);
@@ -84,12 +82,10 @@ export default function Navbar({ keys = [] }) {
 
   const handleLockVault = () => {
     lockVault();
-    navigate("/login", { replace: true });
   };
 
   const handleSignOut = async () => {
     await logout();
-    navigate("/welcome", { replace: true });
   };
 
   const menuItems = [
@@ -105,7 +101,9 @@ export default function Navbar({ keys = [] }) {
       label: "Migrate",
       description: "Upgrade legacy passwords",
       icon: <i className="fa-solid fa-rocket" />,
-      onClick: () => navigate("/migrate"),
+      onClick: () => {
+        if (onOpenMigrate) onOpenMigrate();
+      },
     },
     {
       key: "lockVault",
@@ -311,7 +309,7 @@ export default function Navbar({ keys = [] }) {
                         className="sk-insights-rotate-btn is-danger"
                         onClick={() => {
                           setShowInsights(false);
-                          navigate(`/edit/${item.id}`);
+                          if (onEditItem) onEditItem(item.id);
                         }}
                       >
                         <span className="sk-insights-btn-orb">
@@ -351,7 +349,7 @@ export default function Navbar({ keys = [] }) {
                         className="sk-insights-rotate-btn is-warning"
                         onClick={() => {
                           setShowInsights(false);
-                          navigate(`/edit/${item.id}`);
+                          if (onEditItem) onEditItem(item.id);
                         }}
                       >
                         <span className="sk-insights-btn-orb">

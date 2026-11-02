@@ -1,5 +1,3 @@
-import { useState } from "react";
-import { Navigate } from "react-router-dom";
 import Logo from "../assets/images/logo.svg";
 import "../styles/Home.css";
 
@@ -24,13 +22,7 @@ const FEATURES = [
   },
 ];
 
-export default function Home() {
-  const [navigate, setNavigate] = useState(null);
-
-  if (navigate) {
-    return navigate;
-  }
-
+export default function Home({ onGetStarted }) {
   return (
     <div className="home-container">
       <div className="home merriweather-light">
@@ -63,7 +55,7 @@ export default function Home() {
         <div className="home-actions w-100">
           <button
             type="button"
-            onClick={() => setNavigate(<Navigate to="/login" />)}
+            onClick={onGetStarted}
             className="btn sk-btn-primary w-100 d-flex align-items-center justify-content-center gap-2"
           >
             <span>Get started</span>
